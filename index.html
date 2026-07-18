@@ -44,6 +44,21 @@
                     <span>Facciones</span>
                     <span class="badge" id="badge-factions">31</span>
                 </li>
+                <li class="nav-item" data-page="minerals">
+                    <span class="nav-icon">⛏️</span>
+                    <span>Minerales</span>
+                    <span class="badge" id="badge-minerals">26</span>
+                </li>
+<li class="nav-item" data-page="components">
+<li class="nav-item" data-page="components">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Componentes</span>
+                    <span class="badge" id="badge-components">0</span>
+                </li>
+                    <span class="nav-icon">⚙️</span>
+                    <span>Componentes</span>
+                    <span class="badge" id="badge-components">0</span>
+                </li>
                 <li class="nav-item" data-page="items">
                     <span class="nav-icon">📦</span>
                     <span>Items</span>
@@ -119,11 +134,15 @@
                                 </a>
                                 <a href="#" class="quick-link" data-page="weapons" data-filter="size6">
                                     <span class="ql-icon">💥</span>
-                                    <span>Armas Size 6 (M8A)</span>
+                                    <span>Componentes de naves</span>
+                                </a>
+                                <a href="#" class="quick-link" data-page="minerals">
+                                    <span class="ql-icon">⛏️</span>
+                                    <span>Ver minerales</span>
                                 </a>
                                 <a href="#" class="quick-link" data-page="wikelo" data-filter="ships">
                                     <span class="ql-icon">🛸</span>
-                                    <span>Naves Wikelo</span>
+                                    <span>Catálogo Wikelo</span>
                                 </a>
                             </div>
                         </div>
@@ -192,6 +211,33 @@
                     <div id="factions-content"><div class="loading-sm">Cargando...</div></div>
                 </div>
 
+                <!-- ═══ COMPONENTS PAGE ═══ -->
+                <div id="page-components" class="page">
+                    <div class="page-header"><h2>Componentes de nave</h2><span id="components-count" class="page-count">0</span></div>
+                    <p class="subtitle">Escudos, plantas de poder, coolers, quantum drives y radares</p>
+                    <div class="filters-bar">
+                        <div class="filter-group"><input type="text" id="comp-search" class="filter-input" placeholder="Buscar componente..."></div>
+                        <div class="filter-group"><select id="filter-comp-type" class="filter-select"><option value="">Todos los tipos</option><option value="Shield">🛡️ Escudos</option><option value="Power Plant">⚡ Plantas</option><option value="Cooler">❄️ Coolers</option><option value="Quantum Drive">🚀 QD</option><option value="Radar">📡 Radares</option></select></div>
+                        <div class="filter-group"><select id="filter-comp-size" class="filter-select"><option value="">Cualquier size</option><option value="1">S1</option><option value="2">S2</option><option value="3">S3</option><option value="4">S4</option></select></div>
+                        <button id="comp-reset" class="btn-reset">✕</button>
+                    </div>
+                    <div class="table-container"><table class="data-table" id="components-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="type" class="sortable">Tipo</th><th data-sort="grade" class="sortable">Grade</th><th data-sort="size" class="sortable">Size</th></tr></thead><tbody id="components-tbody"><tr><td colspan="4" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                    <div id="comp-modal" class="modal hidden"><div class="modal-backdrop" onclick="closeCompModal()"></div><div class="modal-content" id="comp-modal-content"></div></div>
+                </div>
+
+                <!-- ═══ COMPONENTS PAGE ═══ -->
+                <div id="page-components" class="page">
+                    <div class="page-header"><h2>Componentes de nave</h2><span id="components-count" class="page-count">0</span></div>
+                    <p class="subtitle">Escudos, plantas de poder, coolers, quantum drives y radares</p>
+                    <div class="filters-bar">
+                        <div class="filter-group"><input type="text" id="comp-search" class="filter-input" placeholder="Buscar componente..."></div>
+                        <div class="filter-group"><select id="filter-comp-type" class="filter-select"><option value="">Todos los tipos</option><option value="Shield">🛡️ Escudos</option><option value="Power Plant">⚡ Plantas</option><option value="Cooler">❄️ Coolers</option><option value="Quantum Drive">🚀 QD</option><option value="Radar">📡 Radares</option></select></div>
+                        <div class="filter-group"><select id="filter-comp-size" class="filter-select"><option value="">Cualquier size</option><option value="1">S1</option><option value="2">S2</option><option value="3">S3</option></select></div>
+                        <button id="comp-reset" class="btn-reset">✕</button>
+                    </div>
+                    <div class="table-container"><table class="data-table" id="components-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="type" class="sortable">Tipo</th><th data-sort="grade" class="sortable">Grade</th><th data-sort="size" class="sortable">Size</th></tr></thead><tbody id="components-tbody"><tr><td colspan="4" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                </div>
+
                 <!-- ═══ ITEMS PAGE ═══ -->
                 <div id="page-items" class="page">
                     <div class="page-header"><h2>Items</h2><span id="items-count" class="page-count">0</span></div>
@@ -203,6 +249,21 @@
                     <div class="table-container" style="max-height:600px;overflow-y:auto">
                         <table class="data-table" id="items-table"><thead><tr><th>Nombre</th><th>Disponible</th></tr></thead><tbody id="items-tbody"><tr><td colspan="2" class="loading-row">Cargando...</td></tr></tbody></table>
                     </div>
+                </div>
+
+                <!-- ═══ MINERALS PAGE ═══ -->
+                <div id="page-minerals" class="page">
+                    <div class="page-header"><h2>Minerales</h2><span id="minerals-count" class="page-count">26</span></div>
+                    <p class="subtitle">26 minerales con firmas de escaneo, ubicaciones y rareza</p>
+                    <div class="filters-bar">
+                        <div class="filter-group"><input type="text" id="mineral-search" class="filter-input" placeholder="Buscar mineral..."></div>
+                        <div class="filter-group"><select id="filter-rarity" class="filter-select"><option value="">Todas rarezas</option><option value="común">Común</option><option value="raro">Raro</option><option value="épico">Épico</option><option value="legendario">Legendario</option></select></div>
+                        <div class="filter-group"><select id="filter-mlocation" class="filter-select"><option value="">Todas locaciones</option></select></div>
+                        <div class="filter-group"><select id="filter-minval" class="filter-select"><option value="0">Cualquier valor</option><option value="5">≥ 5 aUEC</option><option value="10">≥ 10 aUEC</option><option value="15">≥ 15 aUEC</option><option value="20">≥ 20 aUEC</option></select></div>
+                        <button id="mineral-reset" class="btn-reset">✕</button>
+                    </div>
+                    <div class="table-container"><table class="data-table" id="minerals-table"><thead><tr><th data-sort="name" class="sortable">Mineral</th><th data-sort="rarity" class="sortable">Rareza</th><th data-sort="signature" class="sortable">Firma</th><th data-sort="locations" class="sortable">Locaciones</th><th data-sort="value" class="sortable">Valor/SCU</th></tr></thead><tbody id="minerals-tbody"><tr><td colspan="5" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                    <div id="mineral-modal" class="modal hidden"><div class="modal-backdrop" onclick="closeMineralModal()"></div><div class="modal-content" id="mineral-modal-content"></div></div>
                 </div>
 
                 <!-- ═══ BLUEPRINTS PAGE ═══ -->
