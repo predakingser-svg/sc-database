@@ -37,6 +37,46 @@ function openFeedback() {
     modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
 }
 
+// ─── Full string map ES→EN ───
+const _stringMap = {
+    'Dashboard': 'Dashboard', 'Misiones': 'Missions', 'Planos': 'Blueprints',
+    'Armas': 'Weapons', 'Wikelo': 'Wikelo', 'Facciones': 'Factions',
+    'Items': 'Items', 'Componentes': 'Components',
+    'Misiones con blueprints': 'Missions with blueprints',
+    'Misiones ilegales': 'Illegal missions',
+    'Ver todos los blueprints': 'View all blueprints',
+    'Armas Size 6': 'Weapons Size 6', 'Naves Wikelo': 'Wikelo Ships',
+    'Componentes de nave': 'Ship Components',
+    'Título': 'Title', 'Facción': 'Faction', 'Recompensa': 'Reward',
+    'Sistema': 'System', 'Categoría': 'Category',
+    'Nombre': 'Name', 'Tipo': 'Type', 'Tamaño': 'Size', 'Precio': 'Price',
+    'Producción': 'Output', 'Ingredientes': 'Ingredients', 'Tiempo': 'Time',
+    'DPS': 'DPS', 'Alcance': 'Range', 'Grado': 'Grade',
+    'Filtrar': 'Filter', 'Buscar': 'Search', 'Todas': 'All',
+    'Legales': 'Legal', 'Ilegales': 'Illegal',
+    'Cargando...': 'Loading...', 'Error': 'Error',
+    'Sin datos': 'No data', 'Sin resultados': 'No results',
+    'Conectando...': 'Connecting...',
+    'Legal': 'Legal', 'Ilegal': 'Illegal',
+    'Común': 'Common', 'Raro': 'Rare', 'Épico': 'Epic', 'Legendario': 'Legendary',
+    'Escudo': 'Shield', 'Planta de poder': 'Power Plant',
+    'Motor cuántico': 'Quantum Drive', 'Enfriador': 'Cooler',
+    'Radar': 'Radar',
+};
+
+function applyLang() {
+    if (currentLang === 'es') return;
+    const walker = document.createTreeWalker(document.body, 4, null, false);
+    let node;
+    while (node = walker.nextNode()) {
+        for (const [es, en] of Object.entries(_stringMap)) {
+            if (node.textContent.includes(es)) {
+                node.textContent = node.textContent.replace(new RegExp(es, 'g'), en);
+            }
+        }
+    }
+}
+
 // ─── Translation helpers ───
 function getMissionTranslation(mission) {
     if (currentLang !== 'es') return null;
