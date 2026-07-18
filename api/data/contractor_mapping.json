@@ -1,0 +1,642 @@
+{
+  "adagio": {
+    "mission_count": 11,
+    "translation_count": 55
+  },
+  "adaigo": {
+    "mission_count": 15,
+    "translation_count": 0
+  },
+  "apprehendviolentinmate": {
+    "mission_count": 1,
+    "translation_count": 6
+  },
+  "arlingtonevent": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "assassination": {
+    "mission_count": 28,
+    "translation_count": 16
+  },
+  "bhg": {
+    "mission_count": 5,
+    "translation_count": 73
+  },
+  "battaglia": {
+    "mission_count": 28,
+    "translation_count": 99
+  },
+  "battagliastory1": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "battagliastory1nomeet": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "battagliastory2": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "battagliastory2nomeet": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "battagliastory3": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "battagliastory3nomeet": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "bitzeros": {
+    "mission_count": 9,
+    "translation_count": 82
+  },
+  "blockaderunner": {
+    "mission_count": 2,
+    "translation_count": 33
+  },
+  "bounty": {
+    "mission_count": 77,
+    "translation_count": 88
+  },
+  "bountyhuntersguild": {
+    "mission_count": 30,
+    "translation_count": 9
+  },
+  "brightsky": {
+    "mission_count": 1,
+    "translation_count": 17
+  },
+  "cdf": {
+    "mission_count": 1,
+    "translation_count": 28
+  },
+  "cfp": {
+    "mission_count": 142,
+    "translation_count": 425
+  },
+  "certificationmission": {
+    "mission_count": 9,
+    "translation_count": 0
+  },
+  "citizensforprosperity": {
+    "mission_count": 7,
+    "translation_count": 0
+  },
+  "cleanair": {
+    "mission_count": 43,
+    "translation_count": 85
+  },
+  "clearcrimestat": {
+    "mission_count": 2,
+    "translation_count": 0
+  },
+  "clovus": {
+    "mission_count": 2,
+    "translation_count": 0
+  },
+  "collect": {
+    "mission_count": 6,
+    "translation_count": 9
+  },
+  "collectorblueprintflowtest": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "commarrayhack": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "commarrayrepair": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "constantinehurston": {
+    "mission_count": 1,
+    "translation_count": 4
+  },
+  "containersheist": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "covalex": {
+    "mission_count": 12,
+    "translation_count": 167
+  },
+  "criminalkills": {
+    "mission_count": 2,
+    "translation_count": 0
+  },
+  "dataheist": {
+    "mission_count": 12,
+    "translation_count": 144
+  },
+  "deadsaints": {
+    "mission_count": 12,
+    "translation_count": 51
+  },
+  "defend": {
+    "mission_count": 13,
+    "translation_count": 9
+  },
+  "delivery": {
+    "mission_count": 60,
+    "translation_count": 65
+  },
+  "deploy": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "derelict": {
+    "mission_count": 20,
+    "translation_count": 6
+  },
+  "destroy": {
+    "mission_count": 21,
+    "translation_count": 0
+  },
+  "destroynarcotics": {
+    "mission_count": 16,
+    "translation_count": 0
+  },
+  "ecn": {
+    "mission_count": 1,
+    "translation_count": 3
+  },
+  "echhartsecurity": {
+    "mission_count": 6,
+    "translation_count": 0
+  },
+  "eckhart": {
+    "mission_count": 10,
+    "translation_count": 98
+  },
+  "eckhartsecurity": {
+    "mission_count": 33,
+    "translation_count": 57
+  },
+  "eliminateall": {
+    "mission_count": 39,
+    "translation_count": 0
+  },
+  "eliminateboss": {
+    "mission_count": 8,
+    "translation_count": 0
+  },
+  "eliminatespecific": {
+    "mission_count": 21,
+    "translation_count": 1
+  },
+  "fps": {
+    "mission_count": 3,
+    "translation_count": 14
+  },
+  "ftl": {
+    "mission_count": 10,
+    "translation_count": 44
+  },
+  "firesale": {
+    "mission_count": 6,
+    "translation_count": 14
+  },
+  "forcedepletion": {
+    "mission_count": 4,
+    "translation_count": 8
+  },
+  "foxwell": {
+    "mission_count": 34,
+    "translation_count": 162
+  },
+  "foxwellenforcement": {
+    "mission_count": 41,
+    "translation_count": 0
+  },
+  "gmcapture": {
+    "mission_count": 1,
+    "translation_count": 7
+  },
+  "ghosthollow": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "gillyspilotschool": {
+    "mission_count": 8,
+    "translation_count": 0
+  },
+  "hh": {
+    "mission_count": 190,
+    "translation_count": 62
+  },
+  "hws": {
+    "mission_count": 4,
+    "translation_count": 0
+  },
+  "hackprevention": {
+    "mission_count": 5,
+    "translation_count": 0
+  },
+  "haulcargo": {
+    "mission_count": 47,
+    "translation_count": 38
+  },
+  "headhunters": {
+    "mission_count": 71,
+    "translation_count": 513
+  },
+  "hexpenetrator": {
+    "mission_count": 7,
+    "translation_count": 65
+  },
+  "highpointwildernessspecialists": {
+    "mission_count": 10,
+    "translation_count": 0
+  },
+  "hijackedship": {
+    "mission_count": 3,
+    "translation_count": 0
+  },
+  "historicaltour": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "hockrow": {
+    "mission_count": 32,
+    "translation_count": 168
+  },
+  "huntthepolaris": {
+    "mission_count": 1,
+    "translation_count": 22
+  },
+  "ids": {
+    "mission_count": 4,
+    "translation_count": 0
+  },
+  "inhabited": {
+    "mission_count": 16,
+    "translation_count": 0
+  },
+  "intersec": {
+    "mission_count": 22,
+    "translation_count": 102
+  },
+  "intro": {
+    "mission_count": 2,
+    "translation_count": 0
+  },
+  "investigatedestroyship": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "jumptown2": {
+    "mission_count": 6,
+    "translation_count": 17
+  },
+  "killallanimals": {
+    "mission_count": 3,
+    "translation_count": 6
+  },
+  "killallanimalsatlocation": {
+    "mission_count": 3,
+    "translation_count": 0
+  },
+  "killandcollectanimals": {
+    "mission_count": 3,
+    "translation_count": 0
+  },
+  "lawlesssalvage": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "ling": {
+    "mission_count": 6,
+    "translation_count": 13
+  },
+  "locationdebrismanager": {
+    "mission_count": 2,
+    "translation_count": 0
+  },
+  "lootgenerationtestmissionpu": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "luminalia": {
+    "mission_count": 1,
+    "translation_count": 3
+  },
+  "mw": {
+    "mission_count": 3,
+    "translation_count": 0
+  },
+  "manfred": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "mileseckhart": {
+    "mission_count": 3,
+    "translation_count": 48
+  },
+  "mining": {
+    "mission_count": 1,
+    "translation_count": 1
+  },
+  "missingperson": {
+    "mission_count": 9,
+    "translation_count": 0
+  },
+  "missiongiverreputationtest": {
+    "mission_count": 7,
+    "translation_count": 0
+  },
+  "multi-eliminateall": {
+    "mission_count": 2,
+    "translation_count": 0
+  },
+  "multi-eliminateboss": {
+    "mission_count": 2,
+    "translation_count": 0
+  },
+  "multielimallandboss": {
+    "mission_count": 4,
+    "translation_count": 0
+  },
+  "npclootgeneration": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "npctransport": {
+    "mission_count": 1,
+    "translation_count": 2
+  },
+  "ntlockdown": {
+    "mission_count": 5,
+    "translation_count": 53
+  },
+  "northrock": {
+    "mission_count": 7,
+    "translation_count": 103
+  },
+  "ors": {
+    "mission_count": 13,
+    "translation_count": 28
+  },
+  "pvp": {
+    "mission_count": 8,
+    "translation_count": 0
+  },
+  "pacheco": {
+    "mission_count": 5,
+    "translation_count": 5
+  },
+  "patrol": {
+    "mission_count": 4,
+    "translation_count": 0
+  },
+  "phase3debugskipobjective1": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "pirateraids": {
+    "mission_count": 5,
+    "translation_count": 9
+  },
+  "rcd": {
+    "mission_count": 2,
+    "translation_count": 0
+  },
+  "rr": {
+    "mission_count": 6,
+    "translation_count": 118
+  },
+  "rayari": {
+    "mission_count": 10,
+    "translation_count": 8
+  },
+  "recover": {
+    "mission_count": 2,
+    "translation_count": 0
+  },
+  "recovercargo": {
+    "mission_count": 20,
+    "translation_count": 2
+  },
+  "recovery": {
+    "mission_count": 2,
+    "translation_count": 12
+  },
+  "redwind": {
+    "mission_count": 24,
+    "translation_count": 114
+  },
+  "refueling": {
+    "mission_count": 7,
+    "translation_count": 175
+  },
+  "removeclaimjumpers": {
+    "mission_count": 24,
+    "translation_count": 0
+  },
+  "repairo2kiosk": {
+    "mission_count": 2,
+    "translation_count": 0
+  },
+  "resourcerush": {
+    "mission_count": 1,
+    "translation_count": 3
+  },
+  "retakekareah": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "retakelocation": {
+    "mission_count": 1,
+    "translation_count": 11
+  },
+  "retrieveconsignment": {
+    "mission_count": 13,
+    "translation_count": 25
+  },
+  "rox": {
+    "mission_count": 5,
+    "translation_count": 0
+  },
+  "ruto": {
+    "mission_count": 13,
+    "translation_count": 41
+  },
+  "soo2": {
+    "mission_count": 2,
+    "translation_count": 153
+  },
+  "sabotageboss": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "salvagecontractor": {
+    "mission_count": 4,
+    "translation_count": 17
+  },
+  "scavenge": {
+    "mission_count": 2,
+    "translation_count": 0
+  },
+  "scramblerace": {
+    "mission_count": 1,
+    "translation_count": 56
+  },
+  "servicebeacon": {
+    "mission_count": 9,
+    "translation_count": 57
+  },
+  "ship": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "shiphijacked": {
+    "mission_count": 2,
+    "translation_count": 0
+  },
+  "shipincursion": {
+    "mission_count": 1,
+    "translation_count": 4
+  },
+  "shubin": {
+    "mission_count": 31,
+    "translation_count": 183
+  },
+  "siegeoforison": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "single": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "space": {
+    "mission_count": 4,
+    "translation_count": 0
+  },
+  "station": {
+    "mission_count": 2,
+    "translation_count": 10
+  },
+  "steal": {
+    "mission_count": 4,
+    "translation_count": 0
+  },
+  "stealevidence": {
+    "mission_count": 1,
+    "translation_count": 9
+  },
+  "tarpits": {
+    "mission_count": 6,
+    "translation_count": 27
+  },
+  "testinvestigation": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "thecollector": {
+    "mission_count": 84,
+    "translation_count": 227
+  },
+  "thecolllector": {
+    "mission_count": 3,
+    "translation_count": 0
+  },
+  "theft": {
+    "mission_count": 14,
+    "translation_count": 0
+  },
+  "timetrial": {
+    "mission_count": 37,
+    "translation_count": 58
+  },
+  "towship": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "tripminestheft": {
+    "mission_count": 3,
+    "translation_count": 0
+  },
+  "tutorial": {
+    "mission_count": 12,
+    "translation_count": 13
+  },
+  "tutorial01": {
+    "mission_count": 1,
+    "translation_count": 6
+  },
+  "tutorial02": {
+    "mission_count": 1,
+    "translation_count": 2
+  },
+  "tutorial03": {
+    "mission_count": 1,
+    "translation_count": 2
+  },
+  "ueetrainingexercise1": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "ueetrainingexercise2": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "ueetrainingexercise3": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "ueevisitthehalls": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "unaffiliated": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "unafilliated": {
+    "mission_count": 3,
+    "translation_count": 0
+  },
+  "unafilliatedcfp": {
+    "mission_count": 3,
+    "translation_count": 0
+  },
+  "unafilliatedhh": {
+    "mission_count": 3,
+    "translation_count": 0
+  },
+  "vaughn": {
+    "mission_count": 21,
+    "translation_count": 143
+  },
+  "wallaceklim": {
+    "mission_count": 2,
+    "translation_count": 11
+  },
+  "wanted5": {
+    "mission_count": 1,
+    "translation_count": 0
+  },
+  "wildstarracing": {
+    "mission_count": 14,
+    "translation_count": 0
+  },
+  "xenothreat": {
+    "mission_count": 4,
+    "translation_count": 54
+  },
+  "yardrush": {
+    "mission_count": 12,
+    "translation_count": 0
+  },
+  "shapeless veta": {
+    "mission_count": 1,
+    "translation_count": 0
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "Pyro I": {
+    "ship": [
+      "Iron",
+      "Copper",
+      "Tin",
+      "Stileron"
+    ],
+    "ground": [
+      "Beradon"
+    ],
+    "hand": [
+      "Aphorite",
+      "Dolivine",
+      "Hadanite",
+      "Janalite"
+    ]
+  },
+  "Pyro II (Monox)": {
+    "ship": [
+      "Hephaestanite",
+      "Iron",
+      "Tin",
+      "Stileron"
+    ],
+    "ground": [
+      "Glacosite"
+    ],
+    "hand": [
+      "Aphorite",
+      "Dolivine",
+      "Hadanite",
+      "Janalite"
+    ]
+  },
+  "Pyro III": {
+    "ship": [
+      "Quartz",
+      "Borase",
+      "Riccite",
+      "Stileron"
+    ],
+    "ground": [
+      "Beradon"
+    ],
+    "hand": [
+      "Aphorite",
+      "Dolivine",
+      "Janalite"
+    ]
+  },
+  "Pyro IV": {
+    "ship": [
+      "Copper",
+      "Laranite",
+      "Borase",
+      "Stileron"
+    ],
+    "ground": [
+      "Feynmaline"
+    ],
+    "hand": [
+      "Aphorite",
+      "Dolivine",
+      "Hadanite",
+      "Janalite"
+    ]
+  },
+  "Pyro V": {
+    "ship": [],
+    "ground": [],
+    "hand": []
+  }
+}

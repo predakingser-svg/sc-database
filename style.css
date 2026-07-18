@@ -472,3 +472,26 @@ h2 { font-size: 24px; margin-bottom: 5px; }
     .dashboard-grid { grid-template-columns: 1fr; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ─── Language Toggle ─── */
+.lang-toggle {
+    cursor: pointer;
+    padding: 8px 16px;
+    margin: 0 auto 10px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    transition: .2s;
+    border: 1px solid var(--border);
+    display: block;
+    width: calc(100% - 32px);
+}
+.lang-toggle:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent);
+}
+.lang-toggle span {
+    color: var(--text-primary);
+}

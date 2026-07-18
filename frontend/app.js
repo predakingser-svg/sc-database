@@ -4,6 +4,48 @@
 
 const API = '';
 
+// ─── Translation system ───
+const _translations = {
+    "Shield": "Escudo", "Power Plant": "Planta de poder", "Cooler": "Enfriador",
+    "Quantum Drive": "Motor cuántico", "Radar": "Radar",
+    "común": "común", "raro": "raro", "épico": "épico", "legendario": "legendario",
+    "BP": "Plano", "Legal": "Legal", "Ilegal": "Ilegal",
+    "Sí": "Sí", "No": "No",
+    "Stanton": "Stanton", "Pyro": "Pyro", "Nyx": "Nyx"
+};
+
+function __(text) {
+    return _translations[text] || text;
+}
+
+// ─── Full translation dictionary from global.ini ───
+let fullTranslations = {};
+let currentLang = 'es';
+
+async function loadTranslations() {
+    try {
+        const resp = await fetch('/translations?lang=es');
+        const data = await resp.json();
+        if (data && data.data) {
+            fullTranslations = data.data;
+            console.log('📚 ' + Object.keys(fullTranslations).length + ' traducciones cargadas');
+        }
+    } catch(e) {
+        console.warn('No se pudieron cargar traducciones:', e);
+    }
+}
+
+function translateFull(key) {
+    if (!key) return '';
+    if (fullTranslations[key]) return fullTranslations[key];
+    const kl = key.toLowerCase();
+    for (const [k, v] of Object.entries(fullTranslations)) {
+        if (k.toLowerCase() === kl) return v;
+    }
+    return null;
+}
+
+
 // ─── State ───
 let state = {
     stats: null,
@@ -289,7 +331,7 @@ function renderSearchResults(results, dropdown) {
         html += `<div style="padding:8px 14px;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Misiones</div>`;
         results.missions.slice(0, 4).forEach(m => {
             html += `<div class="search-result-item" onclick="navigateTo('missions')">
-                <div class="sr-title">🎯 ${m.title}</div>
+                <div class="sr-title">🎯 ${m._translated_title || m.title}</div>
                 <div class="sr-meta">${m.faction || '?'} · ${m.reward?.toLocaleString() || '?'} aUEC</div>
             </div>`;
             count++;
@@ -497,7 +539,7 @@ function renderMissionPage(page) {
         const bpBadge = m.has_blueprints ? '<span class="badge-bp">BP</span>' : '—';
         
         return `<tr onclick="openMissionModal('${m.uuid}')">
-            <td>${m.title || '?'}</td>
+            <td>${m._translated_title || m.title || '?'}</td>
             <td style="color:var(--text-secondary)">${fname}</td>
             <td>${m.reward_scope || '?'}</td>
             <td>${reward}</td>
@@ -596,7 +638,7 @@ async function openMissionModal(uuid) {
     
     const html = `
         <button class="modal-close" onclick="closeMissionModal()">✕</button>
-        <h2 style="margin-bottom:20px">${m.title || '?'}</h2>
+        <h2 style="margin-bottom:20px">${m._translated_title || m.title || '?'}</h2>
         <div class="detail-grid">
             <div class="detail-item">
                 <div class="di-label">Facción</div>
@@ -1080,6 +1122,7 @@ async function loadWikelo(filter) {
 const wkNames = { favor_trades:'🤝 Favor Trades', polaris_bit_recipes:'💎 Polaris Bit', weapon_contracts:'🔫 Armas', armor_contracts:'🛡️ Armaduras', vehicle_contracts:'🚗 Vehículos', ship_contracts:'🚀 Naves' };
 
 function renderWikelo() {
+    const container = document.getElementById("wikelo-contracts");
     const data = window._wikeloData;
     if (!data) return;
     const cat = document.getElementById('filter-wk-cat').value;
@@ -1611,7 +1654,7 @@ function renderComps() {
     if (!items.length) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Sin resultados</td></tr>'; return; }
     tbody.innerHTML = items.map(c => `<tr>
         <td style="font-weight:600">${c.name}</td>
-        <td><span class="comp-badge ct-${c.type.replace(/ /g,'')}">${c.type}</span></td>
+        <td><span class="comp-badge ct-${c.type.replace(/ /g,'')}">${__(c.type)}</span></td>
         <td>${c.grade || '—'}</td>
         <td>S${c.size || '?'}</td>
     </tr>`).join('');
@@ -1660,9 +1703,6 @@ console.log('✅ Componentes page ready');
 
 // ═══ COMPONENTS PAGE ═══
 
-let compsCache = null;
-let compsSort = { key: 'type', asc: true };
-
 async function loadComponents() {
     const tbody = document.getElementById('components-tbody');
     tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Cargando...</td></tr>';
@@ -1701,7 +1741,7 @@ function renderComps() {
     if (!items.length) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Sin resultados</td></tr>'; return; }
     tbody.innerHTML = items.map(c => `<tr>
         <td style="font-weight:600">${c.name}</td>
-        <td><span class="comp-badge ct-${c.type.replace(/ /g,'')}">${c.type}</span></td>
+        <td><span class="comp-badge ct-${c.type.replace(/ /g,'')}">${__(c.type)}</span></td>
         <td>${c.grade || '—'}</td>
         <td>S${c.size || '?'}</td>
     </tr>`).join('');
