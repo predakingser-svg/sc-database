@@ -4,6 +4,21 @@
 
 const API = '';
 
+// ─── Translation system ───
+const _translations = {
+    "Shield": "Escudo", "Power Plant": "Planta de poder", "Cooler": "Enfriador",
+    "Quantum Drive": "Motor cuántico", "Radar": "Radar",
+    "común": "común", "raro": "raro", "épico": "épico", "legendario": "legendario",
+    "BP": "Plano", "Legal": "Legal", "Ilegal": "Ilegal",
+    "Sí": "Sí", "No": "No",
+    "Stanton": "Stanton", "Pyro": "Pyro", "Nyx": "Nyx"
+};
+
+function __(text) {
+    return _translations[text] || text;
+}
+
+
 // ─── State ───
 let state = {
     stats: null,
@@ -1612,7 +1627,7 @@ function renderComps() {
     if (!items.length) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Sin resultados</td></tr>'; return; }
     tbody.innerHTML = items.map(c => `<tr>
         <td style="font-weight:600">${c.name}</td>
-        <td><span class="comp-badge ct-${c.type.replace(/ /g,'')}">${c.type}</span></td>
+        <td><span class="comp-badge ct-${c.type.replace(/ /g,'')}">${__(c.type)}</span></td>
         <td>${c.grade || '—'}</td>
         <td>S${c.size || '?'}</td>
     </tr>`).join('');
@@ -1699,7 +1714,7 @@ function renderComps() {
     if (!items.length) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Sin resultados</td></tr>'; return; }
     tbody.innerHTML = items.map(c => `<tr>
         <td style="font-weight:600">${c.name}</td>
-        <td><span class="comp-badge ct-${c.type.replace(/ /g,'')}">${c.type}</span></td>
+        <td><span class="comp-badge ct-${c.type.replace(/ /g,'')}">${__(c.type)}</span></td>
         <td>${c.grade || '—'}</td>
         <td>S${c.size || '?'}</td>
     </tr>`).join('');
