@@ -1660,9 +1660,6 @@ console.log('✅ Componentes page ready');
 
 // ═══ COMPONENTS PAGE ═══
 
-let compsCache = null;
-let compsSort = { key: 'type', asc: true };
-
 async function loadComponents() {
     const tbody = document.getElementById('components-tbody');
     tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Cargando...</td></tr>';
