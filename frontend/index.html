@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SC Database</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h1>SC<span>DB</span></h1>
+                <span class="version">v1.0</span>
+            </div>
+            <ul class="nav-list">
+                <li class="nav-item active" data-page="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-page="missions">
+                    <span class="nav-icon">📋</span>
+                    <span>Misiones</span>
+                    <span class="badge" id="badge-missions">0</span>
+                </li>
+                <li class="nav-item" data-page="blueprints">
+                    <span class="nav-icon">🔧</span>
+                    <span>Blueprints</span>
+                    <span class="badge" id="badge-blueprints">0</span>
+                </li>
+                <li class="nav-item" data-page="weapons">
+                    <span class="nav-icon">🔫</span>
+                    <span>Armas</span>
+                    <span class="badge" id="badge-weapons">0</span>
+                </li>
+                <li class="nav-item" data-page="wikelo">
+                    <span class="nav-icon">🛸</span>
+                    <span>Wikelo</span>
+                    <span class="badge" id="badge-wikelo">0</span>
+                </li>
+                <li class="nav-item" data-page="factions">
+                    <span class="nav-icon">🏛️</span>
+                    <span>Facciones</span>
+                    <span class="badge" id="badge-factions">31</span>
+                </li>
+                <li class="nav-item" data-page="items">
+                    <span class="nav-icon">📦</span>
+                    <span>Items</span>
+                    <span class="badge" id="badge-items">0</span>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <span>⚡ Ecko · SC Database</span>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main id="main">
+            <!-- Top Bar -->
+            <header id="topbar">
+                <button id="menu-toggle" class="menu-btn">☰</button>
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Buscar misiones, blueprints, armas..." autocomplete="off">
+                    <div id="search-results" class="search-dropdown hidden"></div>
+                </div>
+                <div class="topbar-info">
+                    <span id="status-indicator" class="status-dot"></span>
+                    <span id="status-text">Conectando...</span>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div id="content">
+                <div id="page-dashboard" class="page active">
+                    <h2>Dashboard</h2>
+                    <p class="subtitle">Resumen de la base de datos de Star Citizen</p>
+                    
+                    <div class="stats-grid" id="stats-grid">
+                        <div class="stat-card loading">Cargando...</div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <h3>Misiones por categoría</h3>
+                            <div id="chart-categories" class="chart-container">
+                                <div class="loading-sm">Cargando...</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Misiones por sistema</h3>
+                            <div id="chart-systems" class="chart-container">
+                                <div class="loading-sm">Cargando...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <h3>Distribución de Blueprints</h3>
+                            <div id="chart-blueprints" class="chart-container">
+                                <div class="loading-sm">Cargando...</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Acceso rápido</h3>
+                            <div class="quick-links">
+                                <a href="#" class="quick-link" data-page="missions" data-filter="has_blueprints">
+                                    <span class="ql-icon">🎯</span>
+                                    <span>Misiones con blueprints</span>
+                                </a>
+                                <a href="#" class="quick-link" data-page="missions" data-filter="illegal">
+                                    <span class="ql-icon">⚔️</span>
+                                    <span>Misiones ilegales</span>
+                                </a>
+                                <a href="#" class="quick-link" data-page="blueprints">
+                                    <span class="ql-icon">🔧</span>
+                                    <span>Ver todos los blueprints</span>
+                                </a>
+                                <a href="#" class="quick-link" data-page="weapons" data-filter="size6">
+                                    <span class="ql-icon">💥</span>
+                                    <span>Armas Size 6 (M8A)</span>
+                                </a>
+                                <a href="#" class="quick-link" data-page="wikelo" data-filter="ships">
+                                    <span class="ql-icon">🛸</span>
+                                    <span>Naves Wikelo</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top:20px">
+                        <h3>Última actualización</h3>
+                        <div id="last-update" class="update-info">Consultando...</div>
+                    </div>
+                </div>
+
+                <!-- ═══ MISSIONS PAGE ═══ -->
+                <div id="page-missions" class="page">
+                    <div class="page-header">
+                        <h2>Misiones</h2>
+                        <span id="missions-count" class="page-count">0</span>
+                    </div>
+                    <p class="subtitle">Explora y filtra las 1,786 misiones disponibles</p>
+                    <div class="filters-bar">
+                        <div class="filter-group"><input type="text" id="missions-search" class="filter-input" placeholder="Buscar en misiones..."></div>
+                        <div class="filter-group"><select id="filter-faction" class="filter-select"><option value="">Todas las facciones</option></select></div>
+                        <div class="filter-group"><select id="filter-system" class="filter-select"><option value="">Todos los sistemas</option><option value="Stanton">Stanton</option><option value="Pyro">Pyro</option><option value="Nyx">Nyx</option></select></div>
+                        <div class="filter-group"><select id="filter-scope" class="filter-select"><option value="">Todas las categorías</option></select></div>
+                        <div class="filter-group filter-checks">
+                            <label class="check-label"><input type="checkbox" id="filter-bp"><span>Con blueprints</span></label>
+                            <label class="check-label"><input type="checkbox" id="filter-illegal"><span>Ilegales</span></label>
+                        </div>
+                        <button id="missions-reset" class="btn-reset">✕</button>
+                    </div>
+                    <div class="table-container"><table class="data-table" id="missions-table"><thead><tr><th data-sort="title" class="sortable">Título</th><th data-sort="faction" class="sortable">Facción</th><th data-sort="scope" class="sortable">Categoría</th><th data-sort="reward" class="sortable">Recompensa</th><th data-sort="system" class="sortable">Sistema</th><th data-sort="illegal" class="sortable">Tipo</th><th data-sort="bp" class="sortable">BP</th></tr></thead><tbody id="missions-tbody"><tr><td colspan="7" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                    <div class="pagination" id="missions-pagination"></div>
+                    <div id="mission-modal" class="modal hidden"><div class="modal-backdrop" onclick="closeMissionModal()"></div><div class="modal-content" id="mission-modal-content"></div></div>
+                </div>
+
+                <!-- ═══ WEAPONS PAGE ═══ -->
+                <div id="page-weapons" class="page">
+                    <div class="page-header"><h2>Armas de nave</h2><span id="weapons-count" class="page-count">0</span></div>
+                    <p class="subtitle">Catálogo de armas con stats, precios y ubicaciones de compra</p>
+                    <div class="filters-bar">
+                        <div class="filter-group"><input type="text" id="wp-search" class="filter-input" placeholder="Buscar arma..."></div>
+                        <div class="filter-group"><select id="filter-size" class="filter-select"><option value="">Cualquier size</option><option value="1">S1</option><option value="2">S2</option><option value="3">S3</option><option value="4">S4</option><option value="5">S5</option><option value="6">S6</option><option value="7">S7</option></select></div>
+                        <div class="filter-group"><select id="filter-wp-type" class="filter-select"><option value="">Cualquier tipo</option></select></div>
+                        <button id="wp-reset" class="btn-reset">✕</button>
+                    </div>
+                    <div class="table-container"><table class="data-table" id="weapons-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="size" class="sortable">Size</th><th data-sort="type" class="sortable">Tipo</th><th data-sort="dps" class="sortable">DPS</th><th data-sort="alpha" class="sortable">Alpha</th><th data-sort="range" class="sortable">Range</th><th data-sort="price" class="sortable">Precio</th></tr></thead><tbody id="weapons-tbody"><tr><td colspan="7" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                    <div class="pagination" id="weapons-pagination"></div>
+                    <div id="wp-modal" class="modal hidden"><div class="modal-backdrop" onclick="closeWpModal()"></div><div class="modal-content" id="wp-modal-content"></div></div>
+                </div>
+
+                <!-- ═══ WIKELO PAGE ═══ -->
+                <div id="page-wikelo" class="page">
+                    <div class="page-header"><h2>Wikelo Emporium</h2><span id="wikelo-count" class="page-count">0</span></div>
+                    <p class="subtitle">Contratos de trueque — naves, armas, armaduras y vehículos</p>
+                    <div class="filters-bar">
+                        <div class="filter-group"><input type="text" id="wikelo-search" class="filter-input" placeholder="Buscar contrato..."></div>
+                        <div class="filter-group"><select id="filter-wk-cat" class="filter-select"><option value="">Todas las categorías</option><option value="favor_trades">Favors</option><option value="weapon_contracts">Armas</option><option value="armor_contracts">Armaduras</option><option value="vehicle_contracts">Vehículos</option><option value="ship_contracts">Naves</option></select></div>
+                        <button id="wikelo-reset" class="btn-reset">✕</button>
+                    </div>
+                    <div id="wikelo-contracts"><div class="loading-sm">Cargando...</div></div>
+                </div>
+
+                <!-- ═══ FACTIONS PAGE ═══ -->
+                <div id="page-factions" class="page">
+                    <div class="page-header"><h2>Facciones</h2><span class="page-count">31</span></div>
+                    <p class="subtitle">Organizaciones y misioneros de Stanton y Pyro</p>
+                    <div id="factions-content"><div class="loading-sm">Cargando...</div></div>
+                </div>
+
+                <!-- ═══ ITEMS PAGE ═══ -->
+                <div id="page-items" class="page">
+                    <div class="page-header"><h2>Items</h2><span id="items-count" class="page-count">0</span></div>
+                    <p class="subtitle">Catálogo completo de todos los items del juego</p>
+                    <div class="filters-bar">
+                        <div class="filter-group"><input type="text" id="items-search" class="filter-input" placeholder="Buscar item..."></div>
+                        <button id="items-reset" class="btn-reset">✕</button>
+                    </div>
+                    <div class="table-container" style="max-height:600px;overflow-y:auto">
+                        <table class="data-table" id="items-table"><thead><tr><th>Nombre</th><th>Disponible</th></tr></thead><tbody id="items-tbody"><tr><td colspan="2" class="loading-row">Cargando...</td></tr></tbody></table>
+                    </div>
+                </div>
+
+                <!-- ═══ BLUEPRINTS PAGE ═══ -->
+                <div id="page-blueprints" class="page">
+                    <div class="page-header">
+                        <h2>Blueprints</h2>
+                        <span id="blueprints-count" class="page-count">0</span>
+                    </div>
+                    <p class="subtitle">Catálogo de planos de fabricación — componentes, armas, armaduras y más</p>
+
+                    <div class="filters-bar">
+                        <div class="filter-group">
+                            <input type="text" id="bp-search" class="filter-input" placeholder="Buscar blueprint...">
+                        </div>
+                        <div class="filter-group">
+                            <select id="filter-ingredients" class="filter-select">
+                                <option value="0">Cualquier # ingredientes</option>
+                                <option value="1">1 ingrediente</option>
+                                <option value="2">2 ingredientes</option>
+                                <option value="3">3 ingredientes</option>
+                                <option value="4">4 ingredientes</option>
+                            </select>
+                        </div>
+                        <div class="filter-group filter-checks">
+                            <label class="check-label">
+                                <input type="checkbox" id="filter-default">
+                                <span>Solo desbloqueables</span>
+                            </label>
+                        </div>
+                        <button id="bp-reset" class="btn-reset" title="Limpiar filtros">✕</button>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table" id="blueprints-table">
+                            <thead>
+                                <tr>
+                                    <th data-sort="output" class="sortable">Output</th>
+                                    <th data-sort="ingredients" class="sortable">Ingredientes</th>
+                                    <th data-sort="time" class="sortable">Tiempo</th>
+                                    <th data-sort="missions" class="sortable">Misiones que lo dan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="blueprints-tbody">
+                                <tr><td colspan="4" class="loading-row">Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination" id="blueprints-pagination"></div>
+
+                    <div id="bp-modal" class="modal hidden">
+                        <div class="modal-backdrop" onclick="closeBpModal()"></div>
+                        <div class="modal-content" id="bp-modal-content"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
