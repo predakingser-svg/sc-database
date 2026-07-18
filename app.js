@@ -1080,6 +1080,7 @@ async function loadWikelo(filter) {
 const wkNames = { favor_trades:'🤝 Favor Trades', polaris_bit_recipes:'💎 Polaris Bit', weapon_contracts:'🔫 Armas', armor_contracts:'🛡️ Armaduras', vehicle_contracts:'🚗 Vehículos', ship_contracts:'🚀 Naves' };
 
 function renderWikelo() {
+    const container = document.getElementById("wikelo-contracts");
     const data = window._wikeloData;
     if (!data) return;
     const cat = document.getElementById('filter-wk-cat').value;
