@@ -2,7 +2,7 @@
    Star Citizen Database — App Logic
    ═══════════════════════════════════════════ */
 
-const API = 'https://sc-database.serveousercontent.com';
+const API = '';
 
 // ─── State ───
 let state = {
