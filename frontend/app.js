@@ -7,6 +7,30 @@ const API = (window.location.hostname.includes('serveo') || window.location.port
     ? ''
     : 'https://sc-database.serveousercontent.com';
 
+// ─── Translation helpers ───
+function getMissionTranslation(mission) {
+    if (currentLang !== 'es') return null;
+    const dn = mission.debug_name || '';
+    if (!dn) return null;
+    const parts = dn.split('_');
+    let contractor = parts[0] || '';
+    if (['PU','PU-','Sandbox'].includes(contractor) && parts.length > 1) {
+        contractor = parts[1];
+    }
+    const ct = contractorTranslations[contractor.toLowerCase()];
+    if (!ct || !ct.titles || ct.titles.length === 0) return null;
+    const type = dn.toLowerCase();
+    for (const t of ct.titles) {
+        if (type.includes('bounty') && t.key.includes('bounty_')) return t.value;
+        if (type.includes('delivery') && t.key.includes('delivery_')) return t.value;
+        if (type.includes('assassin') && (t.key.includes('assassin_') || t.key.includes('kill'))) return t.value;
+        if (type.includes('repair') && t.key.includes('repair')) return t.value;
+        if (type.includes('salvage') && t.key.includes('salvage')) return t.value;
+        if (type.includes('collect') && (t.key.includes('collect') || t.key.includes('bounty'))) return t.value;
+    }
+    return ct.titles[0].value;
+}
+
 // ─── State ───
 let state = {
     stats: null,
@@ -1063,6 +1087,8 @@ async function loadWikelo(filter) {
 const wkNames = { favor_trades:'🤝 Favor Trades', polaris_bit_recipes:'💎 Polaris Bit', weapon_contracts:'🔫 Armas', armor_contracts:'🛡️ Armaduras', vehicle_contracts:'🚗 Vehículos', ship_contracts:'🚀 Naves' };
 
 function renderWikelo() {
+    const container = document.getElementById('mainContent');
+    if (!container) return;
     const data = window._wikeloData;
     if (!data) return;
     const cat = document.getElementById('filter-wk-cat').value;

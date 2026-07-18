@@ -472,3 +472,26 @@ h2 { font-size: 24px; margin-bottom: 5px; }
     .dashboard-grid { grid-template-columns: 1fr; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ─── Top Bar Actions ─── */
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 12px;
+}
+.tb-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: .2s;
+    line-height: 1;
+}
+.tb-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent);
+}
