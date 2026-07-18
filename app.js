@@ -17,6 +17,16 @@ const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 
 // ─── Init ───
+// Global error handler
+window.addEventListener('unhandledrejection', (e) => {
+    console.warn('Promesa sin capturar:', e.reason);
+    e.preventDefault();
+});
+
+window.addEventListener('error', (e) => {
+    console.warn('Error global:', e.message);
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     loadStats();
     setupNavigation();
