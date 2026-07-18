@@ -18,7 +18,15 @@ function toggleLang() {
     localStorage.setItem('sc_lang', currentLang);
     const btn = document.getElementById('langBtn');
     if (btn) btn.textContent = currentLang === 'es' ? '🇪🇸' : '🇬🇧';
-    if (typeof currentPage !== 'undefined' && currentPage) navigateTo(currentPage);
+    if (typeof currentPage !== 'undefined' && currentPage) {
+        if (currentLang === 'es') {
+            // Reload to restore Spanish
+            navigateTo(currentPage);
+        } else {
+            // Apply English strings to current DOM
+            applyLang();
+        }
+    }
 }
 
 function openFeedback() {
