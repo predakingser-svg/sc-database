@@ -272,7 +272,7 @@ function renderSearchResults(results, dropdown) {
         html += `<div style="padding:8px 14px;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Misiones</div>`;
         results.missions.slice(0, 4).forEach(m => {
             html += `<div class="search-result-item" onclick="navigateTo('missions')">
-                <div class="sr-title">🎯 ${m.title}</div>
+                <div class="sr-title">🎯 ${getMissionTranslation(m) || m.title}</div>
                 <div class="sr-meta">${m.faction || '?'} · ${m.reward?.toLocaleString() || '?'} aUEC</div>
             </div>`;
             count++;
@@ -480,7 +480,7 @@ function renderMissionPage(page) {
         const bpBadge = m.has_blueprints ? '<span class="badge-bp">BP</span>' : '—';
         
         return `<tr onclick="openMissionModal('${m.uuid}')">
-            <td>${m.title || '?'}</td>
+            <td>${getMissionTranslation(m) || m.title || '?'}</td>
             <td style="color:var(--text-secondary)">${fname}</td>
             <td>${m.reward_scope || '?'}</td>
             <td>${reward}</td>
@@ -579,7 +579,7 @@ async function openMissionModal(uuid) {
     
     const html = `
         <button class="modal-close" onclick="closeMissionModal()">✕</button>
-        <h2 style="margin-bottom:20px">${m.title || '?'}</h2>
+        <h2 style="margin-bottom:20px">${getMissionTranslation(m) || m.title || '?'}</h2>
         <div class="detail-grid">
             <div class="detail-item">
                 <div class="di-label">Facción</div>

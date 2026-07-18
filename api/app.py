@@ -62,6 +62,16 @@ if wikelo:
     for cat in ['favor_trades', 'polaris_bit_recipes', 'weapon_contracts', 'armor_contracts', 'vehicle_contracts', 'ship_contracts']:
         STATS['wikelo_contracts'] += len(wikelo.get(cat, []))
 
+# ─── Cargar contractor translations ───
+ct_path = os.path.join(os.path.dirname(__file__), "data", "contractor_translations.json")
+contractor_translations = {}
+if os.path.exists(ct_path):
+    with open(ct_path) as f:
+        contractor_translations = json.load(f)
+    print(f"  ✅ {len(contractor_translations)} contractors con traducciones", file=sys.stderr)
+else:
+    print(f"  ⚠️  contractor_translations.json no encontrado", file=sys.stderr)
+
 print("🚀 API lista", file=sys.stderr)
 
 
@@ -88,6 +98,22 @@ def home():
         }
     })
 
+
+@app.route('/translate/missions')
+def translate_missions():
+    """Devuelve traducciones de misiones agrupadas por contractor."""
+    contractor = request.args.get('contractor', '').lower()
+    if contractor and contractor in contractor_translations:
+        return jsonify(contractor_translations[contractor])
+    return jsonify(contractor_translations)
+
+@app.route('/changelog')
+def get_changelog():
+    cl_path = os.path.join(os.path.dirname(__file__), "data", "changelog.json")
+    if os.path.exists(cl_path):
+        with open(cl_path) as f:
+            return jsonify(json.load(f))
+    return jsonify({'error': 'No changelog'}), 404
 
 @app.route('/stats')
 def stats():

@@ -12,7 +12,7 @@
         <nav id="sidebar">
             <div class="sidebar-header">
                 <h1>SC<span>DB</span></h1>
-                <span class="version">v1.0</span>
+                <span class="version">v2.0</span>
             </div>
             <ul class="nav-list">
                 <li class="nav-item active" data-page="dashboard">
@@ -49,9 +49,25 @@
                     <span>Items</span>
                     <span class="badge" id="badge-items">0</span>
                 </li>
+                <li class="nav-item" data-page="components">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Componentes</span>
+                    <span class="badge" id="badge-components">0</span>
+                </li>
+                <li class="nav-item" data-page="translations">
+                    <span class="nav-icon">🌐</span>
+                    <span>Traducciones</span>
+                </li>
+                <li class="nav-item" data-page="changelog">
+                    <span class="nav-icon">🆕</span>
+                    <span>Novedades</span>
+                </li>
             </ul>
             <div class="sidebar-footer">
                 <span>⚡ Ecko · SC Database</span>
+                <div class="lang-toggle" onclick="toggleLang()" title="Cambiar idioma">
+                    <span id="langBtn">🇪🇸 ES</span>
+                </div>
             </div>
         </nav>
 
@@ -124,6 +140,14 @@
                                 <a href="#" class="quick-link" data-page="wikelo" data-filter="ships">
                                     <span class="ql-icon">🛸</span>
                                     <span>Naves Wikelo</span>
+                                </a>
+                                <a href="#" class="quick-link" data-page="components">
+                                    <span class="ql-icon">⚙️</span>
+                                    <span>Componentes de nave</span>
+                                </a>
+                                <a href="#" class="quick-link" data-page="changelog">
+                                    <span class="ql-icon">🆕</span>
+                                    <span>Novedades</span>
                                 </a>
                             </div>
                         </div>
