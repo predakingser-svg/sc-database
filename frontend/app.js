@@ -2,7 +2,10 @@
    Star Citizen Database — App Logic
    ═══════════════════════════════════════════ */
 
-const API = window.location.port === '5000' ? '' : 'http://localhost:5000';
+// Auto-detect API base: Serveo tunnel = same origin, otherwise use tunnel URL
+const API = (window.location.hostname.includes('serveo') || window.location.port === '8080')
+    ? ''
+    : 'https://sc-database.serveousercontent.com';
 
 // ─── State ───
 let state = {
