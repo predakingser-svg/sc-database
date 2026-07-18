@@ -1,49 +1,164 @@
 {
   "releases": [
     {
+      "version": "2.4.0",
+      "date": "2026-07-18",
+      "title_es": "Base de datos integrada ES + EN",
+      "title_en": "Integrated Database ES + EN",
+      "changes_es": [
+        "Base de datos integrada en español (21.6 MB): 1,786 misiones, 1,591 planos, 137 armas, 91 componentes, 26 minerales, 7,733 items, 51 wikelo",
+        "Base de datos integrada en inglés (20.8 MB) con datos originales",
+        "Títulos y descripciones de misiones traducidas por contractor",
+        "Nombres de ingredientes de blueprints traducidos",
+        "Build script: scripts/build_integrated_db.py"
+      ],
+      "changes_en": [
+        "Integrated database in Spanish (21.6 MB): 1,786 missions, 1,591 blueprints, 137 weapons, 91 components, 26 minerals, 7,733 items, 51 wikelo",
+        "Integrated database in English (20.8 MB) with original data",
+        "Mission titles and descriptions translated by contractor",
+        "Blueprint ingredient names translated",
+        "Build script: scripts/build_integrated_db.py"
+      ]
+    },
+    {
+      "version": "2.3.0",
+      "date": "2026-07-18",
+      "title_es": "String map ES-EN y corrección de errores",
+      "title_en": "ES-EN String Map and Bug Fixes",
+      "changes_es": [
+        "String map completo para traducción ES ↔ EN de toda la interfaz",
+        "Función applyLang() que recorre el DOM y traduce textos visibles",
+        "currentLang movido al scope global, sin errores ReferenceError",
+        "loadComponents() y renderComponentsPage() añadidas",
+        "Sidebar: Traducciones y Novedades movidos a la top bar",
+        "Toggle persiste en localStorage"
+      ],
+      "changes_en": [
+        "Complete string map for ES ↔ EN UI translation",
+        "applyLang() DOM walker function for visible text translation",
+        "currentLang moved to global scope, no more ReferenceError",
+        "loadComponents() and renderComponentsPage() added",
+        "Sidebar: Translations and Changelog moved to top bar",
+        "Toggle persists in localStorage"
+      ]
+    },
+    {
+      "version": "2.2.0",
+      "date": "2026-07-18",
+      "title_es": "Top bar rediseñada y fixes de navegación",
+      "title_en": "Redesigned Top Bar and Navigation Fixes",
+      "changes_es": [
+        "Top bar con botones: traducción, releases, feedback",
+        "Página de Novedades con changelog y feedback",
+        "Página de Traducciones por contratista",
+        "Componentes en acceso rápido del dashboard",
+        "Endpoint /changelog y /translate/missions",
+        "getMissionTranslation() para títulos en español"
+      ],
+      "changes_en": [
+        "Top bar with buttons: translation, releases, feedback",
+        "Changelog page with version history and feedback",
+        "Translations page grouped by contractor",
+        "Components in dashboard quick access",
+        "/changelog and /translate/missions endpoints",
+        "getMissionTranslation() for Spanish mission titles"
+      ]
+    },
+    {
+      "version": "2.1.0",
+      "date": "2026-07-18",
+      "title_es": "Traducciones por contractor del global.ini",
+      "title_en": "Contractor Translations from global.ini",
+      "changes_es": [
+        "227 contractors mapeados con 2,070 títulos y 4,316 descripciones en español",
+        "Endpoint /translate/missions?contractor=X para traducciones agrupadas",
+        "Toggle ES/EN básico (solo títulos de misión)",
+        "Función translate() y translate_mission() en la API",
+        "Fix de la API: componentes.json y minerals.json restaurados"
+      ],
+      "changes_en": [
+        "227 contractors mapped with 2,070 titles and 4,316 Spanish descriptions",
+        "/translate/missions?contractor=X endpoint for grouped translations",
+        "Basic ES/EN toggle (mission titles only)",
+        "translate() and translate_mission() API functions",
+        "API fix: components.json and minerals.json restored"
+      ]
+    },
+    {
       "version": "2.0.0",
       "date": "2026-07-18",
-      "title": "Traducciones global.ini + Toggle ES/EN",
-      "changes": [
-        "89,529 traducciones del global.ini cargadas",
-        "Nuevo endpoint /translate missions por contractor",
-        "Toggle Español/Inglés en el sidebar",
-        "Todos los títulos de misión traducibles al español",
-        "91 componentes de nave con nombres en español",
-        "26 minerales con ubicaciones de Stanton y Pyro",
-        "Selector de idioma persistente"
+      "title_es": "Parser global.ini — 89,529 traducciones",
+      "title_en": "global.ini Parser — 89,529 Translations",
+      "changes_es": [
+        "Parser completo del archivo global.ini (90,344 líneas)",
+        "89,529 entradas extraídas: títulos, descripciones, nombres, UI",
+        "translations_full.json: diccionario completo clave→español",
+        "Facciones traducidas: Aciedo, BlacJac, Covalex, Foxwell, Ruto, Vaughn",
+        "Minerales expandidos con ubicaciones de Pyro (Stileron, Iron, Tin, etc.)",
+        "Componentes expandidos de 40 a 91 (shields, coolers, QDs, radars)"
+      ],
+      "changes_en": [
+        "Complete global.ini parser (90,344 lines)",
+        "89,529 extracted entries: titles, descriptions, names, UI",
+        "translations_full.json: complete key→Spanish dictionary",
+        "Translated factions: Aciedo, BlacJac, Covalex, Foxwell, Ruto, Vaughn",
+        "Minerals expanded with Pyro locations (Stileron, Iron, Tin, etc.)",
+        "Components expanded from 40 to 91 (shields, coolers, QDs, radars)"
       ]
     },
     {
       "version": "1.1.0",
       "date": "2026-07-18",
-      "title": "Componentes y Minerales expandidos",
-      "changes": [
-        "51 nuevos componentes (91 total)",
-        "Shields, Power Plants, Coolers, QDs, Radars",
-        "Ubicaciones de minería en Pyro añadidas",
-        "Más datos extraídos del global.ini"
+      "title_es": "Componentes y Minerales expandidos",
+      "title_en": "Expanded Components and Minerals",
+      "changes_es": [
+        "51 nuevos componentes de nave (91 total)",
+        "Shields: FR-66/76/86, Rampart, Palisade, Parapet, 7SA, HAVEN",
+        "Power Plants: JS-300/400, SparkFire, PowerBolt, Celestial, NewDawn",
+        "Coolers: VaporBlock, Glacier, Avalanche, Blizzard, Frost-Star, Draug",
+        "Quantum Drives: VK-00, Siren, XL-1, Yeager, Balandin, Spectre",
+        "Radars: Ping, Sens, Tige, V60-26, Echo, Guardian"
+      ],
+      "changes_en": [
+        "51 new ship components (91 total)",
+        "Shields: FR-66/76/86, Rampart, Palisade, Parapet, 7SA, HAVEN",
+        "Power Plants: JS-300/400, SparkFire, PowerBolt, Celestial, NewDawn",
+        "Coolers: VaporBlock, Glacier, Avalanche, Blizzard, Frost-Star, Draug",
+        "Quantum Drives: VK-00, Siren, XL-1, Yeager, Balandin, Spectre",
+        "Radars: Ping, Sens, Tige, V60-26, Echo, Guardian"
       ]
     },
     {
       "version": "1.0.0",
       "date": "2026-07-18",
-      "title": "Lanzamiento inicial",
-      "changes": [
-        "API Flask con 10 endpoints",
-        "1,786 misiones individuales",
-        "1,591 blueprints con ingredientes",
-        "137 armas de nave con stats",
-        "51 contratos Wikelo",
-        "40 componentes de nave",
-        "26 minerales",
-        "Dashboard con estadísticas y búsqueda global"
+      "title_es": "Lanzamiento inicial",
+      "title_en": "Initial Release",
+      "changes_es": [
+        "API Flask con 10 endpoints REST",
+        "1,786 misiones individuales con UUID, facción, recompensa, sistema",
+        "1,591 blueprints con ingredientes y misiones que los desbloquean",
+        "137 armas de nave con stats (DPS, daño, cadencia, alcance)",
+        "51 contratos Wikelo (naves, armas, armaduras, vehículos)",
+        "Dashboard con estadísticas y búsqueda global",
+        "Frontend: 7 páginas, tema oscuro responsive",
+        "Túnel Serveo para acceso público"
+      ],
+      "changes_en": [
+        "Flask API with 10 REST endpoints",
+        "1,786 individual missions with UUID, faction, reward, system",
+        "1,591 blueprints with ingredients and unlocking missions",
+        "137 ship weapons with stats (DPS, damage, fire rate, range)",
+        "51 Wikelo contracts (ships, weapons, armor, vehicles)",
+        "Dashboard with stats and global search",
+        "Frontend: 7 pages, responsive dark theme",
+        "Serveo tunnel for public access"
       ]
     }
   ],
   "feedback": {
     "github": "https://github.com/predakingser-svg/sc-database/issues",
     "email": "predakingser@gmail.com",
-    "note": "Reporta bugs o sugiere mejoras en GitHub Issues"
+    "note_es": "Reporta bugs o sugiere mejoras en GitHub Issues o por email",
+    "note_en": "Report bugs or suggest improvements on GitHub Issues or via email"
   }
 }

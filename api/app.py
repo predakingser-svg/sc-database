@@ -141,6 +141,7 @@ def api_docs():
             'GET /translate?q=clave': 'Traducir clave del global.ini al español',
             'GET /translations': 'Todas las traducciones del global.ini',
             'GET /translate/missions?contractor=X': 'Traducciones por contratista',
+            'GET /database?lang=es': 'Base de datos completa (ES o EN)',
             'GET /changelog': 'Historial de versiones',
             'GET /search?q=termino': 'Búsqueda global'
         }
@@ -185,6 +186,17 @@ def get_changelog():
         with open(cl_path) as f:
             return jsonify(json.load(f))
     return jsonify({'error': 'No changelog'}), 404
+
+@app.route('/database')
+def get_database():
+    lang = request.args.get('lang', 'en')
+    if lang == 'es':
+        db_path = os.path.join(os.path.dirname(__file__), 'data', 'sc_database_es.json')
+    else:
+        db_path = os.path.join(os.path.dirname(__file__), 'data', 'sc_database_en.json')
+    if os.path.exists(db_path):
+        return jsonify(json.load(open(db_path)))
+    return jsonify({'error': 'Database not found', 'lang': lang}), 404
 
 @app.route('/stats')
 def stats():

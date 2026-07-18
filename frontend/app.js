@@ -16,17 +16,37 @@ let contractorTranslations = {};
 function toggleLang() {
     currentLang = currentLang === 'es' ? 'en' : 'es';
     localStorage.setItem('sc_lang', currentLang);
-    const btn = document.getElementById('langBtn');
-    if (btn) btn.textContent = currentLang === 'es' ? '🇪🇸' : '🇬🇧';
-    if (typeof currentPage !== 'undefined' && currentPage) {
-        if (currentLang === 'es') {
-            // Reload to restore Spanish
-            navigateTo(currentPage);
-        } else {
-            // Apply English strings to current DOM
-            applyLang();
+    location.reload();
+}
+
+function openChangelog() {
+    fetch('/changelog').then(r=>r.json()).then(data => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        let html = '<div class="modal" style="max-width:600px;max-height:80vh;overflow-y:auto"><div class="modal-header"><h3>🆕 Novedades / Releases</h3><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button></div><div class="modal-body">';
+        if (data.releases) for (const r of data.releases) {
+            html += '<div class="release-card" style="margin-bottom:16px;padding:12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border)">';
+            html += '<div style="font-weight:700;font-size:15px;color:var(--accent)">v' + r.version + '</div>';
+            html += '<div style="font-size:12px;color:var(--text-secondary);margin:4px 0 8px">' + r.date + '</div>';
+            html += '<div style="margin-bottom:6px;font-size:14px">' + (currentLang === 'es' ? (r.title_es || r.title) : (r.title_en || r.title)) + '</div>';
+            html += '<ul style="margin:0;padding-left:18px;font-size:13px">';
+            const changes = currentLang === 'es' ? (r.changes_es || r.changes) : (r.changes_en || r.changes);
+            for (const c of changes) html += '<li style="margin-bottom:3px">' + c + '</li>';
+            html += '</ul></div>';
         }
-    }
+        if (data.feedback) {
+            html += '<div style="margin-top:16px;padding:12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border)">';
+            html += '<h4 style="margin-bottom:8px">💬 Feedback</h4>';
+            html += '<p style="margin-bottom:8px;font-size:13px">Reporta bugs o sugiere mejoras:</p>';
+            html += '<a href="' + data.feedback.github + '" target="_blank" class="btn" style="display:block;text-align:center;margin-bottom:6px">🐛 GitHub Issues</a>';
+            html += '<a href="mailto:' + data.feedback.email + '" class="btn" style="display:block;text-align:center">📧 Email</a>';
+            html += '</div>';
+        }
+        html += '</div></div>';
+        overlay.innerHTML = html;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    }).catch(() => { navigateTo('changelog'); });
 }
 
 function openFeedback() {
@@ -77,6 +97,8 @@ function applyLang() {
     }
 }
 
+
+
 // ─── Translation helpers ───
 function getMissionTranslation(mission) {
     if (currentLang !== 'es') return null;
@@ -115,12 +137,16 @@ const $$ = s => document.querySelectorAll(s);
 
 // ─── Init ───
 document.addEventListener('DOMContentLoaded', () => {
+    // Set language button
+    const btn = document.getElementById('langBtn');
+    if (btn) btn.textContent = currentLang === 'es' ? '🇪🇸' : '🇬🇧';
     loadStats();
     setupNavigation();
     setupSearch();
     setupMenuToggle();
     setupQuickLinks();
     updateBadges();
+    if (currentLang === 'en') setTimeout(applyLang, 100);
 });
 
 // ─── API helper ───
