@@ -7,6 +7,28 @@ const API = (window.location.hostname.includes('serveo') || window.location.port
     ? ''
     : 'https://sc-database.serveousercontent.com';
 
+// ─── Global state translations ───
+let currentLang = localStorage.getItem('sc_lang') || 'es';
+let fullTranslations = {};
+let contractorTranslations = {};
+
+// ─── Global functions ───
+function toggleLang() {
+    currentLang = currentLang === 'es' ? 'en' : 'es';
+    localStorage.setItem('sc_lang', currentLang);
+    const btn = document.getElementById('langBtn');
+    if (btn) btn.textContent = currentLang === 'es' ? '🇪🇸' : '🇬🇧';
+    if (typeof currentPage !== 'undefined' && currentPage) navigateTo(currentPage);
+}
+
+function openFeedback() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = '<div class="modal" style="max-width:400px"><div class="modal-header"><h3>💬 Feedback</h3><button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()">✕</button></div><div class="modal-body"><p style="margin-bottom:16px">Reporta bugs o sugiere mejoras:</p><a href="https://github.com/predakingser-svg/sc-database/issues" target="_blank" class="btn" style="display:block;text-align:center;margin-bottom:10px">🐛 GitHub Issues</a><a href="mailto:predakingser@gmail.com" class="btn" style="display:block;text-align:center">📧 predakingser@gmail.com</a></div></div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
 // ─── Translation helpers ───
 function getMissionTranslation(mission) {
     if (currentLang !== 'es') return null;
@@ -225,6 +247,10 @@ function navigateTo(page, filter) {
     if (page === 'blueprints') loadBlueprints(filter);
     if (page === 'weapons') loadWeapons(filter);
     if (page === 'wikelo') loadWikelo(filter);
+    if (page === 'components') loadComponents();
+    if (page === 'minerals') renderMinerals();
+    if (page === 'translations') renderTranslations();
+    if (page === 'changelog') renderChangelog();
 
     // Close sidebar on mobile
     document.getElementById('sidebar').classList.remove('open');
@@ -687,6 +713,20 @@ let bpPage = 1;
 let bpSort = { key: null, asc: true };
 const BP_PER_PAGE = 25;
 
+async function loadComponents() {
+    setStatus('loading', 'Cargando componentes...');
+    try {
+        const d = await apiFetch('/components');
+        window._compsCache = d.data || [];
+        document.getElementById('components-count').textContent = d.total;
+        renderComponentsPage();
+        setStatus('ready', '');
+    } catch(e) {
+        setStatus('error', 'Error al cargar componentes');
+        document.getElementById('comps-tbody').innerHTML = '<tr><td colspan="4" class="loading-row">Error al cargar</td></tr>';
+    }
+}
+
 async function loadBlueprints(filter) {
     const tbody = document.getElementById('blueprints-tbody');
     
@@ -1085,6 +1125,24 @@ async function loadWikelo(filter) {
 }
 
 const wkNames = { favor_trades:'🤝 Favor Trades', polaris_bit_recipes:'💎 Polaris Bit', weapon_contracts:'🔫 Armas', armor_contracts:'🛡️ Armaduras', vehicle_contracts:'🚗 Vehículos', ship_contracts:'🚀 Naves' };
+
+function renderComponentsPage() {
+    const tbody = document.getElementById('comps-tbody');
+    const data = window._compsCache || [];
+    if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Sin componentes cargados</td></tr>';
+        return;
+    }
+    tbody.innerHTML = data.map(c => {
+        const typeClass = 'ct-' + (c.type || '').replace(/ /g,'');
+        return `<tr>
+            <td>${__(c.name)}</td>
+            <td><span class="comp-badge ${typeClass}">${__(c.type)}</span></td>
+            <td>${c.size || '?'}</td>
+            <td>${c.grade || '?'}</td>
+        </tr>`;
+    }).join('');
+}
 
 function renderWikelo() {
     const container = document.getElementById('mainContent');
