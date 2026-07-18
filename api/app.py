@@ -62,6 +62,48 @@ if wikelo:
     for cat in ['favor_trades', 'polaris_bit_recipes', 'weapon_contracts', 'armor_contracts', 'vehicle_contracts', 'ship_contracts']:
         STATS['wikelo_contracts'] += len(wikelo.get(cat, []))
 
+# Components
+comps_path = os.path.join(os.path.dirname(__file__), "data", "components.json")
+components_list = []
+if os.path.exists(comps_path):
+    with open(comps_path) as f:
+        components_list = json.load(f).get("data", [])
+    print(f"  ✅ {len(components_list)} componentes", file=sys.stderr)
+else:
+    print(f"  ⚠️  components.json no encontrado", file=sys.stderr)
+
+# Minerals
+minerals_path = os.path.join(os.path.dirname(__file__), "data", "minerals.json")
+minerals_list = []
+if os.path.exists(minerals_path):
+    with open(minerals_path) as f:
+        minerals_data = json.load(f)
+        minerals_list = minerals_data.get("data", [])
+    print(f"  ✅ {len(minerals_list)} minerales", file=sys.stderr)
+else:
+    print(f"  ⚠️  minerals.json no encontrado", file=sys.stderr)
+
+# Translations (global.ini)
+translations_path = os.path.join(os.path.dirname(__file__), "data", "translations_full.json")
+translations_dict = {}
+if os.path.exists(translations_path):
+    with open(translations_path) as f:
+        translations_dict = json.load(f)
+    print(f"  ✅ {len(translations_dict)} traducciones cargadas del global.ini", file=sys.stderr)
+else:
+    print(f"  ⚠️  translations_full.json no encontrado en {translations_path}", file=sys.stderr)
+
+# ─── Función de traducción ───
+def translate(key, default=None):
+    """Busca key en las traducciones, devuelve default si no existe."""
+    if key in translations_dict:
+        return translations_dict[key]
+    kl = key.lower()
+    for k, v in translations_dict.items():
+        if k.lower() == kl:
+            return v
+    return default
+
 # ─── Cargar contractor translations ───
 ct_path = os.path.join(os.path.dirname(__file__), "data", "contractor_translations.json")
 contractor_translations = {}
@@ -79,25 +121,54 @@ print("🚀 API lista", file=sys.stderr)
 # ENDPOINTS
 # ═══════════════════════════════════════════
 
-@app.route('/')
-def home():
+@app.route('/api')
+def api_docs():
     return jsonify({
         'name': 'Star Citizen Database API',
-        'version': '1.0',
+        'version': '2.0',
         'endpoints': {
             'GET /stats': 'Estadísticas generales',
-            'GET /missions': 'Lista de misiones (?faction=X&system=Y&has_blueprints=true&search=Z)',
-            'GET /missions/<uuid>': 'Detalle de una misión',
+            'GET /missions': 'Lista de misiones (?faction=X&system=Y&has_blueprints=true&lang=es&search=Z)',
+            'GET /missions/<uuid>': 'Detalle de una misión (?lang=es)',
             'GET /blueprints': 'Lista de blueprints (?output=X&min_ingredients=N&search=Z)',
             'GET /blueprints/<uuid>': 'Detalle de un blueprint',
             'GET /weapons': 'Armas de nave (?size=N&type=X&min_dps=N)',
             'GET /weapons/<id>': 'Detalle de un arma',
             'GET /wikelo': 'Contratos Wikelo',
             'GET /items': 'Catálogo de items (?search=Z)',
+            'GET /components': 'Componentes de nave (?type=&size=&search=)',
+            'GET /minerals': 'Minerales (?rarity=&location=&search=)',
+            'GET /translate?q=clave': 'Traducir clave del global.ini al español',
+            'GET /translations': 'Todas las traducciones del global.ini',
+            'GET /translate/missions?contractor=X': 'Traducciones por contratista',
+            'GET /changelog': 'Historial de versiones',
             'GET /search?q=termino': 'Búsqueda global'
         }
     })
 
+
+# ─── TRADUCCIONES ───
+
+@app.route('/translate')
+def get_translate():
+    key = request.args.get('q', '')
+    if not key:
+        return jsonify({'error': 'Falta parámetro ?q=clave'}), 400
+    result = translate(key)
+    if result:
+        return jsonify({'key': key, 'translation': result})
+    return jsonify({'key': key, 'translation': None, 'error': 'No encontrado'}), 404
+
+@app.route('/translations')
+def get_all_translations():
+    lang = request.args.get('lang', 'es')
+    if lang == 'en':
+        return jsonify({'total': 0, 'note': 'English is source language', 'data': {}})
+    return jsonify({
+        'total': len(translations_dict),
+        'source': 'global.ini (Star Citizen Spanish localization)',
+        'data': translations_dict
+    })
 
 @app.route('/translate/missions')
 def translate_missions():
@@ -336,6 +407,53 @@ def get_items():
         'total': len(filtered),
         'data': filtered[:200]  # Limit to 200 for performance
     })
+
+
+# ─── COMPONENTES ───
+
+@app.route('/components')
+def get_components():
+    ctype = request.args.get('type', '').lower()
+    size = request.args.get('size', '').lower()
+    search = request.args.get('search', '').lower()
+    filtered = components_list
+    if ctype:
+        filtered = [c for c in filtered if c.get('type', '').lower() == ctype]
+    if size:
+        filtered = [c for c in filtered if c.get('size', '') == size]
+    if search:
+        filtered = [c for c in filtered if search in c.get('name', '').lower()]
+    return jsonify({'total': len(filtered), 'data': filtered})
+
+
+# ─── MINERALES ───
+
+@app.route('/minerals')
+def get_minerals():
+    rarity = request.args.get('rarity', '').lower()
+    location = request.args.get('location', '').lower()
+    min_val = request.args.get('min_value', type=float)
+    max_val = request.args.get('max_value', type=float)
+    search = request.args.get('search', '').lower()
+    filtered = minerals_list
+    if rarity:
+        filtered = [m for m in filtered if m.get('rarity', '').lower() == rarity]
+    if location:
+        filtered = [m for m in filtered if any(location in loc.lower() for loc in m.get('locations', []))]
+    if min_val is not None:
+        filtered = [m for m in filtered if m.get('value_per_scu', 0) >= min_val]
+    if max_val is not None:
+        filtered = [m for m in filtered if m.get('value_per_scu', 0) <= max_val]
+    if search:
+        filtered = [m for m in filtered if search in m.get('name', '').lower()]
+    return jsonify({'total': len(filtered), 'data': filtered})
+
+@app.route('/minerals/<name>')
+def get_mineral(name):
+    for m in minerals_list:
+        if m.get('name', '').lower() == name.lower():
+            return jsonify(m)
+    return jsonify({'error': 'Mineral not found'}), 404
 
 
 def safe_lower(val):
