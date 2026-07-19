@@ -1,0 +1,463 @@
+{
+  "items": {
+    "Argo ATLS": "Argo ATLS",
+    "Argo ATLS GEO": "Argo ATLS GEO",
+    "Argo ATLS GEO IKTI": "Argo ATLS GEO IKTI",
+    "Argo ATLS IKTI": "Argo ATLS IKTI",
+    "Bluemoon Fungus": "Bluemoon Fungus",
+    "Boomtube": "Boomtube",
+    "Carinite": "Carinite",
+    "Copper": "Copper",
+    "Corundum": "Corundum",
+    "Council Scrip": "Council Scrip",
+    "Crusader Intrepid Wikelo Work Special": "Crusader Intrepid Wikelo Work Special",
+    "Drake Golem Wikelo Work Special": "Drake Golem Wikelo Work Special",
+    "Fresnel Energy LMG": "Fresnel Energy LMG",
+    "Jaclium": "Jaclium",
+    "Kopion Horn": "Kopion Horn",
+    "Kruger L-22 Alpha Wolf Wikelo War Special": "Kruger L-22 Alpha Wolf Wikelo War Special",
+    "MG Scrip": "MG Scrip",
+    "MISC Starlancer MAX Wikelo Work Special": "MISC Starlancer MAX Wikelo Work Special",
+    "Mirai Guardian Wikelo War Special": "Mirai Guardian Wikelo War Special",
+    "Parallax": "Parallax",
+    "Polaris Bit": "Polaris Bit",
+    "Prism": "Prism",
+    "Prowler Utility Wikelo Work Special": "Prowler Utility Wikelo Work Special",
+    "Quantainium": "Quantainium",
+    "R97": "R97",
+    "RCMBNT-PWL-1": "RCMBNT-PWL-1",
+    "RCMBNT-PWL-2": "RCMBNT-PWL-2",
+    "RCMBNT-PWL-3": "RCMBNT-PWL-3",
+    "RCMBNT-RGL-1": "RCMBNT-RGL-1",
+    "RCMBNT-RGL-2": "RCMBNT-RGL-2",
+    "RCMBNT-RGL-3": "RCMBNT-RGL-3",
+    "RCMBNT-XTL-1": "RCMBNT-XTL-1",
+    "RCMBNT-XTL-2": "RCMBNT-XTL-2",
+    "RCMBNT-XTL-3": "RCMBNT-XTL-3",
+    "RSI Scorpius Wikelo Sneak Special": "RSI Scorpius Wikelo Sneak Special",
+    "RSI Zeus Mk II CL Wikelo Work Special": "RSI Zeus Mk II CL Wikelo Work Special",
+    "RSI Zeus Mk II ES Wikelo Work Special": "RSI Zeus Mk II ES Wikelo Work Special",
+    "Sadaryx": "Sadaryx",
+    "Saldynium": "Saldynium",
+    "Savrilium": "Savrilium",
+    "Tripledown": "Pistola Tripledown",
+    "Tungsten": "Tungsten",
+    "Valakkar": "Valakkar",
+    "Valakkar Fang": "Valakkar Fang",
+    "Valakkar Pearl": "Valakkar Pearl",
+    "Vanduul": "Vanduul",
+    "Yormandi Eye": "Yormandi Eye",
+    "Yormandi Tongue": "Yormandi Tongue",
+    "Zenith Laser Sniper Rifle": "Zenith Laser Sniper Rifle",
+    "Wikelo Favor": "Favor de Wikelo"
+  },
+  "misiones": {
+    "TheCollector_Collect_Chess_Title": {
+      "title": "¿Quieres jugar?"
+    },
+    "TheCollector_Conversion_Favors_Title": {
+      "title": "Convertir cosas en favores"
+    },
+    "TheCollector_Conversion_Favors_Title_1": {
+      "title": "¿Cambiar Merc Scrip por favores?"
+    },
+    "TheCollector_Conversion_Favors_Title_2": {
+      "title": "¿Cambiar Council Scrip por favores?"
+    },
+    "TheCollector_Conversion_Favors_Title_3": {
+      "title": "¿Cambiar partes de gusano por favores?"
+    },
+    "TheCollector_Conversion_SpecialFavors_Title": {
+      "title": "¿Quieres una Polaris? Necesitas algo especial."
+    },
+    "TheCollector_Intro_Title": {
+      "title": "Wikelo llega al sistema"
+    },
+    "TheCollector_Lunch_Title": {
+      "title": "Mucha hambre"
+    },
+    "TheCollector_Menu_Title_DesertArm": {
+      "title": "Mira el desierto pero no te verán"
+    },
+    "TheCollector_Menu_Title_DesertVolt": {
+      "title": "Haz que la pistola se vea arenosa"
+    },
+    "TheCollector_Menu_Title_HighComp": {
+      "title": "¿Quieres piezas de nave super útiles?"
+    },
+    "TheCollector_Menu_Title_HighTierShip": {
+      "title": "Nave muy, muy buena para intercambiar"
+    },
+    "TheCollector_Menu_Title_JungleArm": {
+      "title": "¿Quieres una armadura que parezca un árbol?"
+    },
+    "TheCollector_Menu_Title_JungleVolt": {
+      "title": "Pistola eléctrica más parecida a la madera"
+    },
+    "TheCollector_Menu_Title_LowComp": {
+      "title": "Intercambia por piezas útiles de nave"
+    },
+    "TheCollector_Menu_Title_LowTierShip": {
+      "title": "Tengo buenas naves para intercambiar"
+    },
+    "TheCollector_Menu_Title_MedComp": {
+      "title": "Intercambia por piezas de nave muy útiles"
+    },
+    "TheCollector_Menu_Title_MidTierShip": {
+      "title": "¿Quieres una nave grande? Pero no demasiado grande"
+    },
+    "TheCollector_Menu_Title_MiningGadg": {
+      "title": "Necesito cosas de minería. Cosas inteligentes para intercambiar."
+    },
+    "TheCollector_Menu_Title_NavyArm": {
+      "title": "Haz armadura de la armada espacial"
+    },
+    "TheCollector_Menu_Title_NavyVolt": {
+      "title": "Pistola Volt más parecida a la de la armada"
+    },
+    "TheCollector_Menu_Title_PolarisShip": {
+      "title": "Ahora hago Polaris. Oferta por tiempo limitado."
+    },
+    "TheCollector_Menu_Title_RandomArmourFPS": {
+      "title": "Necesito mineral. Daré armas."
+    },
+    "TheCollector_Menu_Title_WalkerSk": {
+      "title": "Convertir traje ATLS en bonito"
+    },
+    "TheCollector_Recipes_Title_ApolloSkin": {
+      "title": "Apollo rojo de combate"
+    },
+    "TheCollector_Recipes_Title_AtlsJump": {
+      "title": "Hacer ATLS saltarín que dispara"
+    },
+    "TheCollector_Recipes_Title_AtlsPew": {
+      "title": "Hacer ATLS disparar"
+    },
+    "TheCollector_Recipes_Title_Battle": {
+      "title": "Armadura de prueba"
+    },
+    "TheCollector_Recipes_Title_BigBooma": {
+      "title": "Arma curiosa"
+    },
+    "TheCollector_Recipes_Title_Bino": {
+      "title": "¿Quieres mejores ojos?"
+    },
+    "TheCollector_Recipes_Title_CombatSuit": {
+      "title": "<EM4>*</EM4> The Collector Recipes Combat Suit"
+    },
+    "TheCollector_Recipes_Title_DrakeClipper": {
+      "title": "<EM4>[BP]</EM4> La Clipper Pelea Ahora"
+    },
+    "TheCollector_Recipes_Title_F55": {
+      "title": "F55 con mejor aspecto"
+    },
+    "TheCollector_Recipes_Title_GMNI_Shotgun": {
+      "title": "Escopeta roja de combate"
+    },
+    "TheCollector_Recipes_Title_HeavyUtil": {
+      "title": "Traje de constructor brillante"
+    },
+    "TheCollector_Recipes_Title_Hush": {
+      "title": "Traje para ocultarse en la nieve"
+    },
+    "TheCollector_Recipes_Title_IrrArm": {
+      "title": "Hacer armadura luminosa"
+    },
+    "TheCollector_Recipes_Title_KopSkull": {
+      "title": "Divertida arma con cráneo de kopion"
+    },
+    "TheCollector_Recipes_Title_KopTooth": {
+      "title": "Divertida arma con diente de kopion"
+    },
+    "TheCollector_Recipes_Title_L22Wolf": {
+      "title": "<EM4>[BP]</EM4> Wolf muy especial"
+    },
+    "TheCollector_Recipes_Title_LotsOfZipZap": {
+      "title": "Zapper VOLT pesado"
+    },
+    "TheCollector_Recipes_Title_MiltSkull": {
+      "title": "Divertida arma militar con cráneo"
+    },
+    "TheCollector_Recipes_Title_MiltTooth": {
+      "title": "Divertida arma militar con diente"
+    },
+    "TheCollector_Recipes_Title_Molten": {
+      "title": "Hacer traje de lava"
+    },
+    "TheCollector_Recipes_Title_NoneAR": {
+      "title": "<EM4>[BP]</EM4> Tu mejor disparo"
+    },
+    "TheCollector_Recipes_Title_NonePistol": {
+      "title": "Disparo ardiente"
+    },
+    "TheCollector_Recipes_Title_RedHunterArmor": {
+      "title": "Armadura roja de cazador"
+    },
+    "TheCollector_Recipes_Title_SandArmour": {
+      "title": "Armadura con cuerno y cuerda"
+    },
+    "TheCollector_Recipes_Title_SlimyLMG": {
+      "title": "Arma Yormandi"
+    },
+    "TheCollector_Recipes_Title_SpikeyArmor": {
+      "title": "Armadura con Vanduul"
+    },
+    "TheCollector_Recipes_Title_SuperHeavyCombat": {
+      "title": "Pesada y Brillante"
+    },
+    "TheCollector_Recipes_Title_VGLflightsuit": {
+      "title": "<EM4>[BP]</EM4> Vístete y despega"
+    },
+    "TheCollector_Recipes_Title_VoltThwack": {
+      "title": "Hacer escopeta VOLT más enojada"
+    },
+    "TheCollector_Recipes_Title_ZipZap": {
+      "title": "Francotirador de nieve"
+    },
+    "TheCollector_Recipes_Title_aparGatlingGun": {
+      "title": "Demasiada Arma"
+    },
+    "TheCollector_Ships_ARGO_Raft_Title": {
+      "title": "¿Listo para la RAFT?"
+    },
+    "TheCollector_Ships_Anvil_Asgard_Title": {
+      "title": "Mod de Combate Asgard"
+    },
+    "TheCollector_Ships_Constellation_Taurus_TItle": {
+      "title": "Quiero nave Taurus"
+    },
+    "TheCollector_Ships_Crusader_A2_Title": {
+      "title": "Mod de guerra Starlifter A2"
+    },
+    "TheCollector_Ships_Drake_Golem_Title": {
+      "title": "Golem Rocks"
+    },
+    "TheCollector_Ships_F7_MK2_TItle": {
+      "title": "F7 de Wikelo"
+    },
+    "TheCollector_Ships_F8C_Milt_TItle": {
+      "title": "F8 Mod de Guerra"
+    },
+    "TheCollector_Ships_F8C_Stealth_TItle": {
+      "title": "Sneaky Stabber"
+    },
+    "TheCollector_Ships_Firebird_TItle": {
+      "title": "Mod Firebird"
+    },
+    "TheCollector_Ships_Fortune_Indus_TItle": {
+      "title": "Nave Fortune para ti"
+    },
+    "TheCollector_Ships_GuardianMX_Title": {
+      "title": "Guardian WiK-X"
+    },
+    "TheCollector_Ships_GuardianQI_TItle": {
+      "title": "Nave Guardian destructora"
+    },
+    "TheCollector_Ships_Guardian_TItle": {
+      "title": "Mod de Combate Guardian"
+    },
+    "TheCollector_Ships_Idris_Title": {
+      "title": "Idris Especial Para Matar"
+    },
+    "TheCollector_Ships_Intrepid_TItle": {
+      "title": "Mejora para la Intrepid"
+    },
+    "TheCollector_Ships_Kruger_Wolf_Title": {
+      "title": "¿Dónde Wolf? Aquí Wolf"
+    },
+    "TheCollector_Ships_MISC_Prospector_Title": {
+      "title": "Buenas Perspectivas"
+    },
+    "TheCollector_Ships_Meteor_Title": {
+      "title": "RSI Meteor Mod"
+    },
+    "TheCollector_Ships_Nox_TItle": {
+      "title": "Mod Noxy"
+    },
+    "TheCollector_Ships_Peregrine_TItle": {
+      "title": "Mod Peregrine de Wikelo"
+    },
+    "TheCollector_Ships_Prowler_Util_Title": {
+      "title": "Prowler más útil"
+    },
+    "TheCollector_Ships_Pulse_TItle": {
+      "title": "Pulse Plus"
+    },
+    "TheCollector_Ships_Scorpius_TItle": {
+      "title": "Construir una Scorpius modificada"
+    },
+    "TheCollector_Ships_Spirit_C1_TItle": {
+      "title": "Mod de carga Spirit"
+    },
+    "TheCollector_Ships_Starfighter_Inferno_Title": {
+      "title": "Starfighter Inferno especial"
+    },
+    "TheCollector_Ships_Starfighter_Ion_Title": {
+      "title": "Starfighter Ion sigilosa"
+    },
+    "TheCollector_Ships_Starlancer_ATC_Title": {
+      "title": "Nueva Nave Starlancer para Mover Cosas"
+    },
+    "TheCollector_Ships_Starlift_Max_TItle": {
+      "title": "Más que un Max"
+    },
+    "TheCollector_Ships_Terrapin_Medic_Title": {
+      "title": "¿Qué es Terrapin?"
+    },
+    "TheCollector_Ships_Ursa_TItle": {
+      "title": "Crear un Mod Ursa"
+    },
+    "TheCollector_Ships_Wolf_Unique_Title": {
+      "title": "El Wolf Más Especial"
+    },
+    "TheCollector_Ships_ZeusCL_TItle": {
+      "title": "Especial de Carga Zeus"
+    },
+    "TheCollector_Ships_ZeusES_TItle": {
+      "title": "Zeus Especial"
+    }
+  },
+  "no_encontrados": [
+    "ASD Secure Drive",
+    "ATLS Cool Metal Color",
+    "ATLS Orange Line",
+    "ATLS Snowland Color",
+    "Ace Interceptor Helmet",
+    "Aegis Sabre Firebird Wikelo War Special",
+    "Antium Arms",
+    "Antium Core",
+    "Antium Helmet",
+    "Antium Legs",
+    "Anvil Asgard Wikelo War Special",
+    "Anvil F8C Lightning Wikelo War Special",
+    "Argo RAFT Wikelo Work Special",
+    "Bokto Arms",
+    "Bokto Core",
+    "Bokto Helmet",
+    "Bokto Legs",
+    "Boomtube \"Clanguard\" Rocket Launcher",
+    "Boomtube Rocket",
+    "Boomtube Rocket Launcher",
+    "Carinite (Pure)",
+    "Corbel Arms Crush",
+    "Corbel Arms Mire",
+    "Corbel Core Crush",
+    "Corbel Core Mire",
+    "Corbel Helmet Crush",
+    "Corbel Helmet Mire",
+    "Corbel Legs Crush",
+    "Corbel Legs Mire",
+    "Crusader C1 Spirit Wikelo Work Special",
+    "DCHS-05 Orbital Positioning Comp-Board",
+    "Expired Quantanium Fuel Canister",
+    "Fresnel \"Yormandi\" Energy LMG",
+    "Geist Armor Arms ASD Edition",
+    "Geist Armor Arms Snow Camo",
+    "Geist Armor Core ASD Edition",
+    "Geist Armor Core Snow Camo",
+    "Geist Armor Helmet ASD Edition",
+    "Geist Armor Helmet Snow Camo",
+    "Geist Armor Legs ASD Edition",
+    "Geist Armor Legs Snow Camo",
+    "Geist Backpack ASD Edition",
+    "Geist Backpack Snow Camo",
+    "Government Cartography Agency Medal (Pristine)",
+    "Irradiated Kopion",
+    "Irradiated Kopion Horn",
+    "Irradiated Valakkar",
+    "Irradiated Valakkar Fang (Adult)",
+    "Irradiated Valakkar Fang (Apex)",
+    "Irradiated Valakkar Fang (Juvenile)",
+    "Irradiated Valakkar Pearl (Grade AA)",
+    "Irradiated Valakkar Pearl (Grade AAA)",
+    "Jaclium (Ore)",
+    "Killshot \"Dominion Camo\" Rifle",
+    "Killshot \"Dominion Camo\" Rifle blueprint",
+    "Killshot Rifle",
+    "Killshot Rifle Magazine (45 Cap)",
+    "L-21 Wolf (Military Spec)",
+    "L-21 Wolf (Stealth Spec)",
+    "Large Artifact Fragment (Pristine)",
+    "MISC Fortune Wikelo Special",
+    "MISC Prospector Wikelo Work Special",
+    "Metamaterial Test #146",
+    "Metamaterial Test #146 blueprint",
+    "Mirai Guardian Wikelo War Special (Vanduul Variant)",
+    "Mirai Pulse Wikelo Special",
+    "Monde Arms",
+    "Monde Arms Crimson Camo",
+    "Monde Core",
+    "Monde Core Crimson Camo",
+    "Monde Helmet",
+    "Monde Helmet Crimson Camo",
+    "Monde Legs",
+    "Monde Legs Crimson Camo",
+    "NN-13 Cannon",
+    "Novikov Backpack Crush",
+    "Novikov Backpack Mire",
+    "Palatino Arms",
+    "Palatino Arms Mark I",
+    "Palatino Backpack",
+    "Palatino Backpack Mark I",
+    "Palatino Core",
+    "Palatino Core Mark I",
+    "Palatino Helmet",
+    "Palatino Helmet Mark I",
+    "Palatino Legs",
+    "Palatino Legs Mark I",
+    "Parallax \"Fun Kopion Skull\" Energy Assault Rifle",
+    "Parallax \"Fun Military Skull\" Energy Assault Rifle",
+    "Parallax Energy Assault Rifle",
+    "Parallax Rifle Battery (80 Cap)",
+    "Prism \"Irradiated\" Laser Shotgun",
+    "Prism Laser Shotgun",
+    "Prism Laser Shotgun Battery (20 cap)",
+    "R97 \"Crimson Camo\" Shotgun",
+    "R97 Shotgun",
+    "R97 Shotgun Magazine (18 cap)",
+    "RSI Apollo Triage Wikelo Work Special",
+    "RSI Constellation Taurus Wikelo Work Special",
+    "RSI Ursa Medivac Wikelo Special",
+    "Saldynium (Ore)",
+    "Strata Arms",
+    "Strata Arms Heatwave",
+    "Strata Backpack",
+    "Strata Backpack Heatwave",
+    "Strata Core",
+    "Strata Core Heatwave",
+    "Strata Helmet",
+    "Strata Helmet Heatwave",
+    "Strata Legs",
+    "Strata Legs Heatwave",
+    "Tailwind Flight Helmet",
+    "Tailwind Flight Helmet Dominion Camo",
+    "Tailwind Flight Helmet Dominion Camo blueprint",
+    "Tailwind Flight Suit",
+    "Tailwind Flight Suit Dominion Camo",
+    "Tailwind Flight Suit Dominion Camo blueprint",
+    "Terrapin Medic Wikelo Work Special",
+    "Testudo Arms Clanguard",
+    "Testudo Arms Turfwar",
+    "Testudo Backpack Clanguard",
+    "Testudo Backpack Turfwar",
+    "Testudo Core Clanguard",
+    "Testudo Core Turfwar",
+    "Testudo Helmet Clanguard",
+    "Testudo Helmet Turfwar",
+    "Testudo Legs Clanguard",
+    "Testudo Legs Turfwar",
+    "Tevarin War Service Marker (Pristine)",
+    "Tripledown \"Heatwave\" Pistol",
+    "Tripledown Pistol",
+    "Tripledown Pistol Magazine (12 Cap)",
+    "Tundra Kopion",
+    "Tundra Kopion Horn",
+    "UEE 6th Platoon Medal (Pristine)",
+    "Vanduul Metal",
+    "Vanduul Plating",
+    "Warden Backpack Crimson Camo",
+    "Warden Backpack Monde",
+    "Zenith \"Snow Camo\" Laser Sniper Rifle",
+    "Zenith Laser Sniper Rifle Battery (22 Cap)"
+  ]
+}

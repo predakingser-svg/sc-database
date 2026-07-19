@@ -1,6 +1,22 @@
 {
   "releases": [
     {
+      "version": "2.5.0",
+      "date": "2026-07-18",
+      "title_es": "Datos de componentes completados (19/21 actualizados)",
+      "title_en": "Component Data Completed (19/21 updated)",
+      "changes_es": [
+        "19 componentes con size y grade actualizados desde components.json",
+        "2 componentes sin datos alternativos disponibles: Drifter, SecureShield",
+        "Items: sin cambios (no hay fuente alternativa para type/description)"
+      ],
+      "changes_en": [
+        "19 components with size and grade populated from components.json",
+        "2 components with no alternative data available: Drifter, SecureShield",
+        "Items: no changes (no alternative source for type/description)"
+      ]
+    },
+    {
       "version": "2.4.0",
       "date": "2026-07-18",
       "title_es": "Base de datos integrada ES + EN",

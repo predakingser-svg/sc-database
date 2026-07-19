@@ -1,0 +1,66 @@
+{
+  "proyecto": "star-citizen-db",
+  "ruta_base": "~/.openclaw/workspace/proyectos/star-citizen-db/frontend/",
+  "instrucciones_generales": "Solo código frontend (HTML/JS). No modificar backend ni estructura de datos.",
+  "plan": [
+    {
+      "id": "T1",
+      "agente": "frontend-dev",
+      "archivo": "app.js",
+      "linea": 1195,
+      "descripcion": "Ocultar 'Key:' en el footer del modal de blueprint sin eliminar el código.",
+      "cambio_exacto": "En openBpDetail(), reemplazar la línea:\n  const footer = `Key: ${b.key || '?'} · v${b.game_version || '?'}`;\npor:\n  const footer = `<span style=\"display:none\">Key: ${b.key || '?'}</span> · v${b.game_version || '?'}`;\nEsto envuelve solo la parte 'Key: ...' en un span invisible, dejando visible la versión del juego.",
+      "contexto": "La línea muestra 'Key: ...' al final del modal de blueprint. Debe permanecer en el código pero invisible visualmente para el usuario."
+    },
+    {
+      "id": "T2",
+      "agente": "frontend-dev",
+      "archivo": "app.js",
+      "linea": 1180,
+      "descripcion": "Cambiar label 'Disponible por defecto' → 'Se consigue en' y hacer clickeable el texto 'No, hay que desbloquearlo'.",
+      "cambio_detallado": [
+        "1. En openBpDetail(), cambiar el label del field:\n   { label: 'Disponible por defecto', value: ... }\n   → { label: 'Se consigue en', value: stringHtml }",
+        "2. Para el value: si b.is_available_by_default es true, mostrar un texto estático como 'Por defecto' (no hay misión específica).",
+        "3. Si b.is_available_by_default es false, generar un string HTML con un <a> o <button> onclick que:\n   - Llame a navigateTo('missions') para ir a la página de misiones\n   - Pase las misiones desbloqueables (b.unlocking_missions, array de UUIDs) como filtro\n   - Abra automáticamente el modal de detalle de la primera misión desbloqueable usando openMissionDetail(umUuid)",
+        "4. El HTML del value debe escaparse correctamente para que showDetailModal lo renderice como HTML (no texto plano). Verificar que el modal renderice valores HTML correctamente (actualmente safeVal() escapa el valor, puede necesitar un flag rawHtml o usar innerHTML directo en el di-value)."
+      ],
+      "nota": "El modal detail usa safeVal() para los valores de los fields, lo cual escapa HTML. Para que el link sea clickeable, puede ser necesario modificar showDetailModal() o detailGrid() para soportar raw HTML en algunos valores (ej. añadir un flag {label, value, rawHtml: true} en el field). Alternativa: renderizar manualmente el footer o una sección extra con el HTML.",
+      "dependencia": "Requiere que b.unlocking_missions sea un array de UUIDs de misiones. Verificar estructura de datos del JSON de blueprints."
+    },
+    {
+      "id": "T3",
+      "agente": "frontend-dev",
+      "archivo": "index.html (+ app.js)",
+      "descripcion": "Eliminar 'Misiones por categoría' del dashboard. Dejar solo 'Misiones por sistema'.",
+      "cambios": [
+        {
+          "archivo": "index.html",
+          "lineas": "97-101",
+          "accion": "Eliminar el div.card que contiene 'Misiones por categoría' y su chart-container. Específicamente:\n  <div class=\"card\">\n      <h3>Misiones por categoría</h3>\n      <div id=\"chart-categories\" class=\"chart-container\">\n          <div class=\"loading-sm\">Cargando...</div>\n      </div>\n  </div>\n  Y también eliminar el div.dashboard-grid que lo contiene si queda vacío, o reestructurar para que el dashboard-grid solo tenga 'Misiones por sistema' en la primera fila y 'Distribución de Blueprints' + 'Acceso rápido' en la segunda."
+        },
+        {
+          "archivo": "app.js",
+          "linea": 497,
+          "accion": "Eliminar la llamada a renderCategoryChart(statsData.missions_by_category) dentro de loadStats(). La línea es:\n  renderCategoryChart(statsData.missions_by_category);"
+        },
+        {
+          "archivo": "app.js",
+          "lineas": "503-525",
+          "accion": "Opcional: eliminar la función renderCategoryChart() completa si no se usa en ningún otro lugar (grep para confirmar). De lo contrario, dejarla pero no llamarla."
+        }
+      ]
+    },
+    {
+      "id": "T4",
+      "agente": "frontend-dev",
+      "archivo": "app.js",
+      "descripcion": "Buscar otras ocurrencias de 'Key:' visible al usuario y ocultarlas también.",
+      "hallazgo": "Se encontró ÚNICAMENTE 1 ocurrencia de 'Key:' visible en todo el frontend activo: línea 1195 en app.js (el mismo que T1). No hay más ocurrencias en ningún .html, .js o .css activo. Las demás referencias a 'key' en el código son internas (sort.key, e.key para teclado, Object.keys(), t.key para traducciones) y no se muestran al usuario.",
+      "accion": "Ya cubierto por T1. Si en el futuro se agregan más 'Key:', verificarlas también. No hay cambios adicionales que hacer."
+    }
+  ],
+  "riesgos": {
+    "T2": "El modal usa safeVal() que escapa HTML. Para inyectar HTML clickeable, modificar showDetailModal() o detailGrid() para aceptar un flag como {label, value, rawHtml: true} en fields. Si no se modifica, el link se verá como texto plano escapado.",
+    "T3": "Verificar que eliminar renderCategoryChart no afecte otras partes del dashboard. La función solo se llama una vez en loadStats(), es seguro eliminarla junto con su llamada."
+  }
+}

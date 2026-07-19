@@ -3,16 +3,77 @@
 Star Citizen Database — API Flask
 Sirve todos los datos scrapeados vía endpoints REST
 """
+import gzip
 import json
 import os
 import sys
-from flask import Flask, jsonify, request
+import time
+from functools import lru_cache
+from io import BytesIO
+from flask import Flask, jsonify, request, after_this_request
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
+
+# ─── Gzip compression via after_request ───
+@app.after_request
+def gzip_response(response):
+    """Comprime respuestas JSON mayores a 1KB con gzip si el cliente lo acepta."""
+    accept_encoding = request.headers.get('Accept-Encoding', '')
+    if 'gzip' not in accept_encoding:
+        return response
+    if response.status_code >= 300:
+        return response
+    if response.content_length and response.content_length < 1024:
+        return response
+    if not response.content_type or 'application/json' not in response.content_type:
+        return response
+
+    original = response.get_data()
+    if len(original) < 1024:
+        return response
+
+    buf = BytesIO()
+    with gzip.GzipFile(mode='wb', fileobj=buf) as gz:
+        gz.write(original)
+    compressed = buf.getvalue()
+
+    if len(compressed) < len(original):
+        response.set_data(compressed)
+        response.headers['Content-Encoding'] = 'gzip'
+        response.headers['Content-Length'] = str(len(compressed))
+        response.headers.pop('Content-Type', None)
+
+    return response
+
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'scrapers', 'sc_data')
+
+# ─── Funciones helper ───
+
+def _strip_nulls(obj):
+    """Elimina recursivamente campos None/null y strings vacíos de dicts y listas."""
+    if isinstance(obj, dict):
+        return {k: _strip_nulls(v) for k, v in obj.items() if v is not None and v != '' and not (isinstance(v, list) and len(v) == 0)}
+    if isinstance(obj, list):
+        return [_strip_nulls(i) for i in obj]
+    return obj
+
+
+def _is_ship_weapon(component):
+    """True si el ítem es un arma de nave (debe excluirse de /components)."""
+    type_val = (component.get('type') or '').lower().replace(' ', '')
+    cat_val = (component.get('category') or '').lower().replace(' ', '')
+    name_val = (component.get('name') or '').lower()
+    combined = f"{type_val}|{cat_val}|{name_val}"
+    weapon_kw = ['weapon', 'missile', 'torpedo', 'repeater', 'cannon', 'machinegun',
+                 'gatling', 'massdriver', 'suckerpunch', 'bomb', 'launcher', 'rocket']
+    for kw in weapon_kw:
+        if kw in combined:
+            return True
+    return False
+
 
 # ─── Cargar datos en memoria ───
 def load_json(filename):
@@ -45,30 +106,73 @@ print(f"  ✅ {len(weapons_list)} armas de nave", file=sys.stderr)
 wikelo = load_json('wikelo_catalog.json')
 print(f"  ✅ Wikelo catalog loaded", file=sys.stderr)
 
-# All items
+# All items — filtered: weapon items go to weapons, not generic items
 items_raw = load_json('_all_items.json')
-items_list = items_raw if isinstance(items_raw, list) else []
-print(f"  ✅ {len(items_list)} items", file=sys.stderr)
+items_list_raw = items_raw if isinstance(items_raw, list) else []
 
-# Stats cache
-STATS = {
-    'missions': len(missions_list),
-    'blueprints': len(blueprints_list),
-    'weapons': len(weapons_list),
-    'wikelo_contracts': 0,
-    'items': len(items_list)
-}
+# Try loading items from built frontend/data/items.json (has item_type field)
+import re
+items_list = []
+weapon_items_count = 0
+
+frontend_items_path = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'data', 'items.json')
+if os.path.exists(frontend_items_path):
+    with open(frontend_items_path) as f:
+        items_list = json.load(f)
+    print(f"  ✅ {len(items_list)} items con item_type cargados de frontend/data/items.json", file=sys.stderr)
+else:
+    # Fallback: load from _all_items.json and classify on the fly
+    NON_WEAPON_EXCEPTIONS = [
+        r'(?i)bomber\s*jacket', r'(?i)bombora\s*livery', r'(?i)torpedo\s*burrito',
+        r'(?i)laser\s*pointer', r'(?i)laser\s*activation', r'(?i)mining\s*laser',
+    ]
+    for item in items_list_raw:
+        name = item.get('name', '')
+        is_wpn = False
+        for exc in NON_WEAPON_EXCEPTIONS:
+            if re.search(exc, name):
+                is_wpn = False
+                break
+        else:
+            if re.search(r'(?i)\b(cannon|repeater|gatling|mass\s*driver|suckerpunch)\b', name):
+                is_wpn = True
+            elif re.search(r'(?i)\b(missile|torpedo)\b', name):
+                is_wpn = True
+            elif re.search(r'(?i)\bbomb\b', name):
+                is_wpn = True
+            elif re.search(r'(?i)\b(missile|torpedo|bomb)\s*rack\b', name):
+                is_wpn = True
+            elif re.search(r'(?i)\b(rocket\s*launcher|launcher)\b', name):
+                is_wpn = True
+            elif re.search(r'(?i)\bturret\b', name):
+                is_wpn = True
+        if is_wpn:
+            weapon_items_count += 1
+        else:
+            items_list.append(item)
+    print(f"  ✅ {len(items_list)} items ({weapon_items_count} armas filtradas)", file=sys.stderr)
+
+# Stats cache (conteos ligeros)
+wikelo_count = 0
 if wikelo:
     for cat in ['favor_trades', 'polaris_bit_recipes', 'weapon_contracts', 'armor_contracts', 'vehicle_contracts', 'ship_contracts']:
-        STATS['wikelo_contracts'] += len(wikelo.get(cat, []))
+        wikelo_count += len(wikelo.get(cat, []))
 
 # Components
 comps_path = os.path.join(os.path.dirname(__file__), "data", "components.json")
 components_list = []
+WEAPON_TYPES = {
+    'missile', 'torpedo', 'weapon', 'weapons', 'missiles', 'torpedoes',
+    'repeater', 'repeaters', 'cannon', 'cannons',
+    'machinegun', 'machineguns', 'gatling', 'gatlings',
+    'massdriver', 'massdrivers', 'bomb', 'bombs',
+    'launcher', 'launchers', 'rocket', 'rockets',
+}
 if os.path.exists(comps_path):
     with open(comps_path) as f:
         components_list = json.load(f).get("data", [])
-    print(f"  ✅ {len(components_list)} componentes", file=sys.stderr)
+    components_list = [c for c in components_list if c.get('type', '').lower().replace(' ','') not in WEAPON_TYPES]
+    print(f"  ✅ {len(components_list)} componentes (weapons/missiles/torpedos/repeaters/cannons/machineguns filtrados)", file=sys.stderr)
 else:
     print(f"  ⚠️  components.json no encontrado", file=sys.stderr)
 
@@ -82,6 +186,39 @@ if os.path.exists(minerals_path):
     print(f"  ✅ {len(minerals_list)} minerales", file=sys.stderr)
 else:
     print(f"  ⚠️  minerals.json no encontrado", file=sys.stderr)
+
+# ─── Stats ligeros (conteos) ───
+# Count factions desde database files
+factions_count = 0
+for db_fname in ['sc_database_en.json', 'sc_database_v3_en.json']:
+    db_path = os.path.join(os.path.dirname(__file__), 'data', db_fname)
+    if os.path.exists(db_path):
+        with open(db_path) as f:
+            db_data = json.load(f)
+        f_data = db_data.get('factions', {})
+        if isinstance(f_data, list):
+            factions_count = max(factions_count, len(f_data))
+        elif isinstance(f_data, dict):
+            factions_count = max(factions_count, len(f_data))
+# Count unique systems desde misiones
+unique_systems = set()
+for m in missions_list:
+    for sys_info in m.get('star_systems', []):
+        sname = sys_info.get('name', 'Unknown') if isinstance(sys_info, dict) else str(sys_info)
+        unique_systems.add(sname)
+systems_count = len(unique_systems)
+
+STATS = {
+    'missions': len(missions_list),
+    'blueprints': len(blueprints_list),
+    'items': len(items_list),
+    'weapons': len(weapons_list),
+    'components': len(components_list),
+    'wikelo': wikelo_count,
+    'factions': factions_count,
+    'systems': systems_count,
+}
+print(f"  ✅ Stats ligeros: {len(STATS)} campos", file=sys.stderr)
 
 # Translations (global.ini)
 translations_path = os.path.join(os.path.dirname(__file__), "data", "translations_full.json")
@@ -114,6 +251,50 @@ if os.path.exists(ct_path):
 else:
     print(f"  ⚠️  contractor_translations.json no encontrado", file=sys.stderr)
 
+# ─── Pre-calcular stats (carga rápida) ───
+def _compute_stats():
+    scopes = {}
+    for m in missions_list:
+        s = m.get('reward_scope', 'Unknown')
+        scopes[s] = scopes.get(s, 0) + 1
+
+    systems = {}
+    for m in missions_list:
+        for sys_info in m.get('star_systems', []):
+            sname = sys_info.get('name', 'Unknown') if isinstance(sys_info, dict) else str(sys_info)
+            systems[sname] = systems.get(sname, 0) + 1
+
+    bp_missions = sum(1 for m in missions_list if m.get('has_blueprints'))
+
+    return {
+        'total_missions': len(missions_list),
+        'total_blueprints': len(blueprints_list),
+        'total_weapons': len(weapons_list),
+        'total_components': len(components_list),
+        'total_minerals': len(minerals_list),
+        'total_items': len(items_list),
+        'missions_by_category': scopes,
+        'missions_by_system': systems,
+        'missions_with_blueprints': bp_missions,
+        'data_version': missions_raw.get('date', 'unknown') if missions_raw else 'unknown'
+    }
+
+STATS_CACHE = _compute_stats()
+print(f"  ✅ Stats pre-calculados ({len(STATS_CACHE['missions_by_category'])} categorías, {len(STATS_CACHE['missions_by_system'])} sistemas)", file=sys.stderr)
+
+# ─── Caché simple en memoria ───
+_cache = {}
+_cache_time = {}
+
+def cached_response(key, data_func, ttl=300):
+    now = time.time()
+    if key in _cache and now - _cache_time.get(key, 0) < ttl:
+        return _cache[key]
+    result = data_func()
+    _cache[key] = result
+    _cache_time[key] = now
+    return result
+
 print("🚀 API lista", file=sys.stderr)
 
 
@@ -127,7 +308,8 @@ def api_docs():
         'name': 'Star Citizen Database API',
         'version': '2.0',
         'endpoints': {
-            'GET /stats': 'Estadísticas generales',
+            'GET /stats': 'Estadísticas ligeras: conteos (~1KB)',
+            'GET /stats/detailed': 'Estadísticas detalladas con desgloses',
             'GET /missions': 'Lista de misiones (?faction=X&system=Y&has_blueprints=true&lang=es&search=Z)',
             'GET /missions/<uuid>': 'Detalle de una misión (?lang=es)',
             'GET /blueprints': 'Lista de blueprints (?output=X&min_ingredients=N&search=Z)',
@@ -135,13 +317,13 @@ def api_docs():
             'GET /weapons': 'Armas de nave (?size=N&type=X&min_dps=N)',
             'GET /weapons/<id>': 'Detalle de un arma',
             'GET /wikelo': 'Contratos Wikelo',
-            'GET /items': 'Catálogo de items (?search=Z)',
-            'GET /components': 'Componentes de nave (?type=&size=&search=)',
+            'GET /items': 'Catálogo de items (?search=Z&sold=true&type=armor_helmet)',
+            'GET /components': 'Componentes de nave (sin armas; ?type=&size=&search=)',
             'GET /minerals': 'Minerales (?rarity=&location=&search=)',
             'GET /translate?q=clave': 'Traducir clave del global.ini al español',
             'GET /translations': 'Todas las traducciones del global.ini',
             'GET /translate/missions?contractor=X': 'Traducciones por contratista',
-            'GET /database?lang=es': 'Base de datos completa (ES o EN)',
+            'GET /database?lang=es&fields=missions,blueprints': 'Base de datos (?fields= para subsets, ?fields=stats para conteos)',
             'GET /changelog': 'Historial de versiones',
             'GET /search?q=termino': 'Búsqueda global'
         }
@@ -163,13 +345,15 @@ def get_translate():
 @app.route('/translations')
 def get_all_translations():
     lang = request.args.get('lang', 'es')
-    if lang == 'en':
-        return jsonify({'total': 0, 'note': 'English is source language', 'data': {}})
-    return jsonify({
-        'total': len(translations_dict),
-        'source': 'global.ini (Star Citizen Spanish localization)',
-        'data': translations_dict
-    })
+    def _gen():
+        if lang == 'en':
+            return {'total': 0, 'note': 'English is source language', 'data': {}}
+        return {
+            'total': len(translations_dict),
+            'source': 'global.ini (Star Citizen Spanish localization)',
+            'data': translations_dict
+        }
+    return jsonify(cached_response(f'translations_{lang}', _gen))
 
 @app.route('/translate/missions')
 def translate_missions():
@@ -181,52 +365,83 @@ def translate_missions():
 
 @app.route('/changelog')
 def get_changelog():
-    cl_path = os.path.join(os.path.dirname(__file__), "data", "changelog.json")
-    if os.path.exists(cl_path):
-        with open(cl_path) as f:
-            return jsonify(json.load(f))
-    return jsonify({'error': 'No changelog'}), 404
+    def _gen():
+        cl_path = os.path.join(os.path.dirname(__file__), "data", "changelog.json")
+        if os.path.exists(cl_path):
+            with open(cl_path) as f:
+                return json.load(f)
+        return {'error': 'No changelog'}
+    result = cached_response('changelog', _gen)
+    if 'error' in result:
+        return jsonify(result), 404
+    return jsonify(result)
 
 @app.route('/database')
 def get_database():
     lang = request.args.get('lang', 'en')
-    if lang == 'es':
-        db_path = os.path.join(os.path.dirname(__file__), 'data', 'sc_database_es.json')
-    else:
-        db_path = os.path.join(os.path.dirname(__file__), 'data', 'sc_database_en.json')
-    if os.path.exists(db_path):
-        return jsonify(json.load(open(db_path)))
-    return jsonify({'error': 'Database not found', 'lang': lang}), 404
+    fields_param = request.args.get('fields', '').strip()
+
+    def _gen():
+        nonlocal fields_param
+        if lang == 'es':
+            db_path = os.path.join(os.path.dirname(__file__), 'data', 'sc_database_es.json')
+        else:
+            db_path = os.path.join(os.path.dirname(__file__), 'data', 'sc_database_en.json')
+
+        if not os.path.exists(db_path):
+            return {'error': 'Database not found', 'lang': lang}
+
+        db = json.load(open(db_path))
+
+        # ?fields=stats -> equivalente a /stats
+        if fields_param == 'stats':
+            return STATS
+
+        # ?fields=missions,blueprints -> solo esos subsets
+        if fields_param:
+            requested = [f.strip() for f in fields_param.split(',') if f.strip()]
+            result = {}
+            for key in requested:
+                if key in db:
+                    val = db[key]
+                    # Filtrar armas del array components
+                    if key == 'components' and isinstance(val, list):
+                        val = [c for c in val if not _is_ship_weapon(c)]
+                    result[key] = val
+                elif key in STATS:
+                    result[key] = STATS[key]
+            return result
+
+        # Comportamiento normal: limpiar y filtrar armas de components
+        # Remover metadata innecesaria y campos nulos
+        for meta_key in ['_meta', 'built', 'version', 'language', 'name']:
+            db.pop(meta_key, None)
+
+        # Filtrar armas del array components
+        if 'components' in db and isinstance(db['components'], list):
+            db['components'] = [c for c in db['components'] if not _is_ship_weapon(c)]
+
+        # Eliminar campos nulos del payload
+        db = _strip_nulls(db)
+
+        return db
+
+    return jsonify(cached_response(f'database_{lang}_{fields_param or "full"}', _gen))
 
 @app.route('/stats')
 def stats():
-    # Mission counts by category
-    scopes = {}
-    for m in missions_list:
-        s = m.get('reward_scope', 'Unknown')
-        scopes[s] = scopes.get(s, 0) + 1
+    """Endpoint ligero: solo conteos (~1KB)."""
+    def _gen():
+        return STATS
+    return jsonify(cached_response('stats', _gen))
 
-    # Mission counts by system
-    systems = {}
-    for m in missions_list:
-        for sys_info in m.get('star_systems', []):
-            sname = sys_info.get('name', 'Unknown') if isinstance(sys_info, dict) else str(sys_info)
-            systems[sname] = systems.get(sname, 0) + 1
 
-    # Blueprint missions
-    bp_missions = sum(1 for m in missions_list if m.get('has_blueprints'))
-
-    return jsonify({
-        'total_missions': len(missions_list),
-        'total_blueprints': len(blueprints_list),
-        'total_weapons': len(weapons_list),
-        'total_items': len(items_list),
-        'missions_by_category': scopes,
-        'missions_by_system': systems,
-        'missions_with_blueprints': bp_missions,
-        'blueprint_ingredients_distribution': {},
-        'data_version': missions_raw.get('date', 'unknown') if missions_raw else 'unknown'
-    })
+@app.route('/stats/detailed')
+def stats_detailed():
+    """Endpoint pesado: estadísticas detalladas con desgloses."""
+    def _gen():
+        return STATS_CACHE
+    return jsonify(cached_response('stats_detailed', _gen))
 
 
 # ─── MISIONES ───
@@ -406,6 +621,7 @@ def get_wikelo():
 def get_items():
     search = request.args.get('search', '').lower()
     sold = request.args.get('sold')
+    item_type = request.args.get('type', '').lower()
 
     filtered = items_list
     if search:
@@ -414,6 +630,8 @@ def get_items():
         filtered = [i for i in filtered if i.get('Sold')]
     elif sold == 'false':
         filtered = [i for i in filtered if not i.get('Sold')]
+    if item_type:
+        filtered = [i for i in filtered if i.get('item_type', '').lower() == item_type]
 
     return jsonify({
         'total': len(filtered),
@@ -429,6 +647,8 @@ def get_components():
     size = request.args.get('size', '').lower()
     search = request.args.get('search', '').lower()
     filtered = components_list
+    # Filtro adicional de seguridad: excluir cualquier arma de nave
+    filtered = [c for c in filtered if not _is_ship_weapon(c)]
     if ctype:
         filtered = [c for c in filtered if c.get('type', '').lower() == ctype]
     if size:
@@ -484,61 +704,64 @@ def global_search():
     if len(q) < 2:
         return jsonify({'error': 'Query too short. Minimum 2 characters.'}), 400
 
-    results = {
-        'missions': [],
-        'blueprints': [],
-        'weapons': [],
-        'items': []
-    }
+    def _gen():
+        results = {
+            'missions': [],
+            'blueprints': [],
+            'weapons': [],
+            'items': []
+        }
 
-    # Search missions
-    for m in missions_list:
-        if q in safe_lower(m.get('title')) or q in safe_lower(m.get('description')):
-            results['missions'].append({
-                'uuid': m['uuid'],
-                'title': m['title'],
-                'faction': (lambda f: f.get('name', 'Unknown') if isinstance(f, dict) else str(f or 'Unknown'))(m.get('faction')),
-                'reward': m.get('reward_min'),
-                'has_blueprints': m.get('has_blueprints')
-            })
-            if len(results['missions']) >= 10:
-                break
+        # Search missions
+        for m in missions_list:
+            if q in safe_lower(m.get('title')) or q in safe_lower(m.get('description')):
+                results['missions'].append({
+                    'uuid': m['uuid'],
+                    'title': m['title'],
+                    'faction': (lambda f: f.get('name', 'Unknown') if isinstance(f, dict) else str(f or 'Unknown'))(m.get('faction')),
+                    'reward': m.get('reward_min'),
+                    'has_blueprints': m.get('has_blueprints')
+                })
+                if len(results['missions']) >= 10:
+                    break
 
-    # Search blueprints
-    for b in blueprints_list:
-        if q in safe_lower(b.get('output_name')):
-            results['blueprints'].append({
-                'uuid': b['uuid'],
-                'output': b['output_name'],
-                'ingredients': b.get('ingredient_count'),
-                'time': b.get('craft_time_label')
-            })
-            if len(results['blueprints']) >= 10:
-                break
+        # Search blueprints
+        for b in blueprints_list:
+            if q in safe_lower(b.get('output_name')):
+                results['blueprints'].append({
+                    'uuid': b['uuid'],
+                    'output': b['output_name'],
+                    'ingredients': b.get('ingredient_count'),
+                    'time': b.get('craft_time_label')
+                })
+                if len(results['blueprints']) >= 10:
+                    break
 
-    # Search weapons
-    for w in weapons_list:
-        if q in w.get('name', '').lower():
-            results['weapons'].append({
-                'id': w['id'],
-                'name': w['name'],
-                'type': w.get('stats', {}).get('TYPE'),
-                'size': w.get('stats', {}).get('SIZE')
-            })
-            if len(results['weapons']) >= 10:
-                break
+        # Search weapons
+        for w in weapons_list:
+            if q in w.get('name', '').lower():
+                results['weapons'].append({
+                    'id': w['id'],
+                    'name': w['name'],
+                    'type': w.get('stats', {}).get('TYPE'),
+                    'size': w.get('stats', {}).get('SIZE')
+                })
+                if len(results['weapons']) >= 10:
+                    break
 
-    # Search items
-    for i in items_list:
-        if q in i.get('name', '').lower():
-            results['items'].append({
-                'id': i['id'],
-                'name': i['name']
-            })
-            if len(results['items']) >= 10:
-                break
+        # Search items
+        for i in items_list:
+            if q in i.get('name', '').lower():
+                results['items'].append({
+                    'id': i['id'],
+                    'name': i['name']
+                })
+                if len(results['items']) >= 10:
+                    break
 
-    return jsonify(results)
+        return results
+
+    return jsonify(cached_response(f'search_{q}', _gen))
 
 
 # ─── MAIN ───

@@ -1,0 +1,152 @@
+{
+  "releases": [
+    {
+      "version": "2.5.0",
+      "date": "2026-07-18",
+      "title_es": "Datos de componentes completados (19/21 actualizados)",
+      "title_en": "Component Data Completed (19/21 updated)",
+      "changes_es": [
+        "19 componentes con size y grade actualizados desde components.json",
+        "2 componentes sin datos alternativos disponibles: Drifter, SecureShield",
+        "Items: sin cambios (no hay fuente alternativa para type/description)"
+      ],
+      "changes_en": [
+        "19 components with size and grade populated from components.json",
+        "2 components with no alternative data available: Drifter, SecureShield",
+        "Items: no changes (no alternative source for type/description)"
+      ]
+    },
+    {
+      "version": "2.4.0",
+      "date": "2026-07-18",
+      "title_es": "Traducciones mejoradas, descripciones limpias, títulos en español",
+      "title_en": "Improved translations, clean descriptions, Spanish titles",
+      "changes_es": [
+        "Traducciones mejoradas",
+        "Descripciones limpias",
+        "Títulos en español"
+      ],
+      "changes_en": [
+        "Improved translations",
+        "Clean descriptions",
+        "Spanish titles"
+      ]
+    },
+    {
+      "version": "2.3.0",
+      "date": "2026-07-18",
+      "title_es": "Migración a Cloudflare Pages con lazy loading",
+      "title_en": "Migration to Cloudflare Pages with lazy loading",
+      "changes_es": [
+        "Migración a Cloudflare Pages",
+        "Lazy loading por sección"
+      ],
+      "changes_en": [
+        "Migration to Cloudflare Pages",
+        "Lazy loading per section"
+      ]
+    },
+    {
+      "version": "2.2.0",
+      "date": "2026-07-18",
+      "title_es": "Correcciones de bugs (blueprints, misión→blueprints)",
+      "title_en": "Bug fixes (blueprints, mission→blueprints)",
+      "changes_es": [
+        "Correcciones de bugs",
+        "blueprints",
+        "misión→blueprints"
+      ],
+      "changes_en": [
+        "Bug fixes",
+        "blueprints",
+        "mission→blueprints"
+      ]
+    },
+    {
+      "version": "2.1.0",
+      "date": "2026-07-18",
+      "title_es": "Nuevos agentes (analizador-web, scraping-agent)",
+      "title_en": "New agents (web-analyzer, scraping-agent)",
+      "changes_es": [
+        "Nuevos agentes",
+        "analizador-web",
+        "scraping-agent"
+      ],
+      "changes_en": [
+        "New agents",
+        "web-analyzer",
+        "scraping-agent"
+      ]
+    },
+    {
+      "version": "2.0.0",
+      "date": "2026-07-18",
+      "title_es": "Rediseño completo con mini-tarjetas y branding",
+      "title_en": "Complete redesign with mini-cards and branding",
+      "changes_es": [
+        "Rediseño completo",
+        "Mini-tarjetas",
+        "Branding"
+      ],
+      "changes_en": [
+        "Complete redesign",
+        "Mini-cards",
+        "Branding"
+      ]
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-07-18",
+      "title_es": "Componentes y Minerales expandidos",
+      "title_en": "Expanded Components and Minerals",
+      "changes_es": [
+        "51 nuevos componentes de nave (91 total)",
+        "Shields: FR-66/76/86, Rampart, Palisade, Parapet, 7SA, HAVEN",
+        "Power Plants: JS-300/400, SparkFire, PowerBolt, Celestial, NewDawn",
+        "Coolers: VaporBlock, Glacier, Avalanche, Blizzard, Frost-Star, Draug",
+        "Quantum Drives: VK-00, Siren, XL-1, Yeager, Balandin, Spectre",
+        "Radars: Ping, Sens, Tige, V60-26, Echo, Guardian"
+      ],
+      "changes_en": [
+        "51 new ship components (91 total)",
+        "Shields: FR-66/76/86, Rampart, Palisade, Parapet, 7SA, HAVEN",
+        "Power Plants: JS-300/400, SparkFire, PowerBolt, Celestial, NewDawn",
+        "Coolers: VaporBlock, Glacier, Avalanche, Blizzard, Frost-Star, Draug",
+        "Quantum Drives: VK-00, Siren, XL-1, Yeager, Balandin, Spectre",
+        "Radars: Ping, Sens, Tige, V60-26, Echo, Guardian"
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-07-18",
+      "title_es": "Lanzamiento inicial",
+      "title_en": "Initial Release",
+      "changes_es": [
+        "API Flask con 10 endpoints REST",
+        "1,786 misiones individuales con UUID, facción, recompensa, sistema",
+        "1,591 blueprints con ingredientes y misiones que los desbloquean",
+        "137 armas de nave con stats (DPS, daño, cadencia, alcance)",
+        "51 contratos Wikelo (naves, armas, armaduras, vehículos)",
+        "Dashboard con estadísticas y búsqueda global",
+        "Frontend: 7 páginas, tema oscuro responsive",
+        "Túnel Serveo para acceso público"
+      ],
+      "changes_en": [
+        "Flask API with 10 REST endpoints",
+        "1,786 individual missions with UUID, faction, reward, system",
+        "1,591 blueprints with ingredients and unlocking missions",
+        "137 ship weapons with stats (DPS, damage, fire rate, range)",
+        "51 Wikelo contracts (ships, weapons, armor, vehicles)",
+        "Dashboard with stats and global search",
+        "Frontend: 7 pages, responsive dark theme",
+        "Serveo tunnel for public access"
+      ]
+    }
+  ],
+  "feedback": {
+    "github": "https://github.com/predakingser-svg/sc-database/issues",
+    "email": "predakingser@gmail.com",
+    "note_es": "Reporta bugs o sugiere mejoras en GitHub Issues o por email",
+    "note_en": "Report bugs or suggest improvements on GitHub Issues or via email"
+  }
+}

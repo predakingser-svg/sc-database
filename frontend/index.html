@@ -11,8 +11,8 @@
         <!-- Sidebar -->
         <nav id="sidebar">
             <div class="sidebar-header">
-                <h1>SC<span>DB</span></h1>
-                <span class="version">v2.0</span>
+                <h1>SC<span>DB</span> <span style="font-size:10px;color:var(--warning);background:rgba(255,167,38,0.15);padding:2px 6px;border-radius:4px;margin-left:4px">BETA</span></h1>
+                <span class="version">v2.1</span>
             </div>
             <ul class="nav-list">
                 <li class="nav-item active" data-page="dashboard">
@@ -36,13 +36,13 @@
                 </li>
                 <li class="nav-item" data-page="wikelo">
                     <span class="nav-icon">🛸</span>
-                    <span>Wikelo</span>
+                    <span>Catálogo de Wikelo</span>
                     <span class="badge" id="badge-wikelo">0</span>
                 </li>
                 <li class="nav-item" data-page="factions">
                     <span class="nav-icon">🏛️</span>
                     <span>Facciones</span>
-                    <span class="badge" id="badge-factions">31</span>
+                    <span class="badge" id="badge-factions">0</span>
                 </li>
                 <li class="nav-item" data-page="items">
                     <span class="nav-icon">📦</span>
@@ -54,7 +54,6 @@
                     <span>Componentes</span>
                     <span class="badge" id="badge-components">0</span>
                 </li>
-
             </ul>
             <div class="sidebar-footer">
                 <span>⚡ Ecko · SC Database</span>
@@ -88,18 +87,26 @@
                 <div id="page-dashboard" class="page active">
                     <h2>Dashboard</h2>
                     <p class="subtitle">Resumen de la base de datos de Star Citizen</p>
-                    
+
                     <div class="stats-grid" id="stats-grid">
                         <div class="stat-card loading">Cargando...</div>
                     </div>
 
-                    <div class="dashboard-grid">
-                        <div class="card">
-                            <h3>Misiones por categoría</h3>
-                            <div id="chart-categories" class="chart-container">
-                                <div class="loading-sm">Cargando...</div>
+                    <div class="kofi-banner">
+                        <div class="kofi-banner-content">
+                            <span class="kofi-icon">☕</span>
+                            <div class="kofi-text">
+                                <strong>¿Te gusta SC Database?</strong>
+                                <span>Apoya el proyecto invitándome un café</span>
                             </div>
+                            <a href="https://ko-fi.com/tubsdep" target="_blank" rel="noopener noreferrer" class="kofi-btn">
+                                <img src="https://storage.ko-fi.com/cdn/kofi_stroke_cup.svg" alt="Ko-fi" class="kofi-btn-icon">
+                                Invítame un café
+                            </a>
                         </div>
+                    </div>
+
+                    <div class="dashboard-grid">
                         <div class="card">
                             <h3>Misiones por sistema</h3>
                             <div id="chart-systems" class="chart-container">
@@ -130,19 +137,18 @@
                                     <span class="ql-icon">🔧</span>
                                     <span>Ver todos los blueprints</span>
                                 </a>
-                                <a href="#" class="quick-link" data-page="weapons" data-filter="size6">
+                                <a href="#" class="quick-link" data-page="weapons" data-filter="">
                                     <span class="ql-icon">💥</span>
-                                    <span>Armas Size 6 (M8A)</span>
+                                    <span>Armas de nave</span>
                                 </a>
                                 <a href="#" class="quick-link" data-page="wikelo" data-filter="ships">
                                     <span class="ql-icon">🛸</span>
-                                    <span>Naves Wikelo</span>
+                                    <span>Catálogo de Wikelo</span>
                                 </a>
                                 <a href="#" class="quick-link" data-page="components">
                                     <span class="ql-icon">⚙️</span>
                                     <span>Componentes de nave</span>
                                 </a>
-
                             </div>
                         </div>
                     </div>
@@ -159,7 +165,7 @@
                         <h2>Misiones</h2>
                         <span id="missions-count" class="page-count">0</span>
                     </div>
-                    <p class="subtitle">Explora y filtra las 1,786 misiones disponibles</p>
+                    <p class="subtitle">Explora y filtra las <span id="missions-subtitle-count">0</span> misiones disponibles</p>
                     <div class="filters-bar">
                         <div class="filter-group"><input type="text" id="missions-search" class="filter-input" placeholder="Buscar en misiones..."></div>
                         <div class="filter-group"><select id="filter-faction" class="filter-select"><option value="">Todas las facciones</option></select></div>
@@ -171,9 +177,8 @@
                         </div>
                         <button id="missions-reset" class="btn-reset">✕</button>
                     </div>
-                    <div class="table-container"><table class="data-table" id="missions-table"><thead><tr><th data-sort="title" class="sortable">Título</th><th data-sort="faction" class="sortable">Facción</th><th data-sort="scope" class="sortable">Categoría</th><th data-sort="reward" class="sortable">Recompensa</th><th data-sort="system" class="sortable">Sistema</th><th data-sort="illegal" class="sortable">Tipo</th><th data-sort="bp" class="sortable">BP</th></tr></thead><tbody id="missions-tbody"><tr><td colspan="7" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                    <div class="table-container"><table class="data-table" id="missions-table"><thead><tr><th data-sort="title" class="sortable">Título</th><th data-sort="faction" class="sortable">Facción</th><th data-sort="scope" class="sortable">Categoría</th><th data-sort="reward" class="sortable">Recompensa</th><th data-sort="system" class="sortable">Sistema</th><th data-sort="illegal" class="sortable">Tipo</th><th data-sort="bp" class="sortable">BP</th><th data-sort="reputation" class="sortable">Reputación</th></tr></thead><tbody id="missions-tbody"><tr><td colspan="8" class="loading-row">Cargando...</td></tr></tbody></table></div>
                     <div class="pagination" id="missions-pagination"></div>
-                    <div id="mission-modal" class="modal hidden"><div class="modal-backdrop" onclick="closeMissionModal()"></div><div class="modal-content" id="mission-modal-content"></div></div>
                 </div>
 
                 <!-- ═══ WEAPONS PAGE ═══ -->
@@ -188,39 +193,39 @@
                     </div>
                     <div class="table-container"><table class="data-table" id="weapons-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="size" class="sortable">Size</th><th data-sort="type" class="sortable">Tipo</th><th data-sort="dps" class="sortable">DPS</th><th data-sort="alpha" class="sortable">Alpha</th><th data-sort="range" class="sortable">Range</th><th data-sort="price" class="sortable">Precio</th></tr></thead><tbody id="weapons-tbody"><tr><td colspan="7" class="loading-row">Cargando...</td></tr></tbody></table></div>
                     <div class="pagination" id="weapons-pagination"></div>
-                    <div id="wp-modal" class="modal hidden"><div class="modal-backdrop" onclick="closeWpModal()"></div><div class="modal-content" id="wp-modal-content"></div></div>
                 </div>
 
-                <!-- ═══ WIKELO PAGE ═══ -->
+                <!-- ═══ WIKELO PAGE (migrated to data-table) ═══ -->
                 <div id="page-wikelo" class="page">
                     <div class="page-header"><h2>Wikelo Emporium</h2><span id="wikelo-count" class="page-count">0</span></div>
                     <p class="subtitle">Contratos de trueque — naves, armas, armaduras y vehículos</p>
                     <div class="filters-bar">
                         <div class="filter-group"><input type="text" id="wikelo-search" class="filter-input" placeholder="Buscar contrato..."></div>
-                        <div class="filter-group"><select id="filter-wk-cat" class="filter-select"><option value="">Todas las categorías</option><option value="favor_trades">Favors</option><option value="weapon_contracts">Armas</option><option value="armor_contracts">Armaduras</option><option value="vehicle_contracts">Vehículos</option><option value="ship_contracts">Naves</option></select></div>
+                        <div class="filter-group"><select id="filter-wk-cat" class="filter-select"><option value="">Todas las categorías</option><option value="favor_trades">Favors</option><option value="weapon_contracts">Armas</option><option value="armor_contracts">Armaduras</option><option value="vehicle_contracts">Vehículos</option><option value="ship_contracts">Naves</option><option value="polaris_bit_recipes">Recetas Polaris</option></select></div>
                         <button id="wikelo-reset" class="btn-reset">✕</button>
                     </div>
-                    <div id="wikelo-contracts"><div class="loading-sm">Cargando...</div></div>
+                    <div class="table-container"><table class="data-table" id="wikelo-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="category" class="sortable">Categoría</th><th data-sort="inputs" class="sortable">Requisitos</th><th data-sort="rewards" class="sortable">Recompensa</th><th data-sort="reputation" class="sortable">Reputación</th></tr></thead><tbody id="wikelo-tbody"><tr><td colspan="5" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                    <div class="pagination" id="wikelo-pagination"></div>
                 </div>
 
                 <!-- ═══ FACTIONS PAGE ═══ -->
                 <div id="page-factions" class="page">
-                    <div class="page-header"><h2>Facciones</h2><span class="page-count">31</span></div>
+                    <div class="page-header"><h2>Facciones</h2><span id="factions-page-count" class="page-count">0</span></div>
                     <p class="subtitle">Organizaciones y misioneros de Stanton y Pyro</p>
                     <div id="factions-content"><div class="loading-sm">Cargando...</div></div>
                 </div>
 
-                <!-- ═══ ITEMS PAGE ═══ -->
+                <!-- ═══ ITEMS PAGE (enhanced) ═══ -->
                 <div id="page-items" class="page">
                     <div class="page-header"><h2>Items</h2><span id="items-count" class="page-count">0</span></div>
                     <p class="subtitle">Catálogo completo de todos los items del juego</p>
                     <div class="filters-bar">
                         <div class="filter-group"><input type="text" id="items-search" class="filter-input" placeholder="Buscar item..."></div>
+                        <div class="filter-group"><select id="filter-item-type" class="filter-select"><option value="">Todas las categorías</option></select></div>
                         <button id="items-reset" class="btn-reset">✕</button>
                     </div>
-                    <div class="table-container" style="max-height:600px;overflow-y:auto">
-                        <table class="data-table" id="items-table"><thead><tr><th>Nombre</th><th>Disponible</th></tr></thead><tbody id="items-tbody"><tr><td colspan="2" class="loading-row">Cargando...</td></tr></tbody></table>
-                    </div>
+                    <div class="table-container"><table class="data-table" id="items-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="type" class="sortable">Tipo</th><th data-sort="available" class="sortable">Disponible</th></tr></thead><tbody id="items-tbody"><tr><td colspan="3" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                    <div class="pagination" id="items-pagination"></div>
                 </div>
 
                 <!-- ═══ BLUEPRINTS PAGE ═══ -->
@@ -244,6 +249,22 @@
                                 <option value="4">4 ingredientes</option>
                             </select>
                         </div>
+                        <div class="filter-group">
+                            <select id="bp-category" class="filter-select">
+                                <option value="">Todos los tipos</option>
+                                <option value="component">Componentes</option>
+                                <option value="ship_weapon">Armas de nave</option>
+                                <option value="fps_weapon">Armas FPS</option>
+                                <option value="armor">Armaduras</option>
+                                <option value="weapon_attachment">Accesorios</option>
+                                <option value="mining_tool">Herramientas de minería</option>
+                                <option value="salvage_tool">Herramientas de recuperación</option>
+                                <option value="tool">Herramientas</option>
+                                <option value="ship_part">Piezas de nave</option>
+                                <option value="clothing">Ropa</option>
+                                <option value="other">Otros</option>
+                            </select>
+                        </div>
                         <div class="filter-group filter-checks">
                             <label class="check-label">
                                 <input type="checkbox" id="filter-default">
@@ -258,23 +279,32 @@
                             <thead>
                                 <tr>
                                     <th data-sort="output" class="sortable">Output</th>
+                                    <th data-sort="category" class="sortable">Tipo</th>
                                     <th data-sort="ingredients" class="sortable">Ingredientes</th>
                                     <th data-sort="time" class="sortable">Tiempo</th>
                                     <th data-sort="missions" class="sortable">Misiones que lo dan</th>
                                 </tr>
                             </thead>
                             <tbody id="blueprints-tbody">
-                                <tr><td colspan="4" class="loading-row">Cargando...</td></tr>
+                                <tr><td colspan="5" class="loading-row">Cargando...</td></tr>
                             </tbody>
                         </table>
                     </div>
 
                     <div class="pagination" id="blueprints-pagination"></div>
+                </div>
 
-                    <div id="bp-modal" class="modal hidden">
-                        <div class="modal-backdrop" onclick="closeBpModal()"></div>
-                        <div class="modal-content" id="bp-modal-content"></div>
+                <!-- ═══ COMPONENTS PAGE (new) ═══ -->
+                <div id="page-components" class="page">
+                    <div class="page-header"><h2>Componentes de nave</h2><span id="components-count" class="page-count">0</span></div>
+                    <p class="subtitle">Catálogo de componentes — planta de poder, escudos, enfriadores, motores cuánticos, radares</p>
+                    <div class="filters-bar">
+                        <div class="filter-group"><input type="text" id="comps-search" class="filter-input" placeholder="Buscar componente..."></div>
+                        <div class="filter-group"><select id="filter-comp-type" class="filter-select"><option value="">Todos los tipos</option></select></div>
+                        <button id="comps-reset" class="btn-reset">✕</button>
                     </div>
+                    <div class="table-container"><table class="data-table" id="comps-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="type" class="sortable">Tipo</th><th data-sort="size" class="sortable">Size</th><th data-sort="grade" class="sortable">Grade</th></tr></thead><tbody id="comps-tbody"><tr><td colspan="4" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                    <div class="pagination" id="comps-pagination"></div>
                 </div>
             </div>
         </main>

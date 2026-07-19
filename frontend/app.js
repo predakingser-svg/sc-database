@@ -1,155 +1,611 @@
 /* ═══════════════════════════════════════════
-   Star Citizen Database — App Logic
+   Star Citizen Database — App Logic  v2.2
+   ═══════════════════════════════════════════
+   Changelog:
+   - v2.2: Lazy loading por sección. Eliminado dbCache y loadDatabase().
+           Cada sección carga su JSON desde /data/ bajo demanda.
+   - Unified modal system (single showDetailModal)
+   - Wikelo migrated to data-table with pagination
+   - Items: pagination + detail modal + null → "—"
+   - Components page: full data-table with modal
+   - CSS cleaned up, wk-card removed
+   - All Escape/backdrop handlers unified
+   - navigateTo duplication removed
+   - filterMissionScope setTimeout removed
    ═══════════════════════════════════════════ */
 
-// Auto-detect API base: Serveo tunnel = same origin, otherwise use tunnel URL
-const API = (window.location.hostname.includes('serveo') || window.location.port === '8080')
+// Auto-detect API base
+const _isDev = window.location.hostname.includes('serveo') || window.location.port === '8080';
+const IS_STATIC = !_isDev;
+const API = _isDev
     ? ''
-    : 'https://sc-database.serveousercontent.com';
+    : '';
 
-// ─── Global state translations ───
+// ─── Global state ───
 let currentLang = localStorage.getItem('sc_lang') || 'es';
 let fullTranslations = {};
 let contractorTranslations = {};
+let missionDescriptionsES = null;
+let missionDescClean = null;
+let missionTitlesES = null;
 
-// ─── Global functions ───
+const SCOPE_ES = {
+    'Assassination': 'Asesinato',
+    'Bounty Hunter': 'Caza de recompensas',
+    'Hauling': 'Transporte',
+    'Investigation': 'Investigación',
+    'Mining': 'Minería',
+    'Other': 'Otro',
+    'Recovery': 'Recuperación',
+    'Salvage': 'Chatarrería',
+    'Security': 'Seguridad',
+    'Delivery': 'Entrega',
+    'Combat': 'Combate',
+    'Medical': 'Médico',
+    'Passenger': 'Pasajeros',
+    'Racing': 'Carreras',
+    'Smuggling': 'Contrabando'
+};
+
+// ─── Translation map ───
+const _stringMap = {
+    'Misiones con blueprints': 'Missions with blueprints',
+    'Misiones ilegales': 'Illegal missions',
+    'Componentes de nave': 'Ship Components',
+    'Invítame un café': 'Buy me a coffee',
+    '¿Te gusta SC Database?': 'Like SC Database?',
+    'Apoya el proyecto invitándome un café': 'Support the project — buy me a coffee',
+    'Ver todos los blueprints': 'View all blueprints',
+    'Armas Size 6': 'Weapons Size 6',
+    'Naves Wikelo': 'Wikelo Ships',
+    'Planta de poder': 'Power Plant',
+    'Motor cuántico': 'Quantum Drive',
+    'Armas': 'Weapons',
+    'Facciones': 'Factions',
+    'Componentes': 'Components',
+    'Misiones': 'Missions',
+    'Planos': 'Blueprints',
+    'Dashboard': 'Dashboard',
+    'Items': 'Items',
+    'Título': 'Title',
+    'Facción': 'Faction',
+    'Recompensa': 'Reward',
+    'Sistema': 'System',
+    'Categoría': 'Category',
+    'Nombre': 'Name',
+    'Tipo': 'Type',
+    'Tamaño': 'Size',
+    'Precio': 'Price',
+    'Producción': 'Output',
+    'Ingredientes': 'Ingredients',
+    'Tiempo': 'Time',
+    'Alcance': 'Range',
+    'Grado': 'Grade',
+    'Filtrar': 'Filter',
+    'Buscar': 'Search',
+    'Todas': 'All',
+    'Legales': 'Legal',
+    'Ilegales': 'Illegal',
+    'Cargando...': 'Loading...',
+    'Error': 'Error',
+    'Sin datos': 'No data',
+    'Sin resultados': 'No results',
+    'Conectando...': 'Connecting...',
+    'Legal': 'Legal',
+    'Ilegal': 'Illegal',
+    'Común': 'Common',
+    'Raro': 'Rare',
+    'Épico': 'Epic',
+    'Legendario': 'Legendary',
+    'Escudo': 'Shield',
+    'Enfriador': 'Cooler',
+    'Radar': 'Radar',
+    'Wikelo': 'Wikelo',
+    'Naves': 'Ships',
+    'Consultando...': 'Checking...',
+    'Última actualización': 'Last Update',
+    'Misiones por categoría': 'Missions by Category',
+    'Misiones por sistema': 'Missions by System',
+    'Distribución de Blueprints': 'Blueprint Distribution',
+    'Acceso rápido': 'Quick Access',
+    'Solo desbloqueables': 'Unlockable only',
+    'Cualquier # ingredientes': 'Any # ingredients',
+    'Cualquier size': 'Any size',
+    'Cualquier tipo': 'Any type',
+    'Todas las categorías': 'All categories',
+    'Todas las facciones': 'All factions',
+    'Todos los sistemas': 'All systems',
+    'Con blueprints': 'With blueprints',
+    'Catálogo de Wikelo': 'Wikelo Catalog',
+    'Armas de nave': 'Ship Weapons',
+    'Buscar en misiones...': 'Search missions...',
+    'Buscar blueprint...': 'Search blueprint...',
+    'Buscar arma...': 'Search weapon...',
+    'Buscar contrato...': 'Search contract...',
+    'Buscar item...': 'Search item...',
+    'Buscar componente...': 'Search component...',
+    'Catálogo de armas con stats': 'Weapon catalog with stats',
+    'Catálogo de planos de fabricación': 'Crafting plans catalog',
+    'Catálogo completo de todos los items del juego': 'Complete catalog of all game items',
+    'Contratos de trueque': 'Trade contracts',
+    'Misiones que lo dan': 'Missions that give it',
+    'Cargando misiones...': 'Loading missions...',
+    'Error al cargar': 'Load error',
+    'Fecha no disponible': 'Date not available',
+    'Datos actualizados': 'Data updated',
+    'No se pudo conectar con la API': 'Could not connect to the API',
+    'Ejecuta primero la API Flask en localhost:5000': 'Run the Flask API on localhost:5000 first',
+    'Requisitos': 'Requirements',
+    'Reputación': 'Reputation',
+    'Disponible': 'Available',
+    'Requisito': 'Requirement',
+    'Size': 'Size',
+    'Catálogo de componentes': 'Component catalog',
+    'Armamento de naves': 'Ship Armament',
+    'Todos los tipos': 'All types',
+    'Armas FPS': 'FPS Weapons',
+    'Accesorios': 'Attachments',
+    'Herramientas de minería': 'Mining Tools',
+    'Herramientas de recuperación': 'Salvage Tools',
+    'Herramientas': 'Tools',
+    'Piezas de nave': 'Ship Parts',
+    'Ropa': 'Clothing',
+    'Otros': 'Others',
+    'Casco': 'Helmet',
+    'Peto': 'Core',
+    'Brazos': 'Arms',
+    'Piernas': 'Legs',
+    'Mochila': 'Backpack',
+    'Traje interior': 'Undersuit',
+    'Arma FPS': 'FPS Weapon',
+    'Munición': 'Ammo',
+    'Herramienta': 'Tool',
+    'Comida/Bebida': 'Food/Drink',
+    'Objeto de misión': 'Mission Item',
+    'Componente de nave': 'Ship Component',
+    'Livery': 'Livery',
+    'Vehículo': 'Vehicle',
+    'Peluche': 'Plushie',
+    'Mineral': 'Mineral/Ore',
+    'Mineral/Ore': 'Mineral',
+    'Otro': 'Other',
+};
+
+// Reverse map for O(1) __() lookup (ES→EN and EN→ES)
+const _reverseMap = new Map();
+for (const [es, en] of Object.entries(_stringMap)) {
+  _reverseMap.set(es, en);
+  _reverseMap.set(en, es);
+}
+
 function toggleLang() {
     currentLang = currentLang === 'es' ? 'en' : 'es';
     localStorage.setItem('sc_lang', currentLang);
     location.reload();
 }
 
-function openChangelog() {
-    fetch('/changelog').then(r=>r.json()).then(data => {
-        const overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-        let html = '<div class="modal" style="max-width:600px;max-height:80vh;overflow-y:auto"><div class="modal-header"><h3>🆕 Novedades / Releases</h3><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button></div><div class="modal-body">';
-        if (data.releases) for (const r of data.releases) {
-            html += '<div class="release-card" style="margin-bottom:16px;padding:12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border)">';
-            html += '<div style="font-weight:700;font-size:15px;color:var(--accent)">v' + r.version + '</div>';
-            html += '<div style="font-size:12px;color:var(--text-secondary);margin:4px 0 8px">' + r.date + '</div>';
-            html += '<div style="margin-bottom:6px;font-size:14px">' + (currentLang === 'es' ? (r.title_es || r.title) : (r.title_en || r.title)) + '</div>';
-            html += '<ul style="margin:0;padding-left:18px;font-size:13px">';
-            const changes = currentLang === 'es' ? (r.changes_es || r.changes) : (r.changes_en || r.changes);
-            for (const c of changes) html += '<li style="margin-bottom:3px">' + c + '</li>';
-            html += '</ul></div>';
+async function openChangelog() {
+    let data = await loadJSON('/data/changelog.json');
+    if (!data) {
+        try {
+            const res = await fetch('/changelog');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            data = await res.json();
+        } catch (e) {
+            navigateTo('changelog');
+            return;
         }
-        if (data.feedback) {
-            html += '<div style="margin-top:16px;padding:12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border)">';
-            html += '<h4 style="margin-bottom:8px">💬 Feedback</h4>';
-            html += '<p style="margin-bottom:8px;font-size:13px">Reporta bugs o sugiere mejoras:</p>';
-            html += '<a href="' + data.feedback.github + '" target="_blank" class="btn" style="display:block;text-align:center;margin-bottom:6px">🐛 GitHub Issues</a>';
-            html += '<a href="mailto:' + data.feedback.email + '" class="btn" style="display:block;text-align:center">📧 Email</a>';
-            html += '</div>';
-        }
-        html += '</div></div>';
-        overlay.innerHTML = html;
-        document.body.appendChild(overlay);
-        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-    }).catch(() => { navigateTo('changelog'); });
+    }
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    const htmlParts = [];
+    htmlParts.push('<div class="modal-detail" style="max-width:600px;max-height:80vh;overflow-y:auto"><div class="modal-header"><h3>🆕 Novedades / Releases</h3>');
+    htmlParts.push('<button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()">✕</button></div><div class="modal-body">');
+    let html = htmlParts.join('');
+    if (data.releases) for (const r of data.releases) {
+        html += '<div class="release-card" style="margin-bottom:16px;padding:12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border)">';
+        html += '<div style="font-weight:700;font-size:15px;color:var(--accent)">v' + r.version + '</div>';
+        html += '<div style="font-size:12px;color:var(--text-secondary);margin:4px 0 8px">' + r.date + '</div>';
+        html += '<div style="margin-bottom:6px;font-size:14px">' + (currentLang === 'es' ? (r.title_es || r.title) : (r.title_en || r.title)) + '</div>';
+        html += '<ul style="margin:0;padding-left:18px;font-size:13px">';
+        const changes = currentLang === 'es' ? (r.changes_es || r.changes) : (r.changes_en || r.changes);
+        for (const c of changes) html += '<li style="margin-bottom:3px">' + c + '</li>';
+        html += '</ul></div>';
+    }
+    if (data.feedback) {
+        html += '<div style="margin-top:16px;padding:12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border)">';
+        html += '<h4 style="margin-bottom:8px">💬 Feedback</h4>';
+        html += '<div style="text-align:center;margin-bottom:12px;padding:8px 0">' +
+            '<div style="background:linear-gradient(to bottom,#cc0000,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:900;font-size:28px;font-family:\'Arial Black\',sans-serif;letter-spacing:2px">Yokays</div>' +
+            '<div style="background:linear-gradient(to bottom,#00cc00,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;font-size:14px;font-family:\'Arial Black\',sans-serif;letter-spacing:3px;margin-top:2px">— DIVISIÓN KOPION</div>' +
+        '</div>';
+        html += '<p style="margin-bottom:8px;font-size:13px">Reporta bugs o sugiere mejoras:</p>';
+        html += '<a href="' + data.feedback.github + '" target="_blank" class="btn" style="display:inline-block;text-align:center;margin-bottom:6px;width:100%;padding:8px;background:var(--accent-dim);color:var(--accent);border-radius:6px;text-decoration:none">🐛 GitHub Issues</a>';
+        html += '<a href="mailto:' + data.feedback.email + '" class="btn" style="display:inline-block;text-align:center;width:100%;padding:8px;background:var(--accent-dim);color:var(--accent);border-radius:6px;text-decoration:none">📧 Email</a>';
+        html += '</div>';
+    }
+    html += '</div></div>';
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
-function openFeedback() {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.innerHTML = '<div class="modal" style="max-width:400px"><div class="modal-header"><h3>💬 Feedback</h3><button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()">✕</button></div><div class="modal-body"><p style="margin-bottom:16px">Reporta bugs o sugiere mejoras:</p><a href="https://github.com/predakingser-svg/sc-database/issues" target="_blank" class="btn" style="display:block;text-align:center;margin-bottom:10px">🐛 GitHub Issues</a><a href="mailto:predakingser@gmail.com" class="btn" style="display:block;text-align:center">📧 predakingser@gmail.com</a></div></div>';
-    document.body.appendChild(modal);
-    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-}
-
-// ─── Full string map ES→EN ───
-const _stringMap = {
-    'Dashboard': 'Dashboard', 'Misiones': 'Missions', 'Planos': 'Blueprints',
-    'Armas': 'Weapons', 'Wikelo': 'Wikelo', 'Facciones': 'Factions',
-    'Items': 'Items', 'Componentes': 'Components',
-    'Misiones con blueprints': 'Missions with blueprints',
-    'Misiones ilegales': 'Illegal missions',
-    'Ver todos los blueprints': 'View all blueprints',
-    'Armas Size 6': 'Weapons Size 6', 'Naves Wikelo': 'Wikelo Ships',
-    'Componentes de nave': 'Ship Components',
-    'Título': 'Title', 'Facción': 'Faction', 'Recompensa': 'Reward',
-    'Sistema': 'System', 'Categoría': 'Category',
-    'Nombre': 'Name', 'Tipo': 'Type', 'Tamaño': 'Size', 'Precio': 'Price',
-    'Producción': 'Output', 'Ingredientes': 'Ingredients', 'Tiempo': 'Time',
-    'DPS': 'DPS', 'Alcance': 'Range', 'Grado': 'Grade',
-    'Filtrar': 'Filter', 'Buscar': 'Search', 'Todas': 'All',
-    'Legales': 'Legal', 'Ilegales': 'Illegal',
-    'Cargando...': 'Loading...', 'Error': 'Error',
-    'Sin datos': 'No data', 'Sin resultados': 'No results',
-    'Conectando...': 'Connecting...',
-    'Legal': 'Legal', 'Ilegal': 'Illegal',
-    'Común': 'Common', 'Raro': 'Rare', 'Épico': 'Epic', 'Legendario': 'Legendary',
-    'Escudo': 'Shield', 'Planta de poder': 'Power Plant',
-    'Motor cuántico': 'Quantum Drive', 'Enfriador': 'Cooler',
-    'Radar': 'Radar',
-};
+function openFeedback() { openChangelog(); }
 
 function applyLang() {
     if (currentLang === 'es') return;
+    const entries = Object.entries(_stringMap).sort((a, b) => b[0].length - a[0].length);
     const walker = document.createTreeWalker(document.body, 4, null, false);
     let node;
     while (node = walker.nextNode()) {
-        for (const [es, en] of Object.entries(_stringMap)) {
-            if (node.textContent.includes(es)) {
-                node.textContent = node.textContent.replace(new RegExp(es, 'g'), en);
+        let text = node.textContent;
+        let changed = false;
+        for (const [es, en] of entries) {
+            if (text.includes(es)) {
+                text = text.replace(new RegExp(es.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), en);
+                changed = true;
             }
         }
+        if (changed) node.textContent = text;
     }
+    document.querySelectorAll('[placeholder]').forEach(el => {
+        let p = el.getAttribute('placeholder');
+        for (const [es, en] of entries) {
+            if (p.includes(es)) p = p.replace(new RegExp(es.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), en);
+        }
+        el.setAttribute('placeholder', p);
+    });
+    document.querySelectorAll('[title]').forEach(el => {
+        let t = el.getAttribute('title');
+        for (const [es, en] of entries) {
+            if (t.includes(es)) t = t.replace(new RegExp(es.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), en);
+        }
+        el.setAttribute('title', t);
+    });
 }
 
+// ═══════════════════════════════════════════
+// ─── Reusable UI Components ───
+// ═══════════════════════════════════════════
 
+// createOverlay(): returns a modal-overlay div with click-outside-to-close
+// Includes fadeOut animation on close
+function closeModal(overlay) {
+    overlay.style.animation = 'fadeOut 0.2s ease forwards';
+    setTimeout(() => overlay.remove(), 200);
+}
 
+function closeBpModal() {
+    document.querySelectorAll('.modal-overlay').forEach(closeModal);
+}
+
+function closeMissionModal() {
+    document.querySelectorAll('.modal-overlay').forEach(closeModal);
+}
+
+function createOverlay(html) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => {
+        if (e.target === overlay) closeModal(overlay);
+    });
+    return overlay;
+}
+
+// detailGrid(items): renders a detail-grid from [{label, value, fullWidth, rawHtml}]
+//   - items: array of {label: string, value: string, fullWidth?: boolean, rawHtml?: boolean}
+//   - rawHtml: if true, renders value directly (unsafe HTML) instead of safeVal
+//   - Returns HTML string
+function detailGrid(items) {
+    return items.map(it => {
+        const style = it.fullWidth ? ' style="grid-column:1/-1"' : '';
+        const v = it.rawHtml ? (it.value || '&mdash;') : safeVal(it.value);
+        return `<div class="detail-item"${style}>
+            <div class="di-label">${it.label}</div>
+            <div class="di-value">${v}</div>
+        </div>`;
+    }).join('');
+}
+
+// safeVal(val): returns "—" for null/undefined/empty
+function safeVal(val) {
+    if (val === null || val === undefined || val === '') return '—';
+    return String(val);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// catalogCard(title, metaLines, onClick): renders a consistent clickable card
+function catalogCard(title, metaLines, onClick) {
+    const meta = metaLines.join('<br>');
+    return `<div class="catalog-card" onclick="${onClick}">
+        <div class="cc-title">${title}</div>
+        <div class="cc-meta">${meta}</div>
+    </div>`;
+}
+
+// showDetailModal(config): opens a unified detail modal
+//   config = {
+//     title: string,
+//     icon: string (emoji, optional),
+//     fields: array of {label, value, fullWidth},
+//     sections: array of {title, items: [{label, value}]},  // optional
+//     footer: string  // optional
+//   }
+function showDetailModal(config) {
+    const icon = config.icon || '';
+    const titleHtml = `<h3 style="font-size:18px;margin-bottom:0">${icon} ${config.title}</h3>`;
+    const gridHtml = config.fields && config.fields.length
+        ? `<div class="detail-grid">${detailGrid(config.fields)}</div>`
+        : '';
+
+    let sectionsHtml = '';
+    if (config.sections) {
+        config.sections.forEach(s => {
+            if (!s.items || !s.items.length) return;
+            const rows = s.items.map(it =>
+                `<div class="item-row"><span>${it.label}</span><span>${safeVal(it.value)}</span></div>`
+            ).join('');
+            sectionsHtml += `<div class="detail-section"><h4>${s.title}</h4>${rows}</div>`;
+        });
+    }
+
+    const footerHtml = config.footer
+        ? `<div class="modal-footer">${config.footer}</div>`
+        : '';
+
+    const html = `<div class="modal-detail">
+        <div class="modal-header">
+            ${titleHtml}
+            <button class="modal-close">✕</button>
+        </div>
+        <div class="modal-body">
+            ${gridHtml}
+            ${sectionsHtml}
+            ${footerHtml}
+        </div>
+    </div>`;
+
+    const overlay = createOverlay(html);
+    // Close button
+    overlay.querySelector('.modal-close').addEventListener('click', () => closeModal(overlay));
+
+    // Remove loading feedback from table rows
+    document.querySelectorAll('.data-table tbody tr.loading').forEach(tr => tr.classList.remove('loading'));
+
+    return overlay;
+}
+
+// renderPagination(elId, current, total, callback): unified pagination
+function renderPagination(elId, current, total, callback) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    if (!total || total <= 1) { el.innerHTML = ''; return; }
+    const fnName = callback.name || 'callback';
+    let html = `<button class="page-btn" onclick="${fnName}(1)" ${current === 1 ? 'disabled' : ''}>«</button>`;
+    html += `<button class="page-btn" onclick="${fnName}(${current - 1})" ${current === 1 ? 'disabled' : ''}>‹</button>`;
+    const range = 3;
+    const start = Math.max(1, current - range);
+    const end = Math.min(total, current + range);
+    if (start > 1) html += `<button class="page-btn" onclick="${fnName}(1)">1</button>`;
+    if (start > 2) html += '<span class="page-btn" style="cursor:default">…</span>';
+    for (let i = start; i <= end; i++) {
+        html += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="${fnName}(${i})">${i}</button>`;
+    }
+    if (end < total - 1) html += '<span class="page-btn" style="cursor:default">…</span>';
+    if (end < total) html += `<button class="page-btn" onclick="${fnName}(${total})">${total}</button>`;
+    html += `<button class="page-btn" onclick="${fnName}(${current + 1})" ${current === total ? 'disabled' : ''}>›</button>`;
+    html += `<button class="page-btn" onclick="${fnName}(${total})" ${current === total ? 'disabled' : ''}>»</button>`;
+    el.innerHTML = html;
+}
+
+// updateSortIndicators(tableId, sortKey, sortAsc): highlights sort arrows
+function updateSortIndicators(tableId, sortKey, sortAsc) {
+    document.querySelectorAll(`#${tableId} th`).forEach(th => {
+        th.classList.remove('sorted', 'asc', 'desc');
+        if (th.dataset.sort === sortKey) {
+            th.classList.add('sorted', sortAsc ? 'asc' : 'desc');
+        }
+    });
+}
+
+function formatSeconds(sec) {
+    if (!sec) return '—';
+    if (sec < 60) return sec + 's';
+    if (sec < 3600) return Math.round(sec/60) + ' min';
+    return (sec/3600).toFixed(1) + ' h';
+}
+
+// ═══════════════════════════════════════════
 // ─── Translation helpers ───
+function __(text) {
+    if (currentLang === 'es') return text;
+    if (_reverseMap.has(text)) return _reverseMap.get(text);
+    if (fullTranslations && fullTranslations[text]) return fullTranslations[text];
+    return text;
+}
+
+// Translation cache for O(1) tr() lookups
+const _trCache = new Map();
+
+// Manual translations for game items not covered by translations_full.json
+const _manualTr = {
+    'Wikelo Favor': 'Favor de Wikelo',
+    'Irradiated Valakkar Pearl (Grade AAA)': 'Perla de Valakkar Irradiada (Grado AAA)',
+    'Irradiated Valakkar Pearl (Grade AA)': 'Perla de Valakkar Irradiada (Grado AA)',
+    'Irradiated Valakkar Pearl (Grade A)': 'Perla de Valakkar Irradiada (Grado A)',
+    'Irradiated Valakkar Pearl (Grade B)': 'Perla de Valakkar Irradiada (Grado B)',
+    'Irradiated Valakkar Pearl (Grade C)': 'Perla de Valakkar Irradiada (Grado C)',
+};
+
+function tr(text) {
+    if (text && text.length > 120) return text;
+    if (currentLang !== 'es' || !text || !fullTranslations) return text;
+    if (_trCache.has(text)) return _trCache.get(text);
+    if (fullTranslations[text]) {
+        _trCache.set(text, fullTranslations[text]);
+        return fullTranslations[text];
+    }
+    const lower = text.toLowerCase();
+    const words = lower.split(/[ _-]+/).filter(w => w.length > 2);
+    for (const [key, val] of Object.entries(fullTranslations)) {
+        const kl = key.toLowerCase();
+        const matches = words.every(w => kl.includes(w));
+        if (matches && val && val.length > 0 && val.length < 200 && !val.includes('~')) {
+            _trCache.set(text, val);
+            return val;
+        }
+    }
+    if (_manualTr[text]) {
+        _trCache.set(text, _manualTr[text]);
+        return _manualTr[text];
+    }
+    _trCache.set(text, text);
+    return text;
+}
+
 function getMissionTranslation(mission) {
     if (currentLang !== 'es') return null;
     const dn = mission.debug_name || '';
     if (!dn) return null;
+    const dnLower = dn.toLowerCase();
     const parts = dn.split('_');
     let contractor = parts[0] || '';
-    if (['PU','PU-','Sandbox'].includes(contractor) && parts.length > 1) {
-        contractor = parts[1];
+    if (['PU','PU-','Sandbox'].includes(contractor) && parts.length > 1) contractor = parts[1];
+    let ct = contractorTranslations[contractor.toLowerCase()];
+    if (ct && ct.titles && ct.titles.length > 0) {
+        const type = dnLower;
+        for (const t of ct.titles) {
+            if (type.includes('bounty') && t.key.includes('bounty_')) return t.value;
+            if (type.includes('delivery') && t.key.includes('delivery_')) return t.value;
+            if (type.includes('assassin') && (t.key.includes('assassin_') || t.key.includes('kill'))) return t.value;
+            if (type.includes('repair') && t.key.includes('repair')) return t.value;
+            if (type.includes('salvage') && t.key.includes('salvage')) return t.value;
+            if (type.includes('collect') && (t.key.includes('collect') || t.key.includes('bounty'))) return t.value;
+        }
+        return ct.titles[0].value;
     }
-    const ct = contractorTranslations[contractor.toLowerCase()];
-    if (!ct || !ct.titles || ct.titles.length === 0) return null;
-    const type = dn.toLowerCase();
-    for (const t of ct.titles) {
-        if (type.includes('bounty') && t.key.includes('bounty_')) return t.value;
-        if (type.includes('delivery') && t.key.includes('delivery_')) return t.value;
-        if (type.includes('assassin') && (t.key.includes('assassin_') || t.key.includes('kill'))) return t.value;
-        if (type.includes('repair') && t.key.includes('repair')) return t.value;
-        if (type.includes('salvage') && t.key.includes('salvage')) return t.value;
-        if (type.includes('collect') && (t.key.includes('collect') || t.key.includes('bounty'))) return t.value;
+    const words = dnLower.replace(/[0-9]/g, ' ').split(/[_ ]+/).filter(w => w.length > 2);
+    let bestMatch = null;
+    let bestScore = 0;
+    for (const [ckey, contractorObj] of Object.entries(contractorTranslations)) {
+        if (!contractorObj || !contractorObj.titles) continue;
+        for (const t of contractorObj.titles) {
+            const tk = t.key.toLowerCase();
+            let score = 0;
+            for (const word of words) { if (tk.includes(word)) score++; }
+            if (score > bestScore) { bestScore = score; bestMatch = t; }
+        }
     }
-    return ct.titles[0].value;
+    return bestMatch ? bestMatch.value : null;
+}
+
+// ─── Lazy translation loader ───
+// Carga translations_full.json bajo demanda, extrae las traducciones
+// de contratos en el formato que necesita getMissionTranslation()
+let _translationsLoading = false;
+let _translationsLoaded = false;
+
+async function loadTranslations() {
+    if (_translationsLoaded) return;
+    if (_translationsLoading) {
+        // Esperar a que termine otra carga en progreso
+        while (_translationsLoading) await new Promise(r => setTimeout(r, 100));
+        return;
+    }
+    _translationsLoading = true;
+    try {
+        const res = await fetch('/data/translations_full.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        // translations_full.json puede ser un mapa plano o tener estructura
+        if (data && typeof data === 'object') {
+            if (data.data && typeof data.data === 'object') {
+                fullTranslations = data.data;
+            } else {
+                fullTranslations = data;
+            }
+            // Extraer contractorTranslations del mapa de traducciones
+            // Buscar entradas que comiencen con contractor_ o que sean objetos con .titles
+            for (const [key, val] of Object.entries(fullTranslations)) {
+                if (typeof val === 'object' && val !== null && val.titles) {
+                    contractorTranslations[key.toLowerCase()] = val;
+                } else if (key.startsWith('contractor_')) {
+                    const name = key.replace('contractor_', '').replace(/_/g, ' ');
+                    try {
+                        const parsed = typeof val === 'string' ? JSON.parse(val) : val;
+                        if (parsed && parsed.titles) {
+                            contractorTranslations[name.toLowerCase()] = parsed;
+                        }
+                    } catch(e) {}
+                }
+            }
+        }
+        _translationsLoaded = true;
+        console.log(`🌐 Translaciones cargadas: ${Object.keys(fullTranslations).length}`);
+    } catch (e) {
+        console.warn('⚠️ Error cargando traducciones:', e);
+    } finally {
+        _translationsLoading = false;
+    }
 }
 
 // ─── State ───
 let state = {
     stats: null,
-    missionsData: [],
-    blueprintsData: [],
     currentPage: 'dashboard'
 };
 
-// ─── DOM refs ───
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 
-// ─── Init ───
-document.addEventListener('DOMContentLoaded', () => {
-    // Set language button
+document.addEventListener('DOMContentLoaded', async () => {
     const btn = document.getElementById('langBtn');
-    if (btn) btn.textContent = currentLang === 'es' ? '🇪🇸' : '🇬🇧';
-    loadStats();
+    if (btn) btn.textContent = currentLang === 'es' ? '🇪🇸 ES' : '🇬🇧 EN';
+
+    // Fase 1: carga crítica — dashboard con stats instantáneos
+    await loadStats();
+
+    // Fase 2: precargar en background las secciones más usadas
+    prefetchData();
+
     setupNavigation();
     setupSearch();
     setupMenuToggle();
     setupQuickLinks();
     updateBadges();
     if (currentLang === 'en') setTimeout(applyLang, 100);
+
+    // ─── Scroll-to-top button ───
+    const scrollBtn = document.createElement('button');
+    scrollBtn.id = 'scroll-top-btn';
+    scrollBtn.textContent = '↑';
+    scrollBtn.setAttribute('aria-label', __('Volver arriba'));
+    scrollBtn.addEventListener('click', () => {
+        document.getElementById('content').scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    document.getElementById('content').appendChild(scrollBtn);
+
+    document.getElementById('content').addEventListener('scroll', () => {
+        const btn = document.getElementById('scroll-top-btn');
+        if (!btn) return;
+        btn.classList.toggle('visible', document.getElementById('content').scrollTop > 300);
+    });
+
+    // ─── Loading feedback on table row clicks (capture phase) ───
+    document.addEventListener('click', (e) => {
+        const tr = e.target.closest('.data-table tbody tr');
+        if (tr) tr.classList.add('loading');
+    }, true);
 });
 
-// ─── API helper ───
 async function apiFetch(path) {
     try {
         const res = await fetch(`${API}${path}`);
@@ -161,29 +617,68 @@ async function apiFetch(path) {
     }
 }
 
-// ─── Load Dashboard Stats ───
+// ─── Static JSON loader for Cloudflare Pages ───
+// Carga archivos desde /data/ con fallback a la API live
+async function loadJSON(path) {
+    try {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+    } catch (e) {
+        console.warn(`Static load failed: ${path}`, e);
+        return null;
+    }
+}
+
+function setStatus(stateVal, text) {
+    const dot = document.getElementById('status-indicator');
+    const txt = document.getElementById('status-text');
+    dot.className = 'status-dot';
+    if (stateVal === 'online') dot.classList.add('online');
+    if (stateVal === 'offline') dot.style.background = 'var(--danger)';
+    txt.textContent = text;
+}
+
+// ═══════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════
+
 async function loadStats() {
     setStatus('checking', 'Consultando...');
-    const stats = await apiFetch('/stats');
-    if (!stats) {
+
+    // Show skeleton for stats grid
+    const grid = document.getElementById('stats-grid');
+    if (grid) {
+        grid.innerHTML = '';
+        for (let i = 0; i < 4; i++) {
+            grid.innerHTML += '<div class="stat-card loading"><div class="skeleton-stat" style="width:60%;height:28px;margin:0 auto 8px;border-radius:6px;background:var(--bg-hover);animation:pulse 1.5s infinite"></div><div class="skeleton-stat" style="width:40%;height:12px;margin:0 auto;border-radius:4px;background:var(--bg-hover);animation:pulse 1.5s infinite"></div></div>';
+        }
+    }
+
+    // Cargar stats desde archivo estático (instantáneo)
+    let statsData = await loadJSON('/data/stats.json');
+
+    if (!statsData) {
+        // Fallback: API live
+        statsData = await apiFetch('/stats');
+    }
+
+    if (!statsData) {
         setStatus('offline', 'API no disponible');
         document.getElementById('stats-grid').innerHTML = '<div class="stat-card" style="grid-column:1/-1;color:var(--danger);padding:40px">❌ No se pudo conectar con la API.<br>Ejecuta primero la API Flask en localhost:5000</div>';
         return;
     }
 
-    state.stats = stats;
+    state.stats = statsData;
     setStatus('online', 'Conectado');
 
-    // Stats cards
-    const grid = document.getElementById('stats-grid');
     const cards = [
-        { val: stats.total_missions, label: 'Misiones' },
-        { val: stats.total_blueprints, label: 'Blueprints' },
-        { val: stats.total_weapons, label: 'Armas' },
-        { val: stats.total_items, label: 'Items' },
-        { val: stats.missions_with_blueprints, label: 'Misiones c/BP' },
+        { val: statsData.total_missions || 0, label: 'Misiones' },
+        { val: statsData.total_blueprints || 0, label: 'Planos' },
+        { val: statsData.total_weapons || 0, label: 'Armas' },
+        { val: statsData.total_items || 0, label: 'Ítems' },
+        { val: statsData.missions_with_blueprints || 0, label: 'Misiones c/BP' },
     ];
-
     grid.innerHTML = cards.map(c => `
         <div class="stat-card">
             <div class="stat-value">${c.val.toLocaleString()}</div>
@@ -191,102 +686,70 @@ async function loadStats() {
         </div>
     `).join('');
 
-    // Charts
-    renderCategoryChart(stats.missions_by_category);
-    renderSystemChart(stats.missions_by_system);
+    // Indicador sutil de carga de datos completos
+    const existingIndicator = document.getElementById('data-loading-indicator');
+    if (!existingIndicator) {
+        const indicator = document.createElement('div');
+        indicator.id = 'data-loading-indicator';
+        indicator.className = 'loading-indicator';
+        indicator.innerHTML = '<span class="spinner"></span> Cargando datos completos…';
+        grid.parentNode.insertBefore(indicator, grid.nextSibling);
+    }
+
+    // Badges para secciones precargadas (missions, blueprints, weapons)
+    ['missions','blueprints','weapons'].forEach(k => {
+        const el = document.getElementById('badge-' + k);
+        if (el) el.textContent = statsData['total_' + k] || 0;
+    });
+    // Badges para secciones lazy (se cargan bajo demanda)
+    ['items','components','wikelo'].forEach(k => {
+        const el = document.getElementById('badge-' + k);
+        if (el) el.textContent = '…';  // Pendiente de carga
+    });
+
+    renderSystemChart(statsData.missions_by_system);
     renderBlueprintChart();
-    renderUpdateInfo(stats.data_version);
-
-    // Update badges
-    document.getElementById('badge-missions').textContent = stats.total_missions;
-    document.getElementById('badge-blueprints').textContent = stats.total_blueprints;
-    document.getElementById('badge-weapons').textContent = stats.total_weapons;
-    document.getElementById('badge-items').textContent = stats.total_items;
+    renderUpdateInfo(statsData.data_version);
 }
-
-// ─── Charts ───
 
 function renderCategoryChart(categories) {
     const container = document.getElementById('chart-categories');
     if (!categories) { container.innerHTML = '<div class="loading-sm">Sin datos</div>'; return; }
-
     const sorted = Object.entries(categories).sort((a,b) => b[1] - a[1]);
     const max = sorted[0][1];
-
     container.innerHTML = sorted.map(([name, count]) => {
         const pct = (count / max * 100).toFixed(0);
         const cls = 'cat-' + name.replace(/[^a-zA-Z0-9]/g, '_');
-        return `
-            <div class="chart-bar-group ${cls}">
-                <div class="chart-bar-label">
-                    <span class="cbl-name">${name}</span>
-                    <span class="cbl-val">${count.toLocaleString()}</span>
-                </div>
-                <div class="chart-bar-track">
-                    <div class="chart-bar-fill" style="width:${pct}%"></div>
-                </div>
-            </div>
-        `;
+        return `<div class="chart-bar-group ${cls}">
+            <div class="chart-bar-label"><span class="cbl-name">${name}</span><span class="cbl-val">${count.toLocaleString()}</span></div>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${pct}%"></div></div>
+        </div>`;
     }).join('');
 }
 
 function renderSystemChart(systems) {
     const container = document.getElementById('chart-systems');
     if (!systems) { container.innerHTML = '<div class="loading-sm">Sin datos</div>'; return; }
-
     const sorted = Object.entries(systems).sort((a,b) => b[1] - a[1]);
     const max = sorted[0][1];
-
     container.innerHTML = sorted.map(([name, count]) => {
         const pct = (count / max * 100).toFixed(0);
         const cls = 'system-' + name.replace(/[^a-zA-Z0-9]/g, '_');
-        return `
-            <div class="chart-bar-group ${cls}">
-                <div class="chart-bar-label">
-                    <span class="cbl-name">${name}</span>
-                    <span class="cbl-val">${count.toLocaleString()}</span>
-                </div>
-                <div class="chart-bar-track">
-                    <div class="chart-bar-fill" style="width:${pct}%"></div>
-                </div>
-            </div>
-        `;
+        return `<div class="chart-bar-group ${cls}">
+            <div class="chart-bar-label"><span class="cbl-name">${name}</span><span class="cbl-val">${count.toLocaleString()}</span></div>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${pct}%"></div></div>
+        </div>`;
     }).join('');
 }
 
 function renderBlueprintChart() {
     const container = document.getElementById('chart-blueprints');
     container.innerHTML = `
-        <div class="chart-bar-group">
-            <div class="chart-bar-label">
-                <span class="cbl-name">Componentes de nave</span>
-                <span class="cbl-val">Power plant, Shield, Cooler, QD, Radar</span>
-            </div>
-        </div>
-        <div class="chart-bar-group">
-            <div class="chart-bar-label">
-                <span class="cbl-name">Armas de nave</span>
-                <span class="cbl-val">Deadbolt, C-788, Tarantula, Singe, NN</span>
-            </div>
-        </div>
-        <div class="chart-bar-group">
-            <div class="chart-bar-label">
-                <span class="cbl-name">Armas FPS</span>
-                <span class="cbl-val">Crossbow, Boomtube, Parallax, Killshot</span>
-            </div>
-        </div>
-        <div class="chart-bar-group">
-            <div class="chart-bar-label">
-                <span class="cbl-name">Armaduras</span>
-                <span class="cbl-val">Testudo, Strata, Geist, Bokto, Monde</span>
-            </div>
-        </div>
-        <div class="chart-bar-group">
-            <div class="chart-bar-label">
-                <span class="cbl-name">Naves / Vehículos</span>
-                <span class="cbl-val">22 naves Wikelo + eventos</span>
-            </div>
-        </div>
+        <div class="chart-bar-group"><div class="chart-bar-label"><span class="cbl-name">Componentes de nave</span><span class="cbl-val">Power plant, Shield, Cooler, QD, Radar</span></div></div>
+        <div class="chart-bar-group"><div class="chart-bar-label"><span class="cbl-name">Armas de nave</span><span class="cbl-val">Deadbolt, C-788, Tarantula, Singe, NN</span></div></div>
+        <div class="chart-bar-group"><div class="chart-bar-label"><span class="cbl-name">Armas FPS</span><span class="cbl-val">Crossbow, Boomtube, Parallax, Killshot</span></div></div>
+        <div class="chart-bar-group"><div class="chart-bar-label"><span class="cbl-name">Armaduras</span><span class="cbl-val">Testudo, Strata, Geist, Bokto, Monde</span></div></div>
+        <div class="chart-bar-group"><div class="chart-bar-label"><span class="cbl-name">Naves / Vehículos</span><span class="cbl-val">22 naves Wikelo + eventos</span></div></div>
         <p style="color:var(--text-muted);font-size:12px;margin-top:15px">Total: ${state.stats?.total_blueprints?.toLocaleString() || '?'} blueprints en la base</p>
     `;
 }
@@ -301,7 +764,66 @@ function renderUpdateInfo(dateStr) {
     }
 }
 
-// ─── Navigation ───
+// ═══════════════════════════════════════════
+// BACKGROUND PREFETCH (P4-T1)
+// ═══════════════════════════════════════════
+
+async function prefetchData() {
+    // Precarga en background: missions, blueprints, weapons
+    // Estas secciones se renderizarán instantáneamente cuando el usuario navegue a ellas
+    const promises = [];
+
+    if (!missionsCache) {
+        promises.push((async () => {
+            try {
+                const res = await fetch('/data/missions.json');
+                if (res.ok) missionsCache = await res.json();
+            } catch(e) { /* silently fail — fallback load on navigation */ }
+        })());
+    }
+
+    if (!bpCache) {
+        promises.push((async () => {
+            try {
+                const res = await fetch('/data/blueprints.json');
+                if (res.ok) bpCache = await res.json();
+            } catch(e) { /* silently fail */ }
+        })());
+    }
+
+    if (!wpCache) {
+        promises.push((async () => {
+            try {
+                const res = await fetch('/data/weapons.json');
+                if (res.ok) wpCache = await res.json();
+            } catch(e) { /* silently fail */ }
+        })());
+    }
+
+    await Promise.allSettled(promises);
+
+    // Ocultar indicador de carga
+    const indicator = document.getElementById('data-loading-indicator');
+    if (indicator) {
+        indicator.classList.add('fade-out');
+        setTimeout(() => indicator.remove(), 400);
+    }
+
+    // Actualizar badges de secciones precargadas si stats ya tenía valores
+    // (mantener el contador real en lugar del placeholder)
+    if (state.stats) {
+        ['missions','blueprints','weapons'].forEach(k => {
+            const el = document.getElementById('badge-' + k);
+            if (el && state.stats['total_' + k]) el.textContent = state.stats['total_' + k];
+        });
+    }
+
+    console.log('⚡ Precarga completada: missions, blueprints, weapons');
+}
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
 
 function setupNavigation() {
     $$('.nav-item').forEach(item => {
@@ -315,18 +837,32 @@ function setupNavigation() {
 function navigateTo(page, filter) {
     state.currentPage = page;
     $$('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
-    $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
+
+    const currentActive = document.querySelector('.page.active');
+    const targetPage = document.getElementById('page-' + page);
+
+    if (currentActive && targetPage && currentActive !== targetPage) {
+        // Fade out current page
+        currentActive.classList.remove('active');
+
+        // After brief delay, show new page with fade-in animation
+        setTimeout(() => {
+            targetPage.classList.add('active');
+            targetPage.classList.add('page-transition');
+        }, 80);
+    } else {
+        // Direct switch (no transition needed)
+        $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
+    }
 
     if (page === 'missions') loadMissions(filter);
-    if (page === 'blueprints') loadBlueprints(filter);
-    if (page === 'weapons') loadWeapons(filter);
-    if (page === 'wikelo') loadWikelo(filter);
-    if (page === 'components') loadComponents();
-    if (page === 'minerals') renderMinerals();
-    if (page === 'translations') renderTranslations();
-    if (page === 'changelog') renderChangelog();
+    else if (page === 'blueprints') loadBlueprints(filter);
+    else if (page === 'weapons') loadWeapons(filter);
+    else if (page === 'wikelo') loadWikelo(filter);
+    else if (page === 'components') loadComponents();
+    else if (page === 'items') loadItems();
+    else if (page === 'factions') loadFactions();
 
-    // Close sidebar on mobile
     document.getElementById('sidebar').classList.remove('open');
 }
 
@@ -334,122 +870,120 @@ function setupQuickLinks() {
     $$('.quick-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const page = link.dataset.page;
-            const filter = link.dataset.filter;
-            navigateTo(page, filter);
+            navigateTo(link.dataset.page, link.dataset.filter);
         });
     });
 }
 
 function setupMenuToggle() {
-    document.getElementById('menu-toggle').addEventListener('click', () => {
+    document.getElementById('menu-toggle').addEventListener('click', (e) => {
+        e.stopPropagation();
         document.getElementById('sidebar').classList.toggle('open');
     });
 }
 
-// ─── Status Indicator ───
-
-function setStatus(state, text) {
-    const dot = document.getElementById('status-indicator');
-    const txt = document.getElementById('status-text');
-    dot.className = 'status-dot';
-    if (state === 'online') dot.classList.add('online');
-    if (state === 'offline') dot.style.background = 'var(--danger)';
-    txt.textContent = text;
-}
-
-// ─── Search ───
+// ═══════════════════════════════════════════
+// SEARCH (caches per sección)
+// ═══════════════════════════════════════════
 
 function setupSearch() {
     const input = document.getElementById('search-input');
     const dropdown = document.getElementById('search-results');
     let timeout;
+    let selectedIndex = -1;
+
+    function localSearch(q) {
+        const lq = q.toLowerCase();
+        const results = { missions: [], blueprints: [], weapons: [], items: [] };
+        if (missionsCache) results.missions = missionsCache.filter(m => (m.title || '').toLowerCase().includes(lq)).slice(0, 4);
+        if (bpCache) results.blueprints = bpCache.filter(b => (b.output_name || b.output || '').toLowerCase().includes(lq)).slice(0, 4);
+        if (wpCache) results.weapons = wpCache.filter(w => (w.name || '').toLowerCase().includes(lq)).slice(0, 4);
+        if (itemsCache) results.items = itemsCache.filter(i => (i.name || '').toLowerCase().includes(lq)).slice(0, 4);
+        return results;
+    }
 
     input.addEventListener('input', () => {
         clearTimeout(timeout);
+        selectedIndex = -1;
         const q = input.value.trim();
         if (q.length < 2) { dropdown.classList.remove('visible'); return; }
-
         timeout = setTimeout(async () => {
-            const results = await apiFetch(`/search?q=${encodeURIComponent(q)}`);
+            let results = localSearch(q);
+            if (!IS_STATIC && (!results || Object.values(results).every(a => a.length === 0))) {
+                results = await apiFetch(`/search?q=${encodeURIComponent(q)}`);
+            }
             if (!results) return;
             renderSearchResults(results, dropdown);
         }, 400);
     });
 
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-container')) {
-            dropdown.classList.remove('visible');
-        }
+    input.addEventListener('keydown', (e) => {
+        const items = dropdown.querySelectorAll('.search-result-item');
+        if (!items.length) return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); selectedIndex = Math.min(selectedIndex + 1, items.length - 1); updateSearchHighlight(items); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); selectedIndex = Math.max(selectedIndex - 1, 0); updateSearchHighlight(items); }
+        else if (e.key === 'Enter' && selectedIndex >= 0) { e.preventDefault(); items[selectedIndex]?.click(); dropdown.classList.remove('visible'); selectedIndex = -1; }
+        else if (e.key === 'Escape') dropdown.classList.remove('visible');
     });
 
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') dropdown.classList.remove('visible');
+    document.addEventListener('click', (e) => { if (!e.target.closest('.search-container')) dropdown.classList.remove('visible'); });
+}
+
+function updateSearchHighlight(items) {
+    items.forEach((item, i) => {
+        item.style.background = i === selectedIndex ? 'var(--accent-dim)' : '';
+        if (i === selectedIndex) item.scrollIntoView({ block: 'nearest' });
     });
 }
 
 function renderSearchResults(results, dropdown) {
     let html = '';
     let count = 0;
-
     if (results.missions?.length) {
         html += `<div style="padding:8px 14px;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Misiones</div>`;
         results.missions.slice(0, 4).forEach(m => {
             html += `<div class="search-result-item" onclick="navigateTo('missions')">
-                <div class="sr-title">🎯 ${getMissionTranslation(m) || m.title}</div>
-                <div class="sr-meta">${m.faction || '?'} · ${m.reward?.toLocaleString() || '?'} aUEC</div>
-            </div>`;
-            count++;
+                <div class="sr-title">🎯 ${escapeHtml(getMissionTranslation(m) || m.title)}</div>
+                <div class="sr-meta">${escapeHtml(m.faction || '?')} · ${escapeHtml(m.reward?.toLocaleString() || '?')} aUEC</div>
+            </div>`; count++;
         });
     }
-
     if (results.blueprints?.length) {
         html += `<div style="padding:8px 14px;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Blueprints</div>`;
         results.blueprints.slice(0, 4).forEach(b => {
             html += `<div class="search-result-item" onclick="navigateTo('blueprints')">
-                <div class="sr-title">🔧 ${b.output}</div>
-                <div class="sr-meta">${b.ingredients} ingredientes · ${b.time}</div>
-            </div>`;
-            count++;
+                <div class="sr-title">🔧 ${escapeHtml(b.output)}</div>
+                <div class="sr-meta">${escapeHtml(b.ingredients)} ingredientes · ${escapeHtml(b.time)}</div>
+            </div>`; count++;
         });
     }
-
     if (results.weapons?.length) {
         html += `<div style="padding:8px 14px;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Armas</div>`;
         results.weapons.slice(0, 4).forEach(w => {
             html += `<div class="search-result-item" onclick="navigateTo('weapons')">
-                <div class="sr-title">🔫 ${w.name}</div>
-                <div class="sr-meta">Size ${w.size || '?'} · ${w.type || '?'}</div>
-            </div>`;
-            count++;
+                <div class="sr-title">🔫 ${escapeHtml(w.name)}</div>
+                <div class="sr-meta">Size ${escapeHtml(w.size || '?')} · ${escapeHtml(w.type || '?')}</div>
+            </div>`; count++;
         });
     }
-
     if (results.items?.length) {
         html += `<div style="padding:8px 14px;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Items</div>`;
         results.items.slice(0, 4).forEach(i => {
             html += `<div class="search-result-item">
-                <div class="sr-title">📦 ${i.name}</div>
-            </div>`;
-            count++;
+                <div class="sr-title">📦 ${escapeHtml(i.name)}</div>
+            </div>`; count++;
         });
     }
-
-    if (count === 0) {
-        html = '<div class="search-result-item" style="color:var(--text-muted)">Sin resultados</div>';
-    }
-
+    if (count === 0) html = '<div class="search-result-item" style="color:var(--text-muted)">Sin resultados</div>';
     dropdown.innerHTML = html;
     dropdown.classList.add('visible');
 }
 
-// ─── Badges ───
+async function updateBadges() { /* badges already updated in loadStats */ }
 
-async function updateBadges() {
-    // Already updated in loadStats
-}
-
-// ─── MISSIONS PAGE ───
+// ═══════════════════════════════════════════
+// MISSIONS PAGE
+// ═══════════════════════════════════════════
 
 let missionsCache = null;
 let missionsFiltered = [];
@@ -459,82 +993,92 @@ const M_PER_PAGE = 25;
 
 async function loadMissions(filter) {
     const tbody = document.getElementById('missions-tbody');
-    const countEl = document.getElementById('missions-count');
-    
     if (!missionsCache) {
-        tbody.innerHTML = '<tr><td colspan="7" class="loading-row">Cargando misiones...</td></tr>';
-        const data = await apiFetch('/missions?per_page=500');
-        if (!data) { tbody.innerHTML = '<tr><td colspan="7" class="loading-row" style="color:var(--danger)">Error al cargar</td></tr>'; return; }
-        
-        // Fetch all pages
-        let allMissions = [...data.data];
-        for (let p = 2; p <= data.total_pages; p++) {
-            const more = await apiFetch(`/missions?per_page=500&page=${p}`);
-            if (more) allMissions = allMissions.concat(more.data);
+        showSkeleton('missions-tbody', 5, 8);
+        try {
+            const res = await fetch('/data/missions.json');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            missionsCache = await res.json();
+        } catch(e) {
+            console.warn('Static load failed for missions, trying API:', e);
+            const data = await apiFetch('/missions?per_page=500');
+            if (!data) { tbody.innerHTML = '<tr><td colspan="8" class="loading-row" style="color:var(--danger)">Error al cargar</td></tr>'; return; }
+            let allMissions = [...data.data];
+            for (let p = 2; p <= data.total_pages; p++) {
+                const more = await apiFetch(`/missions?per_page=500&page=${p}`);
+                if (more) allMissions = allMissions.concat(more.data);
+            }
+            missionsCache = allMissions;
         }
-        missionsCache = allMissions;
     }
-    
+    // Cargar descripciones traducidas al español
+    if (!missionDescriptionsES) {
+        try {
+            const res = await fetch('/data/mission_descriptions_es.json');
+            if (res.ok) missionDescriptionsES = await res.json();
+        } catch(e) {
+            // Silently fail, fallback to English descriptions
+        }
+    }
+    // Cargar descripciones limpias en español
+    if (!missionDescClean) {
+        try {
+            const r = await fetch('/data/mission_descriptions_clean.json');
+            if (r.ok) missionDescClean = await r.json();
+        } catch(e) {}
+    }
+    // Cargar títulos traducidos al español
+    if (!missionTitlesES) {
+        try {
+            const r = await fetch('/data/mission_titles_es.json');
+            if (r.ok) missionTitlesES = await r.json();
+        } catch(e) {}
+    }
+    const subtitlespan = document.getElementById('missions-subtitle-count');
+    if (subtitlespan) subtitlespan.textContent = missionsCache.length;
     missionsFiltered = [...missionsCache];
-    
-    // Apply filter from quick links
-    if (filter === 'has_blueprints') {
-        document.getElementById('filter-bp').checked = true;
-    } else if (filter === 'illegal') {
-        document.getElementById('filter-illegal').checked = true;
-    }
-    
-    // Populate filter dropdowns
+    if (filter === 'has_blueprints') document.getElementById('filter-bp').checked = true;
+    else if (filter === 'illegal') document.getElementById('filter-illegal').checked = true;
     populateMissionFilters();
     applyMissionFilters();
     applyMissionSort();
     renderMissionPage(1);
+    // Auto-abrir misión específica desde blueprint si se solicitó
+    if (window._openMissionUuid && missionsCache) {
+        const uuid = window._openMissionUuid;
+        window._openMissionUuid = null;
+        setTimeout(function(){ openMissionDetail(uuid); }, 300);
+    }
     setupMissionFilters();
+    // Cargar traducciones bajo demanda para las misiones
+    loadTranslations();
 }
 
 function populateMissionFilters() {
     if (!missionsCache) return;
-    
-    // Factions
     const factions = [...new Set(missionsCache.map(m => {
-        const f = m.faction;
-        return typeof f === 'object' ? f?.name : f || 'Unknown';
+        const f = m.faction; return typeof f === 'object' ? f?.name : f || 'Unknown';
     }))].sort();
-    
     const sel = document.getElementById('filter-faction');
-    if (sel.options.length <= 1) {
-        factions.forEach(f => {
-            const opt = document.createElement('option');
-            opt.value = f; opt.textContent = f;
-            sel.appendChild(opt);
-        });
-    }
-    
-    // Scopes
+    if (sel.options.length <= 1) factions.forEach(f => { const o = document.createElement('option'); o.value = f; o.textContent = f; sel.appendChild(o); });
     const scopes = [...new Set(missionsCache.map(m => m.reward_scope || 'Unknown'))].sort();
     const scopeSel = document.getElementById('filter-scope');
-    if (scopeSel.options.length <= 1) {
-        scopes.forEach(s => {
-            const opt = document.createElement('option');
-            opt.value = s; opt.textContent = s;
-            scopeSel.appendChild(opt);
-        });
-    }
+    if (scopeSel.options.length <= 1) scopes.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; scopeSel.appendChild(o); });
 }
 
 function getSystem(m) {
     const sys = m.star_systems;
     if (sys && sys.length > 0) {
-        const s = sys[0];
-        return typeof s === 'object' ? s.name || '?' : String(s);
+        const s = sys[0]; return typeof s === 'object' ? s.name || '?' : String(s);
     }
     return '?';
 }
 
 function getFactionName(m) {
     const f = m.faction;
-    if (typeof f === 'object') return f?.name || 'Unknown';
-    return f || 'Unknown';
+    if (typeof f === 'object') return f?.name || '—';
+    if (!f && m.mission_giver) return m.mission_giver;
+    return f || m.mission_giver || '—';
 }
 
 function applyMissionFilters() {
@@ -544,7 +1088,6 @@ function applyMissionFilters() {
     const scope = document.getElementById('filter-scope').value;
     const onlyBP = document.getElementById('filter-bp').checked;
     const onlyIllegal = document.getElementById('filter-illegal').checked;
-    
     missionsFiltered = (missionsCache || []).filter(m => {
         if (search && !m.title?.toLowerCase().includes(search)) return false;
         if (faction && getFactionName(m) !== faction) return false;
@@ -554,14 +1097,12 @@ function applyMissionFilters() {
         if (onlyIllegal && !m.illegal) return false;
         return true;
     });
-    
     document.getElementById('missions-count').textContent = missionsFiltered.length;
 }
 
 function applyMissionSort() {
     const { key, asc } = missionsSort;
     if (!key) return;
-    
     missionsFiltered.sort((a, b) => {
         let va, vb;
         switch (key) {
@@ -572,12 +1113,10 @@ function applyMissionSort() {
             case 'system': va = getSystem(a); vb = getSystem(b); break;
             case 'illegal': va = a.illegal ? 1 : 0; vb = b.illegal ? 1 : 0; break;
             case 'bp': va = a.has_blueprints ? 1 : 0; vb = b.has_blueprints ? 1 : 0; break;
+            case 'reputation': va = a.reputation_amount || 0; vb = b.reputation_amount || 0; break;
             default: return 0;
         }
-        
-        if (typeof va === 'string') {
-            return asc ? va.localeCompare(vb) : vb.localeCompare(va);
-        }
+        if (typeof va === 'string') return asc ? va.localeCompare(vb) : vb.localeCompare(va);
         return asc ? va - vb : vb - va;
     });
 }
@@ -589,82 +1128,41 @@ function renderMissionPage(page) {
     const pages = Math.ceil(total / M_PER_PAGE) || 1;
     const start = (page - 1) * M_PER_PAGE;
     const pageItems = missionsFiltered.slice(start, start + M_PER_PAGE);
-    
     if (total === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="loading-row">Sin resultados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="loading-row">Sin resultados</td></tr>';
         document.getElementById('missions-pagination').innerHTML = '';
         return;
     }
-    
     tbody.innerHTML = pageItems.map(m => {
         const fname = getFactionName(m);
         const sys = getSystem(m);
-        const reward = m.reward_min?.toLocaleString() || '—';
+        const rowReward = m.reward_min > 0 ? m.reward_min.toLocaleString() + ' ' + (m.reward_currency || 'UEC') : '—';
         const illegalBadge = m.illegal ? '<span class="badge-illegal">Ilegal</span>' : '<span class="badge-legal">Legal</span>';
         const bpBadge = m.has_blueprints ? '<span class="badge-bp">BP</span>' : '—';
-        
-        return `<tr onclick="openMissionModal('${m.uuid}')">
+        return `<tr onclick="openMissionDetail('${m.uuid}')">
             <td>${getMissionTranslation(m) || m.title || '?'}</td>
-            <td style="color:var(--text-secondary)">${fname}</td>
-            <td>${m.reward_scope || '?'}</td>
-            <td>${reward}</td>
-            <td>${sys}</td>
+            <td style="color:var(--text-secondary)">${fname || '—'}</td>
+            <td>${SCOPE_ES[m.reward_scope] || m.reward_scope || '—'}</td>
+            <td>${rowReward}</td>
+            <td>${sys || '—'}</td>
             <td>${illegalBadge}</td>
             <td>${bpBadge}</td>
+            <td>${m.reputation_amount ? m.reputation_amount + ' XP' : '—'}</td>
         </tr>`;
     }).join('');
-    
-    // Pagination
-    renderMissionPagination(page, pages);
-    
-    // Highlight sort
-    document.querySelectorAll('#missions-table th').forEach(th => {
-        th.classList.remove('sorted', 'asc', 'desc');
-        if (th.dataset.sort === missionsSort.key) {
-            th.classList.add('sorted', missionsSort.asc ? 'asc' : 'desc');
-        }
-    });
-}
-
-function renderMissionPagination(current, total) {
-    const el = document.getElementById('missions-pagination');
-    let html = '';
-    
-    html += `<button class="page-btn" onclick="renderMissionPage(1)" ${current === 1 ? 'disabled' : ''}>«</button>`;
-    html += `<button class="page-btn" onclick="renderMissionPage(${current - 1})" ${current === 1 ? 'disabled' : ''}>‹</button>`;
-    
-    const range = 3;
-    const start = Math.max(1, current - range);
-    const end = Math.min(total, current + range);
-    
-    if (start > 1) html += `<button class="page-btn" onclick="renderMissionPage(1)">1</button>`;
-    if (start > 2) html += '<span class="page-btn" style="cursor:default">…</span>';
-    
-    for (let i = start; i <= end; i++) {
-        html += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="renderMissionPage(${i})">${i}</button>`;
-    }
-    
-    if (end < total - 1) html += '<span class="page-btn" style="cursor:default">…</span>';
-    if (end < total) html += `<button class="page-btn" onclick="renderMissionPage(${total})">${total}</button>`;
-    
-    html += `<button class="page-btn" onclick="renderMissionPage(${current + 1})" ${current === total ? 'disabled' : ''}>›</button>`;
-    html += `<button class="page-btn" onclick="renderMissionPage(${total})" ${current === total ? 'disabled' : ''}>»</button>`;
-    
-    el.innerHTML = html;
+    renderPagination('missions-pagination', page, pages, renderMissionPage);
+    updateSortIndicators('missions-table', missionsSort.key, missionsSort.asc);
 }
 
 function setupMissionFilters() {
-    // Already setup once
     if (window._missionFiltersReady) return;
     window._missionFiltersReady = true;
-    
     ['missions-search', 'filter-faction', 'filter-system', 'filter-scope', 'filter-bp', 'filter-illegal'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         el.addEventListener('input', () => { applyMissionFilters(); applyMissionSort(); renderMissionPage(1); });
         el.addEventListener('change', () => { applyMissionFilters(); applyMissionSort(); renderMissionPage(1); });
     });
-    
     document.getElementById('missions-reset').addEventListener('click', () => {
         document.getElementById('missions-search').value = '';
         document.getElementById('filter-faction').value = '';
@@ -674,112 +1172,101 @@ function setupMissionFilters() {
         document.getElementById('filter-illegal').checked = false;
         applyMissionFilters(); applyMissionSort(); renderMissionPage(1);
     });
-    
-    // Sort on header click
     document.querySelectorAll('#missions-table th.sortable').forEach(th => {
         th.addEventListener('click', () => {
             const key = th.dataset.sort;
-            if (missionsSort.key === key) {
-                missionsSort.asc = !missionsSort.asc;
-            } else {
-                missionsSort.key = key;
-                missionsSort.asc = true;
-            }
-            applyMissionSort();
-            renderMissionPage(1);
+            if (missionsSort.key === key) missionsSort.asc = !missionsSort.asc;
+            else { missionsSort.key = key; missionsSort.asc = true; }
+            applyMissionSort(); renderMissionPage(1);
         });
     });
 }
 
-// ─── MISSION DETAIL MODAL ───
+// ─── MISSION DETAIL (uses unified modal) ───
 
-async function openMissionModal(uuid) {
-    const data = await apiFetch(`/missions/${uuid}`);
-    if (!data) return;
-    
-    const m = data;
+async function openMissionDetail(uuid) {
+    // Try cache first
+    let m = null;
+    if (missionsCache) {
+        m = missionsCache.find(x => x.uuid === uuid);
+    }
+    if (!m) {
+        m = await apiFetch(`/missions/${uuid}`);
+    }
+    if (!m) return;
+    // Asegurar que el unlock map esté cargado
+    if (!window._bpUnlockMap) {
+        try {
+            const res = await fetch('/data/blueprint_unlock_map.json');
+            if (res.ok) window._bpUnlockMap = await res.json();
+        } catch(e) {}
+    }
+    // Construir mapa inverso si hace falta
+    if (!window._missionBpMap) {
+        window._missionBpMap = {};
+        if (window._bpUnlockMap) {
+            for (const [bpUuid, bpData] of Object.entries(window._bpUnlockMap)) {
+                for (const mm of bpData.unlocking_missions || []) {
+                    if (!window._missionBpMap[mm.mission_uuid]) window._missionBpMap[mm.mission_uuid] = [];
+                    window._missionBpMap[mm.mission_uuid].push({uuid: bpUuid, name: bpData.blueprint_name});
+                }
+            }
+        }
+    }
     const fname = getFactionName(m);
     const sys = getSystem(m);
-    
-    const html = `
-        <button class="modal-close" onclick="closeMissionModal()">✕</button>
-        <h2 style="margin-bottom:20px">${getMissionTranslation(m) || m.title || '?'}</h2>
-        <div class="detail-grid">
-            <div class="detail-item">
-                <div class="di-label">Facción</div>
-                <div class="di-value">${fname}</div>
-            </div>
-            <div class="detail-item">
-                <div class="di-label">Categoría</div>
-                <div class="di-value">${m.reward_scope || '?'}</div>
-            </div>
-            <div class="detail-item">
-                <div class="di-label">Sistema</div>
-                <div class="di-value">${sys}</div>
-            </div>
-            <div class="detail-item">
-                <div class="di-label">Recompensa</div>
-                <div class="di-value">${m.reward_min?.toLocaleString() || '?'} ${m.reward_currency || 'UEC'}</div>
-            </div>
-            <div class="detail-item">
-                <div class="di-label">Legalidad</div>
-                <div class="di-value">${m.illegal ? '<span class="badge-illegal">Ilegal</span>' : '<span class="badge-legal">Legal</span>'}</div>
-            </div>
-            <div class="detail-item">
-                <div class="di-label">Blueprints</div>
-                <div class="di-value">${m.has_blueprints ? '<span class="badge-bp">✅ Da blueprints</span>' : '❌ No'}</div>
-            </div>
-            <div class="detail-item">
-                <div class="di-label">Reputación</div>
-                <div class="di-value">${m.reputation_amount || 0} XP</div>
-            </div>
-            <div class="detail-item">
-                <div class="di-label">Combate</div>
-                <div class="di-value">${m.has_combat ? 'Sí' : 'No'}</div>
-            </div>
-            <div class="detail-item">
-                <div class="di-label">Jugadores</div>
-                <div class="di-value">${m.max_players_per_instance || 1} max</div>
-            </div>
-            <div class="detail-item">
-                <div class="di-label">Cooldown</div>
-                <div class="di-value">${m.cooldown_label || '—'}</div>
-            </div>
-            <div class="detail-item" style="grid-column:1/-1">
-                <div class="di-label">Rank</div>
-                <div class="di-value">${m.rank_index !== null && m.rank_index !== undefined ? 'Nivel ' + m.rank_index : '—'}</div>
-            </div>
-        </div>
-        ${m.description ? `<div style="margin-top:15px;padding:12px;background:var(--bg-primary);border-radius:8px;color:var(--text-secondary);font-size:13px;line-height:1.5">${m.description}</div>` : ''}
-        <div style="margin-top:15px;font-size:11px;color:var(--text-muted)">UUID: ${m.uuid} · v${m.game_version || '?'}</div>
-    `;
-    
-    document.getElementById('mission-modal-content').innerHTML = html;
-    document.getElementById('mission-modal').classList.remove('hidden');
-}
 
-function closeMissionModal() {
-    document.getElementById('mission-modal').classList.add('hidden');
-}
+    // Buscar blueprints que da esta misión desde el mapa inverso
+    const missionBps = window._missionBpMap ? window._missionBpMap[m.uuid] : null;
 
-// Close modal on Escape key
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeMissionModal();
-});
-
-// ─── CLOSE MODAL ON CLICK OUTSIDE ───
-
-document.addEventListener('click', (e) => {
-    if (e.target.closest('.modal-backdrop')) {
-        closeMissionModal();
-        closeBpModal();
+    // Si la misión da blueprints, agregar sección al modal
+    let bpSection = null;
+    if (missionBps && missionBps.length > 0) {
+        const bpCards = missionBps.map(bp => 
+            '<span class="mini-card" onclick="window._openBpUuid=\'' + bp.uuid + '\';closeMissionModal();navigateTo(\'blueprints\');return false">' + bp.name + '</span>'
+        ).join('');
+        bpSection = { title: 'Blueprints que desbloquea', items: [{label: '', value: '<div class="mini-card-group">' + bpCards + '</div>'}] };
     }
-});
 
+    const fields = [
+        { label: __('Facción'), value: tr(fname) },
+        { label: 'Categoría', value: SCOPE_ES[m.reward_scope] || m.reward_scope || '?' },
+        { label: 'Sistema', value: sys },
+        { label: 'Recompensa', value: m.reward_min > 0 ? m.reward_min.toLocaleString() + ' ' + (m.reward_currency || 'UEC') : '—' },
+        { label: 'Legalidad', value: m.illegal ? '<span class="badge-illegal">Ilegal</span>' : '<span class="badge-legal">Legal</span>' },
+        { label: 'Combate', value: m.has_combat ? 'Sí' : 'No' },
+        { label: 'Jugadores', value: (m.max_players_per_instance || 1) + ' max' },
+        { label: 'Cooldown', value: m.cooldown_label || '—' },
+        { label: 'Rank', value: m.rank_index !== null && m.rank_index !== undefined ? 'Nivel ' + m.rank_index : '—', fullWidth: true },
+    ];
 
-// ═══════════════════════════════════════════
-// BLUEPRINTS PAGE
-// ═══════════════════════════════════════════
+    const footer = `UUID: ${m.uuid} · v${m.game_version || '?'}`;
+
+    const title = (currentLang === 'es' && missionTitlesES && m.debug_name && missionTitlesES[m.debug_name])
+        ? missionTitlesES[m.debug_name]
+        : (getMissionTranslation(m) || tr(m.title) || m.title || '?');
+    let desc = m.description;
+    if (currentLang === 'es' && m.debug_name) {
+        if (missionDescClean && missionDescClean[m.debug_name]) {
+            desc = missionDescClean[m.debug_name];
+        } else if (missionDescriptionsES && missionDescriptionsES[m.debug_name]) {
+            desc = missionDescriptionsES[m.debug_name];
+        }
+    }
+
+    const descSection = desc ? { title: 'Descripción', items: [{ label: '', value: desc }] } : null;
+    const sections = [];
+    if (descSection) sections.push(descSection);
+    if (bpSection) sections.push(bpSection);
+
+    showDetailModal({
+        icon: '📋',
+        title: title,
+        fields: fields,
+        sections: sections,
+        footer: footer
+    });
+}
 
 let bpCache = null;
 let bpFiltered = [];
@@ -787,62 +1274,74 @@ let bpPage = 1;
 let bpSort = { key: null, asc: true };
 const BP_PER_PAGE = 25;
 
-async function loadComponents() {
-    setStatus('loading', 'Cargando componentes...');
-    try {
-        const d = await apiFetch('/components');
-        window._compsCache = d.data || [];
-        document.getElementById('components-count').textContent = d.total;
-        renderComponentsPage();
-        setStatus('ready', '');
-    } catch(e) {
-        setStatus('error', 'Error al cargar componentes');
-        document.getElementById('comps-tbody').innerHTML = '<tr><td colspan="4" class="loading-row">Error al cargar</td></tr>';
-    }
-}
-
 async function loadBlueprints(filter) {
     const tbody = document.getElementById('blueprints-tbody');
-    
     if (!bpCache) {
-        tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Cargando blueprints...</td></tr>';
-        const data = await apiFetch('/blueprints?per_page=500');
-        if (!data) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row" style="color:var(--danger)">Error al cargar</td></tr>'; return; }
-        
-        let allBp = [...data.data];
-        for (let p = 2; p <= data.total_pages; p++) {
-            const more = await apiFetch(`/blueprints?per_page=500&page=${p}`);
-            if (more) allBp = allBp.concat(more.data);
+        showSkeleton('blueprints-tbody', 5, 4);
+        try {
+            const res = await fetch('/data/blueprints.json');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            bpCache = await res.json();
+        } catch(e) {
+            console.warn('Static load failed for blueprints, trying API:', e);
+            const data = await apiFetch('/blueprints?per_page=500');
+            if (!data) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row" style="color:var(--danger)">Error al cargar</td></tr>'; return; }
+            let allBp = [...data.data];
+            for (let p = 2; p <= data.total_pages; p++) {
+                const more = await apiFetch(`/blueprints?per_page=500&page=${p}`);
+                if (more) allBp = allBp.concat(more.data);
+            }
+            bpCache = allBp;
         }
-        bpCache = allBp;
     }
-    
+    // Ensure blueprint unlock map is loaded (shared between missions & blueprints)
+    if (!window._bpUnlockMap) {
+        try {
+            const res = await fetch('/data/blueprint_unlock_map.json');
+            if (res.ok) {
+                window._bpUnlockMap = await res.json();
+                // Build reverse map: mission_uuid → [{uuid, name}]
+                window._missionBpMap = {};
+                for (const [bpUuid, bpData] of Object.entries(window._bpUnlockMap)) {
+                    for (const m of bpData.unlocking_missions || []) {
+                        if (!window._missionBpMap[m.mission_uuid]) window._missionBpMap[m.mission_uuid] = [];
+                        window._missionBpMap[m.mission_uuid].push({uuid: bpUuid, name: bpData.blueprint_name});
+                    }
+                }
+            }
+        } catch(e) {
+            console.warn('Failed to load blueprint_unlock_map.json:', e);
+        }
+    }
     bpFiltered = [...bpCache];
     applyBpFilters();
     applyBpSort();
     renderBpPage(1);
     setupBpFilters();
+    // Auto-open specific blueprint from mission modal
+    if (window._openBpUuid && bpCache) {
+        const uuid = window._openBpUuid;
+        window._openBpUuid = null;
+        setTimeout(() => openBpDetail(uuid), 300);
+    }
 }
 
 function applyBpFilters() {
     const search = document.getElementById('bp-search').value.toLowerCase();
     const minIng = parseInt(document.getElementById('filter-ingredients').value) || 0;
     const onlyUnlockable = document.getElementById('filter-default').checked;
-    
     bpFiltered = (bpCache || []).filter(b => {
         if (search && !b.output_name?.toLowerCase().includes(search)) return false;
         if (minIng > 0 && (b.ingredient_count || 0) !== minIng) return false;
         if (onlyUnlockable && b.is_available_by_default) return false;
         return true;
     });
-    
     document.getElementById('blueprints-count').textContent = bpFiltered.length;
 }
 
 function applyBpSort() {
     const { key, asc } = bpSort;
     if (!key) return;
-    
     bpFiltered.sort((a, b) => {
         let va, vb;
         switch (key) {
@@ -864,157 +1363,155 @@ function renderBpPage(page) {
     const pages = Math.ceil(total / BP_PER_PAGE) || 1;
     const start = (page - 1) * BP_PER_PAGE;
     const pageItems = bpFiltered.slice(start, start + BP_PER_PAGE);
-    
     if (total === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Sin resultados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Sin resultados</td></tr>';
         document.getElementById('blueprints-pagination').innerHTML = '';
         return;
     }
-    
     tbody.innerHTML = pageItems.map(b => {
         const timeStr = b.craft_time_label || formatSeconds(b.craft_time_seconds);
         const missionsCount = b.unlocking_missions_count || 0;
         const missionsBadge = missionsCount > 0 ? `<span class="badge-bp">${missionsCount} mis.</span>` : '<span style="color:var(--text-muted)">—</span>';
-        
-        return `<tr onclick="openBpModal('${b.uuid}')">
+        return `<tr onclick="openBpDetail('${b.uuid}')">
             <td>${b.output_name || '?'}</td>
+            <td>${getBpCategoryLabel(b.category || '')}</td>
             <td>${b.ingredient_count || 0}</td>
             <td>${timeStr}</td>
             <td>${missionsBadge}</td>
         </tr>`;
     }).join('');
-    
-    // Pagination
-    renderBpPagination(page, pages);
-    
-    // Sort indicators
-    document.querySelectorAll('#blueprints-table th').forEach(th => {
-        th.classList.remove('sorted', 'asc', 'desc');
-        if (th.dataset.sort === bpSort.key) {
-            th.classList.add('sorted', bpSort.asc ? 'asc' : 'desc');
-        }
-    });
-}
-
-function formatSeconds(sec) {
-    if (!sec) return '—';
-    if (sec < 60) return sec + 's';
-    if (sec < 3600) return Math.round(sec/60) + ' min';
-    return (sec/3600).toFixed(1) + ' h';
-}
-
-function renderBpPagination(current, total) {
-    const el = document.getElementById('blueprints-pagination');
-    let html = '';
-    html += `<button class="page-btn" onclick="renderBpPage(1)" ${current === 1 ? 'disabled' : ''}>«</button>`;
-    html += `<button class="page-btn" onclick="renderBpPage(${current - 1})" ${current === 1 ? 'disabled' : ''}>‹</button>`;
-    
-    const range = 3;
-    const start = Math.max(1, current - range);
-    const end = Math.min(total, current + range);
-    if (start > 1) html += `<button class="page-btn" onclick="renderBpPage(1)">1</button>`;
-    if (start > 2) html += '<span class="page-btn" style="cursor:default">…</span>';
-    for (let i = start; i <= end; i++) {
-        html += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="renderBpPage(${i})">${i}</button>`;
-    }
-    if (end < total - 1) html += '<span class="page-btn" style="cursor:default">…</span>';
-    if (end < total) html += `<button class="page-btn" onclick="renderBpPage(${total})">${total}</button>`;
-    html += `<button class="page-btn" onclick="renderBpPage(${current + 1})" ${current === total ? 'disabled' : ''}>›</button>`;
-    html += `<button class="page-btn" onclick="renderBpPage(${total})" ${current === total ? 'disabled' : ''}>»</button>`;
-    el.innerHTML = html;
+    renderPagination('blueprints-pagination', page, pages, renderBpPage);
+    updateSortIndicators('blueprints-table', bpSort.key, bpSort.asc);
 }
 
 function setupBpFilters() {
     if (window._bpFiltersReady) return;
     window._bpFiltersReady = true;
-    
     ['bp-search', 'filter-ingredients', 'filter-default'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         el.addEventListener('input', () => { applyBpFilters(); applyBpSort(); renderBpPage(1); });
         el.addEventListener('change', () => { applyBpFilters(); applyBpSort(); renderBpPage(1); });
     });
-    
     document.getElementById('bp-reset').addEventListener('click', () => {
         document.getElementById('bp-search').value = '';
         document.getElementById('filter-ingredients').value = '0';
         document.getElementById('filter-default').checked = false;
         applyBpFilters(); applyBpSort(); renderBpPage(1);
     });
-    
     document.querySelectorAll('#blueprints-table th.sortable').forEach(th => {
         th.addEventListener('click', () => {
             const key = th.dataset.sort;
             if (bpSort.key === key) bpSort.asc = !bpSort.asc;
             else { bpSort.key = key; bpSort.asc = true; }
-            applyBpSort();
-            renderBpPage(1);
+            applyBpSort(); renderBpPage(1);
         });
     });
 }
 
-// ─── BP DETAIL MODAL ───
+// ─── BP category labels ───
+function getBpCategoryLabel(cat) {
+    const labels = {
+        'component': 'Componente',
+        'ship_weapon': 'Arma de nave',
+        'fps_weapon': 'Arma FPS',
+        'armor': 'Armadura',
+        'weapon_attachment': 'Accesorio',
+        'mining_tool': 'Herramienta de minería',
+        'salvage_tool': 'Herramienta de recuperación',
+        'tool': 'Herramienta',
+        'ship_part': 'Pieza de nave',
+        'clothing': 'Ropa',
+        'other': 'Otros',
+    };
+    // Try EN labels for when in English mode
+    const labelsEn = {
+        'component': 'Component',
+        'ship_weapon': 'Ship Weapon',
+        'fps_weapon': 'FPS Weapon',
+        'armor': 'Armor',
+        'weapon_attachment': 'Attachment',
+        'mining_tool': 'Mining Tool',
+        'salvage_tool': 'Salvage Tool',
+        'tool': 'Tool',
+        'ship_part': 'Ship Part',
+        'clothing': 'Clothing',
+        'other': 'Other',
+    };
+    const lang = (typeof currentLang !== 'undefined' ? currentLang : 'es');
+    const map = lang === 'en' ? labelsEn : labels;
+    return map[cat] || cat || '—';
+}
 
-async function openBpModal(uuid) {
-    const b = await apiFetch(`/blueprints/${uuid}`);
+// ─── BP DETAIL (uses unified modal) ───
+
+async function openBpDetail(uuid) {
+    let b = null;
+    if (bpCache) {
+        b = bpCache.find(x => x.uuid === uuid);
+    }
+    if (!b) b = await apiFetch(`/blueprints/${uuid}`);
     if (!b) return;
-    
     const timeStr = b.craft_time_label || formatSeconds(b.craft_time_seconds);
-    
-    let ingredientsHtml = '';
+
+    const unlockData = window._bpUnlockMap ? window._bpUnlockMap[b.uuid] : null;
+    let seConsigueValue, seConsigueRawHtml;
+    if (b.is_available_by_default) {
+        seConsigueValue = 'Sí';
+        seConsigueRawHtml = false;
+    } else if (unlockData && unlockData.unlocking_missions && unlockData.unlocking_missions.length > 0) {
+        const primaryMissions = unlockData.unlocking_missions.filter(m => m.chance === 1);
+        const targetMissions = primaryMissions.length > 0 ? primaryMissions : unlockData.unlocking_missions;
+        const missionTitle = escapeHtml(targetMissions[0].mission_title);
+        const missionUuid = targetMissions[0].mission_uuid;
+        seConsigueValue = '<span class="mini-card" onclick="window._openMissionUuid=\'' + missionUuid + '\';closeBpModal();navigateTo(\'missions\');return false">' + missionTitle + '</span>';
+        seConsigueRawHtml = true;
+    } else {
+        seConsigueValue = 'No disponible';
+        seConsigueRawHtml = false;
+    }
+
+    const catLabel = getBpCategoryLabel(b.category || '');
+    let subtypeInfo = '';
+    if (b.category === 'component' && b.component_subtype) {
+        const subtypeLabels = {
+            'power_plant': 'Planta de poder',
+            'cooler': 'Enfriador',
+            'shield': 'Escudo',
+            'quantum_drive': 'Motor cuántico',
+            'radar': 'Radar'
+        };
+        subtypeInfo = '(' + (subtypeLabels[b.component_subtype] || b.component_subtype) + ')';
+    }
+    const fields = [
+        { label: 'Tipo', value: catLabel + (subtypeInfo ? ' ' + subtypeInfo : '') },
+        { label: 'Tiempo de fabricación', value: timeStr },
+        { label: 'Ingredientes', value: b.ingredient_count || 0 },
+        { label: 'Se consigue en', value: seConsigueValue, rawHtml: seConsigueRawHtml },
+        { label: 'Misiones para desbloquear', value: b.unlocking_missions_count || 0 },
+    ];
+
+    const sections = [];
     if (b.ingredients && b.ingredients.length) {
-        ingredientsHtml = '<div style="margin:15px 0"><h4 style="color:var(--text-secondary);margin-bottom:8px">Ingredientes</h4>';
-        b.ingredients.forEach(ing => {
-            const qty = ing.quantity_scu ? ing.quantity_scu + ' SCU' : (ing.quantity || '');
-            ingredientsHtml += `<div style="display:flex;justify-content:space-between;padding:6px 10px;background:var(--bg-primary);border-radius:6px;margin-bottom:4px;font-size:13px">
-                <span style="color:var(--text-primary)">${ing.name || '?'}</span>
-                <span style="color:var(--accent)">${qty}</span>
-            </div>`;
+        sections.push({
+            title: 'Ingredientes',
+            items: b.ingredients.map(ing => ({
+                label: ing.name || '?',
+                value: ing.quantity_scu ? ing.quantity_scu + ' SCU' : (ing.quantity || '')
+            }))
         });
-        ingredientsHtml += '</div>';
     }
-    
-    let missionsHtml = '';
-    if (b.unlocking_missions_count > 0) {
-        missionsHtml = `<div style="margin:10px 0;padding:10px;background:var(--bg-primary);border-radius:8px;font-size:13px">
-            <span style="color:var(--accent)">${b.unlocking_missions_count} misiones</span> pueden desbloquear este blueprint
-        </div>`;
-    }
-    
-    const html = `
-        <button class="modal-close" onclick="closeBpModal()">✕</button>
-        <h2 style="margin-bottom:20px">🔧 ${b.output_name || '?'}</h2>
-        <div class="detail-grid">
-            <div class="detail-item">
-                <div class="di-label">Tiempo de fabricación</div>
-                <div class="di-value">${timeStr}</div>
-            </div>
-            <div class="detail-item">
-                <div class="di-label">Ingredientes</div>
-                <div class="di-value">${b.ingredient_count || 0}</div>
-            </div>
-            <div class="detail-item">
-                <div class="di-label">Disponible por defecto</div>
-                <div class="di-value">${b.is_available_by_default ? 'Sí' : 'No, hay que desbloquearlo'}</div>
-            </div>
-            <div class="detail-item">
-                <div class="di-label">Misiones para desbloquear</div>
-                <div class="di-value">${b.unlocking_missions_count || 0}</div>
-            </div>
-        </div>
-        ${ingredientsHtml}
-        ${missionsHtml}
-        <div style="margin-top:15px;font-size:11px;color:var(--text-muted)">Key: ${b.key || '?'} · v${b.game_version || '?'}</div>
-    `;
-    
-    document.getElementById('bp-modal-content').innerHTML = html;
-    document.getElementById('bp-modal').classList.remove('hidden');
-}
 
-function closeBpModal() {
-    document.getElementById('bp-modal').classList.add('hidden');
-}
+    const footer = `<span style="display:none">Key: ${b.key || '?'}</span> · v${b.game_version || '?'}`;
 
+    showDetailModal({
+        icon: '🔧',
+        title: b.output_name || '?',
+        fields: fields,
+        sections: sections,
+        footer: footer
+    });
+}
 
 // ═══════════════════════════════════════════
 // WEAPONS PAGE
@@ -1029,9 +1526,17 @@ const WP_PER_PAGE = 25;
 async function loadWeapons(filter) {
     const tbody = document.getElementById('weapons-tbody');
     if (!wpCache) {
-        const data = await apiFetch('/weapons');
-        if (!data) { tbody.innerHTML = '<tr><td colspan="7" class="loading-row" style="color:var(--danger)">Error</td></tr>'; return; }
-        wpCache = data.data || [];
+        showSkeleton('weapons-tbody', 5, 7);
+        try {
+            const res = await fetch('/data/weapons.json');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            wpCache = await res.json();
+        } catch(e) {
+            console.warn('Static load failed for weapons, trying API:', e);
+            const data = await apiFetch('/weapons');
+            if (!data) { tbody.innerHTML = '<tr><td colspan="7" class="loading-row" style="color:var(--danger)">Error</td></tr>'; return; }
+            wpCache = data.data || [];
+        }
     }
     wpFiltered = [...wpCache];
     if (filter === 'size6') document.getElementById('filter-size').value = '6';
@@ -1074,7 +1579,7 @@ function applyWpSort() {
             case 'dps': va = parseFloat(sa['BASE DPS']) || 0; vb = parseFloat(sb['BASE DPS']) || 0; break;
             case 'alpha': va = parseFloat(sa.ALPHA) || 0; vb = parseFloat(sb.ALPHA) || 0; break;
             case 'range': va = parseFloat(sa.FIRERANGE) || 0; vb = parseFloat(sb.FIRERANGE) || 0; break;
-            case 'price': va = Math.min(...(a.locations || []).map(l => parseInt(l.price) || 999999)); vb = Math.min(...(b.locations || []).map(l => parseInt(l.price) || 999999)); break;
+            case 'price': va = Math.min(...(a.locations || []).map(l => parseInt(l.price) || Number.MAX_SAFE_INTEGER)); vb = Math.min(...(b.locations || []).map(l => parseInt(l.price) || Number.MAX_SAFE_INTEGER)); break;
             default: return 0;
         }
         if (typeof va === 'string') return wpSort.asc ? va.localeCompare(vb) : vb.localeCompare(va);
@@ -1091,36 +1596,19 @@ function renderWpPage(page) {
     if (!total) { tbody.innerHTML = '<tr><td colspan="7" class="loading-row">Sin resultados</td></tr>'; return; }
     tbody.innerHTML = items.map(w => {
         const s = w.stats || {};
-        const minPrice = Math.min(...(w.locations || []).map(l => parseInt(l.price) || 999999));
-        return `<tr onclick="openWpModal('${w.id}')">
+        const minPrice = Math.min(...(w.locations || []).map(l => parseInt(l.price) || Number.MAX_SAFE_INTEGER));
+        return `<tr onclick="openWpDetail('${w.id}')">
             <td>${w.name || '?'}</td>
-            <td>S${s.SIZE || '?'}</td>
-            <td style="color:var(--text-secondary)">${s.TYPE || '?'}</td>
+            <td>S${safeVal(s.SIZE)}</td>
+            <td style="color:var(--text-secondary)">${s.TYPE || '—'}</td>
             <td style="color:var(--accent)">${s['BASE DPS'] || '—'}</td>
             <td>${s.ALPHA || '—'}</td>
             <td>${s.FIRERANGE || '—'}</td>
-            <td>${minPrice < 999999 ? minPrice.toLocaleString() : '—'}</td>
+            <td>${minPrice < Number.MAX_SAFE_INTEGER ? minPrice.toLocaleString() : '—'}</td>
         </tr>`;
     }).join('');
-    renderSimplePagination('weapons-pagination', page, pages, renderWpPage);
-    document.querySelectorAll('#weapons-table th').forEach(th => {
-        th.classList.remove('sorted','asc','desc');
-        if (th.dataset.sort === wpSort.key) th.classList.add('sorted', wpSort.asc ? 'asc' : 'desc');
-    });
-}
-
-function renderSimplePagination(elId, c, t, fn) {
-    const el = document.getElementById(elId); if (!el) return;
-    const name = fn.name;
-    let h = `<button class="page-btn" onclick="${name}(1)" ${c===1?'disabled':''}>«</button><button class="page-btn" onclick="${name}(${c-1})" ${c===1?'disabled':''}>‹</button>`;
-    const s = Math.max(1,c-2), e = Math.min(t,c+2);
-    if (s>1) h+=`<button class="page-btn" onclick="${name}(1)">1</button>`;
-    if (s>2) h+='<span class="page-btn" style="cursor:default">…</span>';
-    for (let i=s;i<=e;i++) h+=`<button class="page-btn ${i===c?'active':''}" onclick="${name}(${i})">${i}</button>`;
-    if (e<t-1) h+='<span class="page-btn" style="cursor:default">…</span>';
-    if (e<t) h+=`<button class="page-btn" onclick="${name}(${t})">${t}</button>`;
-    h+=`<button class="page-btn" onclick="${name}(${c+1})" ${c===t?'disabled':''}>›</button><button class="page-btn" onclick="${name}(${t})" ${c===t?'disabled':''}>»</button>`;
-    el.innerHTML = h;
+    renderPagination('weapons-pagination', page, pages, renderWpPage);
+    updateSortIndicators('weapons-table', wpSort.key, wpSort.asc);
 }
 
 function setupWpFilters() {
@@ -1143,111 +1631,609 @@ function setupWpFilters() {
     });
 }
 
-async function openWpModal(id) {
-    const w = await apiFetch(`/weapons/${id}`);
+// ─── WEAPON DETAIL (uses unified modal) ───
+
+async function openWpDetail(id) {
+    let w = null;
+    if (wpCache) {
+        w = wpCache.find(x => x.id === id);
+    }
+    if (!w) w = await apiFetch(`/weapons/${id}`);
     if (!w) return;
     const s = w.stats || {};
-    let locHtml = '';
+
+    const fields = [
+        { label: 'Fabricante', value: s.MANUFACTURER || '—' },
+        { label: 'Tipo', value: s.TYPE || '—' },
+        { label: 'Tamaño', value: s.SIZE || '—' },
+        { label: 'DPS', value: s['BASE DPS'] || '—' },
+        { label: 'Daño Alpha', value: s.ALPHA || '—' },
+        { label: 'Cadencia', value: s.FIRERATE || '—' },
+        { label: 'Alcance', value: s.FIRERANGE || '—' },
+        { label: 'Consumo', value: s['POWER DRAW'] || '—' },
+        { label: 'Velocidad', value: s['BULLET SPEED'] || '—' },
+        { label: 'Munición máx.', value: s['MAX AMMO'] || '—' },
+    ];
+
+    const sections = [];
     if (w.locations && w.locations.length) {
-        locHtml = '<div style="margin:15px 0"><h4 style="color:var(--text-secondary);margin-bottom:8px">📍 Dónde comprarlo</h4>';
-        w.locations.slice(0,10).forEach(l => {
-            locHtml += `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-primary);border-radius:6px;margin-bottom:3px;font-size:12px">
-                <span style="color:var(--text-primary)">${l.name}</span>
-                <span style="color:var(--accent)">${parseInt(l.price)?.toLocaleString() || '?'} aUEC</span>
-            </div>`;
+        sections.push({
+            title: '📍 Dónde comprarlo',
+            items: w.locations.slice(0, 10).map(l => ({
+                label: l.name,
+                value: (parseInt(l.price)?.toLocaleString() || '?') + ' aUEC'
+            }))
         });
-        locHtml += '</div>';
     }
-    document.getElementById('wp-modal-content').innerHTML = `
-        <button class="modal-close" onclick="closeWpModal()">✕</button>
-        <h2 style="margin-bottom:20px">🔫 ${w.name || '?'}</h2>
-        <div class="detail-grid">
-            <div class="detail-item"><div class="di-label">Fabricante</div><div class="di-value">${s.MANUFACTURER || '?'}</div></div>
-            <div class="detail-item"><div class="di-label">Tipo</div><div class="di-value">${s.TYPE || '?'}</div></div>
-            <div class="detail-item"><div class="di-label">Size</div><div class="di-value">${s.SIZE || '?'}</div></div>
-            <div class="detail-item"><div class="di-label">DPS</div><div class="di-value" style="color:var(--accent)">${s['BASE DPS'] || '—'}</div></div>
-            <div class="detail-item"><div class="di-label">Alpha</div><div class="di-value">${s.ALPHA || '—'}</div></div>
-            <div class="detail-item"><div class="di-label">Fire Rate</div><div class="di-value">${s.FIRERATE || '—'}</div></div>
-            <div class="detail-item"><div class="di-label">Range</div><div class="di-value">${s.FIRERANGE || '—'}</div></div>
-            <div class="detail-item"><div class="di-label">Power Draw</div><div class="di-value">${s['POWER DRAW'] || '—'}</div></div>
-            <div class="detail-item"><div class="di-label">Bullet Speed</div><div class="di-value">${s['BULLET SPEED'] || '—'}</div></div>
-            <div class="detail-item"><div class="di-label">Max Ammo</div><div class="di-value">${s['MAX AMMO'] || '—'}</div></div>
-        </div>${locHtml}`;
-    document.getElementById('wp-modal').classList.remove('hidden');
+
+    showDetailModal({
+        icon: '🔫',
+        title: w.name || '?',
+        fields: fields,
+        sections: sections
+    });
 }
-function closeWpModal() { document.getElementById('wp-modal').classList.add('hidden'); }
 
 // ═══════════════════════════════════════════
-// WIKELO PAGE
+// WIKELO PAGE (migrated to data-table)
 // ═══════════════════════════════════════════
+
+let wkCache = null; // raw items array
+let wkFiltered = [];
+let wkPage = 1;
+let wkSort = { key: null, asc: true };
+const WK_PER_PAGE = 25;
+let wkTrans = null; // wikelo_translations_integrated.json cache
+
+const wkCatNames = {
+    favor_trades: '🤝 Favors',
+    polaris_bit_recipes: '💎 Recetas Polaris',
+    weapon_contracts: '🔫 Armas',
+    armor_contracts: '🛡️ Armaduras',
+    vehicle_contracts: '🚗 Vehículos',
+    ship_contracts: '🚀 Naves'
+};
+
+// Mapa de categorías de items → categorías Wikelo
+const wkCategoryMap = {
+    weapon: 'weapon_contracts',
+    armor: 'armor_contracts',
+    ship: 'ship_contracts',
+    vehicle: 'vehicle_contracts'
+};
 
 async function loadWikelo(filter) {
-    const container = document.getElementById('wikelo-contracts');
-    container.innerHTML = '<div class="loading-sm">Cargando...</div>';
-    const data = await apiFetch('/wikelo');
-    if (!data) { container.innerHTML = '<div class="loading-sm" style="color:var(--danger)">Error</div>'; return; }
-    window._wikeloData = data;
+    const tbody = document.getElementById('wikelo-tbody');
+    if (!wkCache) {
+        showSkeleton('wikelo-tbody', 5, 5);
+        try {
+            const res = await fetch('/data/wikelo.json');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            // Normalize into flat array with category
+            wkCache = [];
+            if (Array.isArray(data)) {
+                data.forEach(item => wkCache.push({ ...item, _category: wkCategoryMap[item.category] || item.category || 'favor_trades' }));
+            } else if (data.data && Array.isArray(data.data)) {
+                data.data.forEach(item => wkCache.push({ ...item, _category: wkCategoryMap[item.category] || item.category || 'favor_trades' }));
+            } else if (typeof data === 'object') {
+                Object.keys(data).forEach(k => {
+                    if (k !== 'total' && Array.isArray(data[k])) {
+                        data[k].forEach(item => wkCache.push({ ...item, _category: k }));
+                    }
+                });
+            }
+        } catch(e) {
+            console.warn('Static load failed for wikelo, trying API:', e);
+            const data = await apiFetch('/wikelo');
+            if (!data) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row" style="color:var(--danger)">Error al cargar</td></tr>'; return; }
+            // Normalize
+            wkCache = [];
+            if (Array.isArray(data)) {
+                data.forEach(item => wkCache.push({ ...item, _category: wkCategoryMap[item.category] || item.category || 'favor_trades' }));
+            } else if (data.data && Array.isArray(data.data)) {
+                data.data.forEach(item => wkCache.push({ ...item, _category: wkCategoryMap[item.category] || item.category || 'favor_trades' }));
+            } else if (typeof data === 'object') {
+                Object.keys(data).forEach(k => {
+                    if (k !== 'total' && Array.isArray(data[k])) {
+                        data[k].forEach(item => wkCache.push({ ...item, _category: k }));
+                    }
+                });
+            }
+        }
+        // Badge de lazyload → número real
+        const badgeWk = document.getElementById('badge-wikelo');
+        if (badgeWk) badgeWk.textContent = wkCache.length;
+    }
+    wkFiltered = [...wkCache];
     if (filter === 'ships') document.getElementById('filter-wk-cat').value = 'ship_contracts';
-    renderWikelo();
-    document.getElementById('wikelo-search')?.addEventListener('input', renderWikelo);
-    document.getElementById('filter-wk-cat')?.addEventListener('change', renderWikelo);
-    document.getElementById('wikelo-reset')?.addEventListener('click', () => {
-        document.getElementById('wikelo-search').value='';
-        document.getElementById('filter-wk-cat').value='';
-        renderWikelo();
+    applyWikeloFilters();
+    applyWikeloSort();
+    renderWikeloPage(1);
+    setupWikeloFilters();
+}
+
+function applyWikeloFilters() {
+    const q = (document.getElementById('wikelo-search')?.value || '').toLowerCase();
+    const cat = document.getElementById('filter-wk-cat')?.value || '';
+    wkFiltered = (wkCache || []).filter(i => {
+        if (q && !i.name?.toLowerCase().includes(q) && !tr(i.name)?.toLowerCase().includes(q)) return false;
+        if (cat && i._category !== cat) return false;
+        return true;
+    });
+    document.getElementById('wikelo-count').textContent = wkFiltered.length;
+}
+
+function applyWikeloSort() {
+    const { key, asc } = wkSort;
+    if (!key) return;
+    wkFiltered.sort((a, b) => {
+        let va, vb;
+        switch (key) {
+            case 'name': va = (tr(a.name) || a.name || '').toLowerCase(); vb = (tr(b.name) || b.name || '').toLowerCase(); break;
+            case 'category': va = a._category || ''; vb = b._category || ''; break;
+            case 'inputs': va = (a.inputs || []).length; vb = (b.inputs || []).length; break;
+            case 'rewards': va = (a.rewards || []).length; vb = (b.rewards || []).length; break;
+            case 'reputation': va = a.reputation_min || 0; vb = b.reputation_min || 0; break;
+            default: return 0;
+        }
+        if (typeof va === 'string') return asc ? va.localeCompare(vb) : vb.localeCompare(va);
+        return asc ? va - vb : vb - va;
     });
 }
 
-const wkNames = { favor_trades:'🤝 Favor Trades', polaris_bit_recipes:'💎 Polaris Bit', weapon_contracts:'🔫 Armas', armor_contracts:'🛡️ Armaduras', vehicle_contracts:'🚗 Vehículos', ship_contracts:'🚀 Naves' };
-
-function renderComponentsPage() {
-    const tbody = document.getElementById('comps-tbody');
-    const data = window._compsCache || [];
-    if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Sin componentes cargados</td></tr>';
+async function renderWikeloPage(page) {
+    wkPage = page;
+    const tbody = document.getElementById('wikelo-tbody');
+    // Cargar traducciones de Wikelo bajo demanda
+    if (!wkTrans) {
+        try {
+            const wRes = await fetch('/data/wikelo_translations_integrated.json');
+            if (wRes.ok) wkTrans = await wRes.json();
+        } catch(e) { console.warn('⚠️ Error cargando wkTrans:', e); }
+    }
+    const total = wkFiltered.length;
+    const pages = Math.ceil(total / WK_PER_PAGE) || 1;
+    const start = (page - 1) * WK_PER_PAGE;
+    const pageItems = wkFiltered.slice(start, start + WK_PER_PAGE);
+    if (total === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Sin resultados</td></tr>';
+        document.getElementById('wikelo-pagination').innerHTML = '';
         return;
     }
-    tbody.innerHTML = data.map(c => {
-        const typeClass = 'ct-' + (c.type || '').replace(/ /g,'');
-        return `<tr>
-            <td>${__(c.name)}</td>
-            <td><span class="comp-badge ${typeClass}">${__(c.type)}</span></td>
-            <td>${c.size || '?'}</td>
-            <td>${c.grade || '?'}</td>
+    tbody.innerHTML = pageItems.map(i => {
+        const translatedName = tr(i.name) || i.name || '?';
+        const catName = wkCatNames[i._category] || i._category || '—';
+        const inputs = (i.inputs || []).map(x => {
+            const itemName = x.item || '';
+            const translated = wkTrans && wkTrans.items && wkTrans.items[itemName] ? wkTrans.items[itemName] : (tr(itemName) || itemName);
+            return `${x.quantity || ''}x ${translated}`;
+        }).join(', ') || '—';
+        const rewards = (i.rewards || []).map(r => {
+            const itemName = r.item || '';
+            const translated = wkTrans && wkTrans.items && wkTrans.items[itemName] ? wkTrans.items[itemName] : (tr(itemName) || itemName);
+            return `${r.quantity || ''} ${translated}`.trim();
+        }).join(', ') || '—';
+        const rep = i.reputation_min ? '⭐ ' + i.reputation_min : '—';
+        // Encode data for modal
+        const detailData = encodeURIComponent(JSON.stringify({
+            name: translatedName,
+            inputs: inputs,
+            rewards: rewards,
+            rep: rep,
+            category: catName
+        }));
+        return `<tr onclick="openWikeloDetail('${detailData}')">
+            <td style="color:var(--accent);font-weight:500">${translatedName}</td>
+            <td>${catName}</td>
+            <td style="color:var(--text-secondary);max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${inputs}">${inputs}</td>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${rewards}">${rewards}</td>
+            <td>${rep}</td>
         </tr>`;
     }).join('');
+    renderPagination('wikelo-pagination', page, pages, renderWikeloPage);
+    updateSortIndicators('wikelo-table', wkSort.key, wkSort.asc);
 }
 
-function renderWikelo() {
-    const container = document.getElementById('mainContent');
-    if (!container) return;
-    const data = window._wikeloData;
-    if (!data) return;
-    const cat = document.getElementById('filter-wk-cat').value;
-    const q = document.getElementById('wikelo-search').value.toLowerCase();
-    let html = '', total = 0;
-    const cats = cat ? {[cat]: data[cat] || []} : data;
-    Object.entries(cats).forEach(([k, items]) => {
-        const f = items.filter(i => !q || i.name?.toLowerCase().includes(q));
-        if (!f.length) return;
-        total += f.length;
-        html += `<div class="card"><h3>${wkNames[k] || k} <span class="page-count">${f.length}</span></h3>`;
-        f.forEach(i => {
-            const ins = (i.inputs||[]).map(x => `${x.quantity}x ${x.item}`).join(', ');
-            const rw = (i.rewards||[]).map(r => r.item).join(', ');
-            html += `<div class="wikelo-item" style="padding:10px;margin-bottom:6px;background:var(--bg-primary);border-radius:8px;cursor:pointer" onclick="alert('INPUTS: ${ins.replace(/'/g,"\\'")}\\n\\nREWARDS: ${rw}')">
-                <div style="font-weight:600;color:var(--accent);font-size:13px">${i.name}</div>
-                <div style="font-size:11px;color:var(--text-secondary);margin-top:3px">→ ${rw}</div>
-            </div>`;
-        });
-        html += '</div>';
+function setupWikeloFilters() {
+    if (window._wkFiltersReady) return;
+    window._wkFiltersReady = true;
+    ['wikelo-search', 'filter-wk-cat'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', () => { applyWikeloFilters(); applyWikeloSort(); renderWikeloPage(1); });
+        el.addEventListener('change', () => { applyWikeloFilters(); applyWikeloSort(); renderWikeloPage(1); });
     });
-    container.innerHTML = html || '<div class="card"><div class="loading-sm">Sin resultados</div></div>';
-    document.getElementById('wikelo-count').textContent = total;
+    document.getElementById('wikelo-reset').addEventListener('click', () => {
+        document.getElementById('wikelo-search').value = '';
+        document.getElementById('filter-wk-cat').value = '';
+        applyWikeloFilters(); applyWikeloSort(); renderWikeloPage(1);
+    });
+    document.querySelectorAll('#wikelo-table th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+            const key = th.dataset.sort;
+            if (wkSort.key === key) wkSort.asc = !wkSort.asc;
+            else { wkSort.key = key; wkSort.asc = true; }
+            applyWikeloSort(); renderWikeloPage(1);
+        });
+    });
+}
+
+// ─── WIKELO DETAIL (uses unified modal) ───
+
+function openWikeloDetail(encoded) {
+    try {
+        const d = JSON.parse(decodeURIComponent(encoded));
+        showDetailModal({
+            icon: '🛸',
+            title: d.name,
+            fields: [
+                { label: '📥 Entrega', value: d.inputs, fullWidth: true },
+                { label: '🎁 Recompensa', value: d.rewards, fullWidth: true },
+                { label: 'Reputación min.', value: d.rep },
+            ],
+            footer: d.name + ' · Contrato Wikelo'
+        });
+    } catch(e) {}
 }
 
 // ═══════════════════════════════════════════
-// FACTIONS PAGE
+// ITEMS PAGE (enhanced with pagination + modal)
+// ═══════════════════════════════════════════
+
+const ITEM_TYPE_LABELS = {
+    armor_helmet: 'Casco',
+    armor_core: 'Peto',
+    armor_arms: 'Brazos',
+    armor_legs: 'Piernas',
+    armor_backpack: 'Mochila',
+    undersuit: 'Traje interior',
+    fps_weapon: 'Arma FPS',
+    ammo: 'Munición',
+    tool: 'Herramienta',
+    clothing: 'Ropa',
+    food_drink: 'Comida/Bebida',
+    mission_item: 'Objeto de misión',
+    ship_component: 'Componente de nave',
+    livery: 'Livery',
+    vehicle: 'Vehículo',
+    plushie: 'Peluche',
+    mineral_ore: 'Mineral',
+    other: 'Otro'
+};
+
+const ITEM_TYPE_LABELS_EN = {
+    armor_helmet: 'Helmet',
+    armor_core: 'Core',
+    armor_arms: 'Arms',
+    armor_legs: 'Legs',
+    armor_backpack: 'Backpack',
+    undersuit: 'Undersuit',
+    fps_weapon: 'FPS Weapon',
+    ammo: 'Ammo',
+    tool: 'Tool',
+    clothing: 'Clothing',
+    food_drink: 'Food/Drink',
+    mission_item: 'Mission Item',
+    ship_component: 'Ship Component',
+    livery: 'Livery',
+    vehicle: 'Vehicle',
+    plushie: 'Plushie',
+    mineral_ore: 'Mineral/Ore',
+    other: 'Other'
+};
+
+function getItemTypeLabel(type) {
+    if (!type) return '—';
+    const map = currentLang === 'es' ? ITEM_TYPE_LABELS : ITEM_TYPE_LABELS_EN;
+    return map[type] || type;
+}
+
+function populateItemTypeFilter() {
+    const sel = document.getElementById('filter-item-type');
+    if (!sel || sel.options.length > 1) return;
+    const entries = currentLang === 'es'
+        ? Object.entries(ITEM_TYPE_LABELS)
+        : Object.entries(ITEM_TYPE_LABELS_EN);
+    entries.forEach(([value, label]) => {
+        const o = document.createElement('option');
+        o.value = value;
+        o.textContent = label;
+        sel.appendChild(o);
+    });
+}
+
+let itemsCache = null;
+let itemsFiltered = [];
+let itemsPage = 1;
+let itemsSort = { key: null, asc: true };
+const ITEMS_PER_PAGE = 50;
+
+async function loadItems() {
+    const tbody = document.getElementById('items-tbody');
+    if (!itemsCache) {
+        showSkeleton('items-tbody', 5, 3);
+        try {
+            const res = await fetch('/data/items.json');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            itemsCache = await res.json();
+        } catch(e) {
+            console.warn('Static load failed for items, trying API:', e);
+            const firstPage = await apiFetch('/items?per_page=500');
+            if (!firstPage) { tbody.innerHTML = '<tr><td colspan="3" class="loading-row" style="color:var(--danger)">Error</td></tr>'; return; }
+            let allItems = [...(firstPage.data || [])];
+            for (let p = 2; p <= (firstPage.total_pages || 1); p++) {
+                const more = await apiFetch(`/items?per_page=500&page=${p}`);
+                if (more && more.data) allItems = allItems.concat(more.data);
+            }
+            itemsCache = allItems;
+        }
+    }
+    itemsFiltered = [...itemsCache];
+    document.getElementById('items-count').textContent = itemsCache.length;
+    // Badge de lazyload → número real
+    const badgeItems = document.getElementById('badge-items');
+    if (badgeItems) badgeItems.textContent = itemsCache.length;
+    populateItemTypeFilter();
+    applyItemsFilters();
+    applyItemsSort();
+    renderItemsPage(1);
+    setupItemsFilters();
+}
+
+function applyItemsFilters() {
+    const q = document.getElementById('items-search').value.toLowerCase();
+    const typeFilter = document.getElementById('filter-item-type')?.value || '';
+    itemsFiltered = (itemsCache || []).filter(i => {
+        if (q && !i.name?.toLowerCase().includes(q)) return false;
+        if (typeFilter) {
+            const itemType = (i.item_type || i.type || i.Type || '').toLowerCase();
+            if (itemType !== typeFilter) return false;
+        }
+        return true;
+    });
+    document.getElementById('items-count').textContent = itemsFiltered.length;
+}
+
+function applyItemsSort() {
+    const { key, asc } = itemsSort;
+    if (!key) return;
+    itemsFiltered.sort((a, b) => {
+        let va, vb;
+        switch (key) {
+            case 'name': va = a.name || ''; vb = b.name || ''; break;
+            case 'type': va = a.item_type || a.type || ''; vb = b.item_type || b.type || ''; break;
+            case 'available': va = Boolean(a.Sold) ? 1 : 0; vb = Boolean(b.Sold) ? 1 : 0; break;
+            default: return 0;
+        }
+        if (typeof va === 'string') return asc ? va.localeCompare(vb) : vb.localeCompare(va);
+        return asc ? va - vb : vb - va;
+    });
+}
+
+function renderItemsPage(page) {
+    itemsPage = page;
+    const tbody = document.getElementById('items-tbody');
+    const total = itemsFiltered.length;
+    const pages = Math.ceil(total / ITEMS_PER_PAGE) || 1;
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    const pageItems = itemsFiltered.slice(start, start + ITEMS_PER_PAGE);
+    if (total === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="loading-row">Sin resultados</td></tr>';
+        document.getElementById('items-pagination').innerHTML = '';
+        return;
+    }
+    tbody.innerHTML = pageItems.map(i => {
+        const soldBadge = i.Sold ? '<span class="badge-bp">Sí</span>' : '<span style="color:var(--text-muted)">No</span>';
+
+        const rawType = i.item_type || i.type || i.Type || '';
+        const itemType = getItemTypeLabel(rawType);
+        return `<tr onclick="openItemDetail('${encodeURIComponent(JSON.stringify(i))}')">
+            <td>${i.name || '?'}</td>
+            <td style="color:var(--text-secondary)">${itemType}</td>
+            <td>${soldBadge}</td>
+        </tr>`;
+    }).join('');
+    renderPagination('items-pagination', page, pages, renderItemsPage);
+    updateSortIndicators('items-table', itemsSort.key, itemsSort.asc);
+}
+
+function setupItemsFilters() {
+    if (window._itemsFiltersReady) return;
+    window._itemsFiltersReady = true;
+    ['items-search', 'filter-item-type'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', () => { applyItemsFilters(); applyItemsSort(); renderItemsPage(1); });
+        el.addEventListener('change', () => { applyItemsFilters(); applyItemsSort(); renderItemsPage(1); });
+    });
+    document.getElementById('items-reset').addEventListener('click', () => {
+        document.getElementById('items-search').value = '';
+        document.getElementById('filter-item-type').value = '';
+        applyItemsFilters(); applyItemsSort(); renderItemsPage(1);
+    });
+    document.querySelectorAll('#items-table th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+            const key = th.dataset.sort;
+            if (itemsSort.key === key) itemsSort.asc = !itemsSort.asc;
+            else { itemsSort.key = key; itemsSort.asc = true; }
+            applyItemsSort(); renderItemsPage(1);
+        });
+    });
+}
+
+// ─── ITEM DETAIL (uses unified modal) ───
+
+function openItemDetail(encoded) {
+    try {
+        const i = JSON.parse(decodeURIComponent(encoded));
+        const fields = [
+            { label: 'Nombre', value: i.name || '—' },
+            { label: 'Tipo', value: getItemTypeLabel(i.item_type || i.type || i.Type) || '—' },
+            { label: 'Disponible en tiendas', value: i.Sold ? '<span class="badge-bp">Sí</span>' : '<span style="color:var(--text-muted)">No</span>' },
+            { label: 'Descripción', value: i.description || '—', fullWidth: true },
+        ];
+        showDetailModal({
+            icon: '📦',
+            title: i.name || 'Item',
+            fields: fields
+        });
+    } catch(e) {}
+}
+
+// ═══════════════════════════════════════════
+// COMPONENTS PAGE (new)
+// ═══════════════════════════════════════════
+
+let compsCache = null;
+let compsFiltered = [];
+let compsPage = 1;
+let compsSort = { key: null, asc: true };
+const COMPS_PER_PAGE = 25;
+
+async function loadComponents() {
+    const tbody = document.getElementById('comps-tbody');
+    if (!compsCache) {
+        showSkeleton('comps-tbody', 5, 4);
+        try {
+            const res = await fetch('/data/components.json');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            compsCache = await res.json();
+        } catch(e) {
+            console.warn('Static load failed for components, trying API:', e);
+            const d = await apiFetch('/components');
+            compsCache = d.data || [];
+        }
+        document.getElementById('components-count').textContent = compsCache.length;
+        // Badge de lazyload → número real
+        const badgeComps = document.getElementById('badge-components');
+        if (badgeComps) badgeComps.textContent = compsCache.length;
+    }
+    compsFiltered = [...compsCache];
+    populateCompTypes();
+    applyCompsFilters();
+    applyCompsSort();
+    renderCompsPage(1);
+    setupCompsFilters();
+}
+
+function populateCompTypes() {
+    const sel = document.getElementById('filter-comp-type');
+    if (sel.options.length > 1) return;
+    const types = [...new Set(compsCache.map(c => c.type || 'Unknown'))].sort();
+    types.forEach(t => {
+        const o = document.createElement('option');
+        o.value = t; o.textContent = t;
+        sel.appendChild(o);
+    });
+}
+
+function applyCompsFilters() {
+    const q = document.getElementById('comps-search').value.toLowerCase();
+    const type = document.getElementById('filter-comp-type').value;
+    compsFiltered = (compsCache || []).filter(c => {
+        if (q && !c.name?.toLowerCase().includes(q)) return false;
+        if (type && c.type !== type) return false;
+        return true;
+    });
+    document.getElementById('components-count').textContent = compsFiltered.length;
+}
+
+function applyCompsSort() {
+    const { key, asc } = compsSort;
+    if (!key) return;
+    compsFiltered.sort((a, b) => {
+        let va, vb;
+        switch (key) {
+            case 'name': va = a.name || ''; vb = b.name || ''; break;
+            case 'type': va = a.type || ''; vb = b.type || ''; break;
+            case 'size': va = parseInt(a.size) || 0; vb = parseInt(b.size) || 0; break;
+            case 'grade': va = parseInt(a.grade) || 0; vb = parseInt(b.grade) || 0; break;
+            default: return 0;
+        }
+        if (typeof va === 'string') return asc ? va.localeCompare(vb) : vb.localeCompare(va);
+        return asc ? va - vb : vb - va;
+    });
+}
+
+function renderCompsPage(page) {
+    compsPage = page;
+    const tbody = document.getElementById('comps-tbody');
+    const total = compsFiltered.length;
+    const pages = Math.ceil(total / COMPS_PER_PAGE) || 1;
+    const start = (page - 1) * COMPS_PER_PAGE;
+    const pageItems = compsFiltered.slice(start, start + COMPS_PER_PAGE);
+    if (total === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Sin resultados</td></tr>';
+        document.getElementById('comps-pagination').innerHTML = '';
+        return;
+    }
+    tbody.innerHTML = pageItems.map(c => {
+        const typeClass = 'ct-' + (c.type || '').replace(/ /g,'');
+        const typeBadge = `<span class="comp-badge ${typeClass}">${c.type || '—'}</span>`;
+        return `<tr onclick="openCompDetail('${encodeURIComponent(JSON.stringify(c))}')">
+            <td>${c.name || '?'}</td>
+            <td>${typeBadge}</td>
+            <td>${safeVal(c.size)}</td>
+            <td>${safeVal(c.grade)}</td>
+        </tr>`;
+    }).join('');
+    renderPagination('comps-pagination', page, pages, renderCompsPage);
+    updateSortIndicators('comps-table', compsSort.key, compsSort.asc);
+}
+
+function setupCompsFilters() {
+    if (window._compsFiltersReady) return;
+    window._compsFiltersReady = true;
+    ['comps-search', 'filter-comp-type'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', () => { applyCompsFilters(); applyCompsSort(); renderCompsPage(1); });
+        el.addEventListener('change', () => { applyCompsFilters(); applyCompsSort(); renderCompsPage(1); });
+    });
+    document.getElementById('comps-reset').addEventListener('click', () => {
+        document.getElementById('comps-search').value = '';
+        document.getElementById('filter-comp-type').value = '';
+        applyCompsFilters(); applyCompsSort(); renderCompsPage(1);
+    });
+    document.querySelectorAll('#comps-table th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+            const key = th.dataset.sort;
+            if (compsSort.key === key) compsSort.asc = !compsSort.asc;
+            else { compsSort.key = key; compsSort.asc = true; }
+            applyCompsSort(); renderCompsPage(1);
+        });
+    });
+}
+
+// ─── COMPONENT DETAIL (uses unified modal) ───
+
+function openCompDetail(encoded) {
+    try {
+        const c = JSON.parse(decodeURIComponent(encoded));
+        const fields = [
+            { label: 'Nombre', value: c.name || '—' },
+            { label: 'Tipo', value: c.type || '—' },
+            { label: 'Size', value: safeVal(c.size) },
+            { label: 'Grade', value: safeVal(c.grade) },
+        ];
+        // Add any extra stats if available
+        if (c.stats) {
+            Object.entries(c.stats).forEach(([k, v]) => {
+                fields.push({ label: k, value: v || '—' });
+            });
+        }
+        showDetailModal({
+            icon: '⚙️',
+            title: c.name || 'Componente',
+            fields: fields,
+            footer: c.type ? `Tipo: ${c.type}` : ''
+        });
+    } catch(e) {}
+}
+
+// ═══════════════════════════════════════════
+// FACTIONS PAGE (static, unchanged)
 // ═══════════════════════════════════════════
 
 function loadFactions() {
@@ -1297,102 +2283,41 @@ function loadFactions() {
         html += '</div></div>';
     });
     document.getElementById('factions-content').innerHTML = html;
+    // Count total unique factions
+    let totalFactions = 0;
+    Object.values(groups).forEach(items => totalFactions += items.length);
+    const factionsBadge = document.getElementById('badge-factions');
+    if (factionsBadge) factionsBadge.textContent = totalFactions;
+    const factionsCount = document.getElementById('factions-page-count');
+    if (factionsCount) factionsCount.textContent = totalFactions;
 }
 
 // ═══════════════════════════════════════════
-// ITEMS PAGE
+// POLISH — cross-links, tooltips, keyboard nav, responsive, skeletons, badges
 // ═══════════════════════════════════════════
 
-async function loadItems() {
-    const tbody = document.getElementById('items-tbody');
-    const data = await apiFetch('/items');
-    if (!data) { tbody.innerHTML = '<tr><td colspan="2" class="loading-row" style="color:var(--danger)">Error</td></tr>'; return; }
-    window._itemsCache = data.data || [];
-    document.getElementById('items-count').textContent = window._itemsCache.length;
-    filterItems();
-    document.getElementById('items-search').addEventListener('input', filterItems);
-    document.getElementById('items-reset').addEventListener('click', () => {
-        document.getElementById('items-search').value = '';
-        filterItems();
-    });
-}
-
-function filterItems() {
-    const q = document.getElementById('items-search').value.toLowerCase();
-    const items = (window._itemsCache || []).filter(i => !q || i.name?.toLowerCase().includes(q));
-    const tbody = document.getElementById('items-tbody');
-    tbody.innerHTML = items.slice(0,200).map(i => {
-        const s = i.Sold ? '<span class="badge-bp">Sí</span>' : '<span style="color:var(--text-muted)">No</span>';
-        return `<tr><td>${i.name}</td><td>${s}</td></tr>`;
-    }).join('') + (items.length > 200 ? `<tr><td colspan="2" class="loading-row">Mostrando 200 de ${items.length}</td></tr>` : '');
-}
-
-// ═══════════════════════════════════════════
-// SAFE NAVIGATE OVERRIDE
-// ═══════════════════════════════════════════
-
-const _origNav = window.navigateTo || function(){};
-window.navigateTo = function(page, filter) {
-    state.currentPage = page;
-    $$('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
-    $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
-    if (page === 'missions') loadMissions(filter);
-    else if (page === 'blueprints') loadBlueprints(filter);
-    else if (page === 'weapons') loadWeapons(filter);
-    else if (page === 'wikelo') loadWikelo(filter);
-    else if (page === 'factions') loadFactions();
-    else if (page === 'items') loadItems();
-    document.getElementById('sidebar').classList.remove('open');
-};
-window.navigateTo = window.navigateTo;
-
-// Force reconnect if API was called
-if (!state.stats) loadStats();
-
-
-// ═══════════════════════════════════════════
-// PASO 6 — PULIDO
-// ═══════════════════════════════════════════
-
-// ─── 6.1 CROSS-LINKS: Add faction links to mission modal ───
-
-const _origOpenMission = openMissionModal;
-openMissionModal = async function(uuid) {
-    await _origOpenMission(uuid);
-    // Add faction link
-    const content = document.getElementById('mission-modal-content');
-    const fname = content.querySelector('.detail-item:nth-child(1) .di-value')?.textContent?.trim();
-    if (fname && fname !== '?') {
-        const factionDiv = content.querySelector('.detail-item:nth-child(1)');
-        if (factionDiv) {
-            const oldVal = factionDiv.querySelector('.di-value');
-            if (oldVal) {
-                oldVal.innerHTML = `<a href="#" onclick="navigateTo('factions');closeMissionModal();return false" style="color:var(--accent);text-decoration:underline">${fname}</a>`;
+// ─── Cross-links ───
+// We enhance the mission detail modal with faction/scope links via showDetailModal overrides
+const _origShowDetail = showDetailModal;
+showDetailModal = function(config) {
+    const overlay = _origShowDetail(config);
+    // Add faction link if this is a mission modal
+    if (config.icon === '📋') {
+        const body = overlay.querySelector('.modal-body');
+        if (body) {
+            const fname = body.querySelector('.detail-item:first-child .di-value')?.textContent?.trim();
+            if (fname && fname !== '—') {
+                const factionDiv = body.querySelector('.detail-item:first-child .di-value');
+                if (factionDiv) {
+                    factionDiv.innerHTML = `<span class="mini-card" onclick="navigateTo('factions');closeModal(overlay);return false">${fname}</span>`;
+                }
             }
         }
     }
-    // Add "view missions like this" link
-    const scope = content.querySelector('.detail-item:nth-child(2) .di-value')?.textContent?.trim();
-    if (scope && scope !== '?') {
-        const actionsDiv = document.createElement('div');
-        actionsDiv.style.marginTop = '15px';
-        actionsDiv.innerHTML = `<a href="#" onclick="navigateTo('missions');filterMissionScope('${scope}');closeMissionModal();return false" style="color:var(--text-secondary);font-size:13px">🔍 Ver más misiones de tipo "${scope}"</a>`;
-        content.appendChild(actionsDiv);
-    }
+    return overlay;
 };
 
-function filterMissionScope(scope) {
-    // Set filter and trigger
-    setTimeout(() => {
-        const sel = document.getElementById('filter-scope');
-        if (sel) { sel.value = scope; sel.dispatchEvent(new Event('change')); }
-    }, 100);
-}
-
-
-// ─── 6.2 TOOLTIPS ───
-
-// Add tooltip to table rows via title attribute
+// ─── Tooltips on table rows ───
 document.addEventListener('mouseover', (e) => {
     const tr = e.target.closest('.data-table tbody tr');
     if (tr && tr.cells.length > 1) {
@@ -1403,8 +2328,6 @@ document.addEventListener('mouseover', (e) => {
         }
     }
 });
-
-// Inject tooltip styles
 const tooltipStyle = document.createElement('style');
 tooltipStyle.textContent = `
     .data-table tbody tr { cursor: pointer; position: relative; }
@@ -1431,61 +2354,14 @@ tooltipStyle.textContent = `
 `;
 document.head.appendChild(tooltipStyle);
 
-
-// ─── 6.3 KEYBOARD NAVIGATION FOR SEARCH ───
-
-(function enhanceSearch() {
-    const input = document.getElementById('search-input');
-    const dropdown = document.getElementById('search-results');
-    let selectedIndex = -1;
-
-    input.addEventListener('keydown', (e) => {
-        const items = dropdown.querySelectorAll('.search-result-item');
-        if (!items.length) return;
-
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
-            updateSearchHighlight(items);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            selectedIndex = Math.max(selectedIndex - 1, 0);
-            updateSearchHighlight(items);
-        } else if (e.key === 'Enter' && selectedIndex >= 0) {
-            e.preventDefault();
-            items[selectedIndex]?.click();
-            dropdown.classList.remove('visible');
-            selectedIndex = -1;
-        }
-    });
-
-    function updateSearchHighlight(items) {
-        items.forEach((item, i) => {
-            item.style.background = i === selectedIndex ? 'var(--accent-dim)' : '';
-            if (i === selectedIndex) item.scrollIntoView({ block: 'nearest' });
-        });
-    }
-
-    // Reset on input
-    const _origInput = input.addEventListener;
-    input.addEventListener('input', () => { selectedIndex = -1; });
-})();
-
-
-// ─── 6.4 RESPONSIVE: Better mobile sidebar ───
-
+// ─── Responsive sidebar close ───
 (function enhanceMobile() {
     const sidebar = document.getElementById('sidebar');
     const main = document.getElementById('main');
-
-    // Close sidebar on click outside
     main.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
-            sidebar.classList.remove('open');
-        }
+        if (e.target.closest && e.target.closest('#menu-toggle')) return;
+        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) sidebar.classList.remove('open');
     });
-
-    // Better table scrolling on mobile
     const tables = document.querySelectorAll('.table-container');
     tables.forEach(t => {
         t.style.overflowX = 'auto';
@@ -1493,37 +2369,52 @@ document.head.appendChild(tooltipStyle);
     });
 })();
 
-
-// ─── 6.5 LOADING SKELETONS ───
-
+// ─── Loading skeletons (P4-T2) ───
 function showSkeleton(containerId, rows = 5, cols = 4) {
     const container = document.getElementById(containerId);
     if (!container) return;
+    // Fade out existing content
+    container.style.transition = 'opacity 0.15s ease';
+    container.style.opacity = '1';
     let html = '';
     for (let r = 0; r < rows; r++) {
-        html += '<tr>';
+        html += '<tr class="skeleton-row">';
         for (let c = 0; c < cols; c++) {
-            const w = 30 + Math.random() * 60;
-            html += `<td><div class="skeleton" style="width:${w}%;height:14px;border-radius:4px;background:var(--bg-hover);animation:pulse 1.5s infinite"></div></td>`;
+            const w = 25 + Math.random() * 50;
+            // Alternate widths for more natural look
+            const width = c === 0 ? Math.max(w, 50) : w;
+            html += `<td><div class="skeleton-cell" style="width:${width}%"></div></td>`;
         }
         html += '</tr>';
     }
     container.innerHTML = html;
 }
 
-// Add skeleton animation
+// Skeleton CSS is injected via the stylesheet (see style.css for main definitions)
 const skeletonStyle = document.createElement('style');
 skeletonStyle.textContent = `
-    @keyframes pulse {
-        0%, 100% { opacity: 0.3; }
-        50% { opacity: 0.7; }
-    }
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+@keyframes pulse { 0%,100% { opacity: 0.25; } 50% { opacity: 0.55; } }
+.skeleton-cell {
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border) 50%, var(--bg-hover) 75%);
+    background-size: 200px 100%;
+    animation: shimmer 2s infinite ease-in-out, pulse 2s infinite ease-in-out;
+}
+.skeleton-row {
+    pointer-events: none;
+}
+.skeleton-row td {
+    border-bottom-color: transparent !important;
+}
 `;
 document.head.appendChild(skeletonStyle);
 
-
-// ─── 6.5b CACHE STATUS INDICATOR ───
-
+// ─── Connection status ───
 setInterval(() => {
     const statusEl = document.getElementById('status-text');
     if (!statusEl) return;
@@ -1536,24 +2427,21 @@ setInterval(() => {
     }
 }, 10000);
 
-
-// ─── 6.5c BADGE AUTO-UPDATE ───
-
-// Periodically refresh stats to keep badges accurate
+// ─── Badge auto-update ───
 setInterval(async () => {
     if (state.currentPage === 'dashboard') {
-        const stats = await apiFetch('/stats');
+        let stats = await loadJSON('/data/stats.json');
+        if (!stats) stats = await apiFetch('/stats');
         if (stats) {
             state.stats = stats;
-            if (document.getElementById('badge-missions')) {
-                document.getElementById('badge-missions').textContent = stats.total_missions;
-                document.getElementById('badge-blueprints').textContent = stats.total_blueprints;
-                document.getElementById('badge-weapons').textContent = stats.total_weapons;
-                document.getElementById('badge-items').textContent = stats.total_items;
-            }
+            // Solo actualizar badges de secciones precargadas
+            ['missions','blueprints','weapons'].forEach(k => {
+                const el = document.getElementById('badge-' + k);
+                if (el) el.textContent = stats['total_' + k] || 0;
+            });
+            // Badges lazy se mantienen como '…' hasta que se cargue la sección
         }
     }
-}, 60000); // Every minute
+}, 60000);
 
-
-console.log('✅ Paso 6 — Pulido aplicado');
+console.log('✅ SC Database v2.2 — Lazy loading por sección');

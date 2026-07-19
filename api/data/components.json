@@ -4,80 +4,80 @@
     {
       "name": "QuikCool",
       "type": "Cooler",
-      "size": "?",
-      "grade": "?"
+      "size": "1",
+      "grade": "Competition"
     },
     {
       "name": "RapidCool",
       "type": "Cooler",
-      "size": "?",
-      "grade": "?"
+      "size": "1",
+      "grade": "Competition"
     },
     {
       "name": "Glacier",
       "type": "Cooler",
-      "size": "?",
-      "grade": "?"
+      "size": "2",
+      "grade": "Industrial"
     },
     {
       "name": "CoolCore",
       "type": "Cooler",
-      "size": "?",
-      "grade": "?"
+      "size": "2",
+      "grade": "Civilian"
     },
     {
       "name": "Chill-Max",
       "type": "Cooler",
-      "size": "?",
-      "grade": "?"
+      "size": "1",
+      "grade": "Industrial"
     },
     {
       "name": "BlastChill",
       "type": "Cooler",
-      "size": "?",
-      "grade": "?"
+      "size": "2",
+      "grade": "Competition"
     },
     {
       "name": "VaporBlock",
       "type": "Cooler",
-      "size": "?",
-      "grade": "?"
+      "size": "2",
+      "grade": "Military"
     },
     {
       "name": "JS-300",
       "type": "Power Plant",
-      "size": "?",
-      "grade": "?"
+      "size": "2",
+      "grade": "Military"
     },
     {
       "name": "JS-400",
       "type": "Power Plant",
-      "size": "?",
-      "grade": "?"
+      "size": "3",
+      "grade": "Military"
     },
     {
       "name": "SparkFire",
       "type": "Power Plant",
-      "size": "?",
-      "grade": "?"
+      "size": "1",
+      "grade": "Competition"
     },
     {
       "name": "Drift",
       "type": "Quantum Drive",
-      "size": "?",
-      "grade": "?"
+      "size": "1",
+      "grade": "Stealth"
     },
     {
       "name": "Spectre",
       "type": "Quantum Drive",
-      "size": "?",
-      "grade": "?"
+      "size": "1",
+      "grade": "Stealth"
     },
     {
       "name": "Atlas",
       "type": "Quantum Drive",
-      "size": "?",
-      "grade": "?"
+      "size": "2",
+      "grade": "Military"
     },
     {
       "name": "Drifter",
@@ -88,32 +88,32 @@
     {
       "name": "Siren",
       "type": "Quantum Drive",
-      "size": "?",
-      "grade": "?"
+      "size": "1",
+      "grade": "Civilian"
     },
     {
       "name": "Crossfield",
       "type": "Quantum Drive",
-      "size": "?",
-      "grade": "?"
+      "size": "2",
+      "grade": "Civilian"
     },
     {
       "name": "XL-1",
       "type": "Quantum Drive",
-      "size": "?",
-      "grade": "?"
+      "size": "1",
+      "grade": "Industrial"
     },
     {
       "name": "FR-66",
       "type": "Shield",
-      "size": "?",
-      "grade": "?"
+      "size": "2",
+      "grade": "Military"
     },
     {
       "name": "FR-76",
       "type": "Shield",
-      "size": "?",
-      "grade": "?"
+      "size": "3",
+      "grade": "Military"
     },
     {
       "name": "SecureShield",
@@ -124,8 +124,8 @@
     {
       "name": "FR-86",
       "type": "Shield",
-      "size": "?",
-      "grade": "?"
+      "size": "3",
+      "grade": "Military"
     },
     {
       "name": "FR-66 Shield Generator",

@@ -1,0 +1,548 @@
+[
+  {
+    "name": "QuikCool",
+    "type": "Cooler",
+    "size": "1",
+    "grade": "Competition"
+  },
+  {
+    "name": "RapidCool",
+    "type": "Cooler",
+    "size": "1",
+    "grade": "Competition"
+  },
+  {
+    "name": "Glacier",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Industrial"
+  },
+  {
+    "name": "CoolCore",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Chill-Max",
+    "type": "Cooler",
+    "size": "1",
+    "grade": "Industrial"
+  },
+  {
+    "name": "BlastChill",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Competition"
+  },
+  {
+    "name": "VaporBlock",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Military"
+  },
+  {
+    "name": "JS-300",
+    "type": "Power Plant",
+    "size": "2",
+    "grade": "Military"
+  },
+  {
+    "name": "JS-400",
+    "type": "Power Plant",
+    "size": "3",
+    "grade": "Military"
+  },
+  {
+    "name": "SparkFire",
+    "type": "Power Plant",
+    "size": "1",
+    "grade": "Competition"
+  },
+  {
+    "name": "Drift",
+    "type": "Quantum Drive",
+    "size": "1",
+    "grade": "Stealth"
+  },
+  {
+    "name": "Spectre",
+    "type": "Quantum Drive",
+    "size": "1",
+    "grade": "Stealth"
+  },
+  {
+    "name": "Atlas",
+    "type": "Quantum Drive",
+    "size": "2",
+    "grade": "Military"
+  },
+  {
+    "name": "Drifter",
+    "type": "Quantum Drive",
+    "size": "?",
+    "grade": "?"
+  },
+  {
+    "name": "Siren",
+    "type": "Quantum Drive",
+    "size": "1",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Crossfield",
+    "type": "Quantum Drive",
+    "size": "2",
+    "grade": "Civilian"
+  },
+  {
+    "name": "XL-1",
+    "type": "Quantum Drive",
+    "size": "1",
+    "grade": "Industrial"
+  },
+  {
+    "name": "FR-66",
+    "type": "Shield",
+    "size": "2",
+    "grade": "Military"
+  },
+  {
+    "name": "FR-76",
+    "type": "Shield",
+    "size": "3",
+    "grade": "Military"
+  },
+  {
+    "name": "SecureShield",
+    "type": "Shield",
+    "size": "?",
+    "grade": "?"
+  },
+  {
+    "name": "FR-86",
+    "type": "Shield",
+    "size": "3",
+    "grade": "Military"
+  },
+  {
+    "name": "FR-66 Shield Generator",
+    "type": "Shield",
+    "size": "2",
+    "grade": "Military"
+  },
+  {
+    "name": "FR-76 Shield Generator",
+    "type": "Shield",
+    "size": "3",
+    "grade": "Military"
+  },
+  {
+    "name": "FR-86 Shield Generator",
+    "type": "Shield",
+    "size": "3",
+    "grade": "Military"
+  },
+  {
+    "name": "JS-300 Power Plant",
+    "type": "Power Plant",
+    "size": "2",
+    "grade": "Military"
+  },
+  {
+    "name": "JS-400 Power Plant",
+    "type": "Power Plant",
+    "size": "3",
+    "grade": "Military"
+  },
+  {
+    "name": "VaporBlock Cooler",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Military"
+  },
+  {
+    "name": "Glacier Cooler",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Industrial"
+  },
+  {
+    "name": "Chill-Max Cooler",
+    "type": "Cooler",
+    "size": "1",
+    "grade": "Industrial"
+  },
+  {
+    "name": "Spectre Quantum Drive",
+    "type": "Quantum Drive",
+    "size": "1",
+    "grade": "Stealth"
+  },
+  {
+    "name": "Atlas Quantum Drive",
+    "type": "Quantum Drive",
+    "size": "2",
+    "grade": "Military"
+  },
+  {
+    "name": "Siren Quantum Drive",
+    "type": "Quantum Drive",
+    "size": "1",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Crossfield Quantum Drive",
+    "type": "Quantum Drive",
+    "size": "2",
+    "grade": "Civilian"
+  },
+  {
+    "name": "XL-1 Quantum Drive",
+    "type": "Quantum Drive",
+    "size": "1",
+    "grade": "Industrial"
+  },
+  {
+    "name": "Ping Radar",
+    "type": "Radar",
+    "size": "1",
+    "grade": "Military"
+  },
+  {
+    "name": "Echo Radar",
+    "type": "Radar",
+    "size": "1",
+    "grade": "Stealth"
+  },
+  {
+    "name": "Guardian Radar",
+    "type": "Radar",
+    "size": "1",
+    "grade": "Military"
+  },
+  {
+    "name": "Rampart Shield Generator",
+    "type": "Shield",
+    "size": "3",
+    "grade": "Military"
+  },
+  {
+    "name": "CoolCore Cooler",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Civilian"
+  },
+  {
+    "name": "RapidCool Cooler",
+    "type": "Cooler",
+    "size": "1",
+    "grade": "Competition"
+  },
+  {
+    "name": "Palisade Shield Generator",
+    "type": "Shield",
+    "size": "2",
+    "grade": "Industrial"
+  },
+  {
+    "name": "Parapet Shield Generator",
+    "type": "Shield",
+    "size": "3",
+    "grade": "Industrial"
+  },
+  {
+    "name": "7SA 'Concord' Shield",
+    "type": "Shield",
+    "size": "1",
+    "grade": "Civilian"
+  },
+  {
+    "name": "INK Shield",
+    "type": "Shield",
+    "size": "1",
+    "grade": "Civilian"
+  },
+  {
+    "name": "7MA 'Lorica' Shield",
+    "type": "Shield",
+    "size": "2",
+    "grade": "Civilian"
+  },
+  {
+    "name": "RPEL Shield",
+    "type": "Shield",
+    "size": "2",
+    "grade": "Civilian"
+  },
+  {
+    "name": "7CA 'Nargun' Shield",
+    "type": "Shield",
+    "size": "3",
+    "grade": "Civilian"
+  },
+  {
+    "name": "HAVEN Shield",
+    "type": "Shield",
+    "size": "3",
+    "grade": "Civilian"
+  },
+  {
+    "name": "SparkFire Power Plant",
+    "type": "Power Plant",
+    "size": "1",
+    "grade": "Competition"
+  },
+  {
+    "name": "PowerBolt Power Plant",
+    "type": "Power Plant",
+    "size": "1",
+    "grade": "Civilian"
+  },
+  {
+    "name": "IonWave Power Plant",
+    "type": "Power Plant",
+    "size": "0",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Radix Power Plant",
+    "type": "Power Plant",
+    "size": "0",
+    "grade": "Civilian"
+  },
+  {
+    "name": "IonBurst Power Plant",
+    "type": "Power Plant",
+    "size": "1",
+    "grade": "Civilian"
+  },
+  {
+    "name": "LightBlossom Power Plant",
+    "type": "Power Plant",
+    "size": "1",
+    "grade": "Civilian"
+  },
+  {
+    "name": "MagnaBloom Power Plant",
+    "type": "Power Plant",
+    "size": "1",
+    "grade": "Civilian"
+  },
+  {
+    "name": "FullForce Power Plant",
+    "type": "Power Plant",
+    "size": "2",
+    "grade": "Civilian"
+  },
+  {
+    "name": "IonSurge Power Plant",
+    "type": "Power Plant",
+    "size": "2",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Radiance Power Plant",
+    "type": "Power Plant",
+    "size": "2",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Celestial Power Plant",
+    "type": "Power Plant",
+    "size": "3",
+    "grade": "Civilian"
+  },
+  {
+    "name": "NewDawn Power Plant",
+    "type": "Power Plant",
+    "size": "3",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Avalanche Cooler",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Military"
+  },
+  {
+    "name": "Blizzard Cooler",
+    "type": "Cooler",
+    "size": "3",
+    "grade": "Military"
+  },
+  {
+    "name": "IceBox Cooler",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Stealth"
+  },
+  {
+    "name": "SnowBlind Cooler",
+    "type": "Cooler",
+    "size": "1",
+    "grade": "Stealth"
+  },
+  {
+    "name": "NightFall Cooler",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Stealth"
+  },
+  {
+    "name": "HeatSafe Cooler",
+    "type": "Cooler",
+    "size": "1",
+    "grade": "Stealth"
+  },
+  {
+    "name": "HeatSink Cooler",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Stealth"
+  },
+  {
+    "name": "QuikCool Cooler",
+    "type": "Cooler",
+    "size": "1",
+    "grade": "Competition"
+  },
+  {
+    "name": "BlastChill Cooler",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Competition"
+  },
+  {
+    "name": "Frost-Star SL Cooler",
+    "type": "Cooler",
+    "size": "0",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Fridan Cooler",
+    "type": "Cooler",
+    "size": "0",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Tepilo Cooler",
+    "type": "Cooler",
+    "size": "0",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Frost-Star Cooler",
+    "type": "Cooler",
+    "size": "1",
+    "grade": "Civilian"
+  },
+  {
+    "name": "ArcticStorm Cooler",
+    "type": "Cooler",
+    "size": "1",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Berian Cooler",
+    "type": "Cooler",
+    "size": "1",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Gelid Cooler",
+    "type": "Cooler",
+    "size": "1",
+    "grade": "Civilian"
+  },
+  {
+    "name": "ColdSnap Cooler",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Aufeis Cooler",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Graupel Cooler",
+    "type": "Cooler",
+    "size": "2",
+    "grade": "Civilian"
+  },
+  {
+    "name": "FrostBurn Cooler",
+    "type": "Cooler",
+    "size": "3",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Draug Cooler",
+    "type": "Cooler",
+    "size": "3",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Elsen Cooler",
+    "type": "Cooler",
+    "size": "3",
+    "grade": "Civilian"
+  },
+  {
+    "name": "Kragen Cooler",
+    "type": "Cooler",
+    "size": "3",
+    "grade": "Civilian"
+  },
+  {
+    "name": "VK-00 Quantum Drive",
+    "type": "Quantum Drive",
+    "size": "1",
+    "grade": "Military"
+  },
+  {
+    "name": "Yeager Quantum Drive",
+    "type": "Quantum Drive",
+    "size": "2",
+    "grade": "Military"
+  },
+  {
+    "name": "Balandin Quantum Drive",
+    "type": "Quantum Drive",
+    "size": "3",
+    "grade": "Military"
+  },
+  {
+    "name": "TS-2 Quantum Drive",
+    "type": "Quantum Drive",
+    "size": "3",
+    "grade": "Military"
+  },
+  {
+    "name": "Drift Quantum Drive",
+    "type": "Quantum Drive",
+    "size": "1",
+    "grade": "Stealth"
+  },
+  {
+    "name": "Sens Radar",
+    "type": "Radar",
+    "size": "0",
+    "grade": "Military"
+  },
+  {
+    "name": "Tige Radar",
+    "type": "Radar",
+    "size": "1",
+    "grade": "Military"
+  },
+  {
+    "name": "V60-26 Radar",
+    "type": "Radar",
+    "size": "0",
+    "grade": "Military"
+  }
+]

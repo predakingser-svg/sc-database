@@ -12,11 +12,15 @@ def index():
 
 @app.route('/style.css')
 def style_css():
-    return send_from_directory(FRONTEND, 'style.css')
+    resp = send_from_directory(FRONTEND, 'style.css')
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return resp
 
 @app.route('/app.js')
 def app_js():
-    return send_from_directory(FRONTEND, 'app.js')
+    resp = send_from_directory(FRONTEND, 'app.js')
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return resp
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
