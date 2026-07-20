@@ -3,6 +3,20 @@
    ═══════════════════════════════════════════ */
 
 :root {
+    --flicker: linear(
+      0 0%,
+      0.1864 6.17%,
+      0.0001 14.41%,
+      0.5244 20.97%,
+      0.3927 37.91%,
+      0.8115 60.62%,
+      0.9416 61.92%,
+      0.9928 67.98%,
+      0.5032 70.42%,
+      0.9077 96.96%,
+      0.6736 98.74%,
+      1 100%
+    );
     --bg-primary: #0a0a0f;
     --bg-secondary: #12121a;
     --bg-card: #1a1a25;
@@ -18,6 +32,350 @@
     --danger: #ef5350;
     --sidebar-width: 240px;
     --topbar-height: 60px;
+}
+
+/* ═══════════════════════════════════════════
+   Pyro Theme (naranja/rojo/ámbar)
+   ═══════════════════════════════════════════ */
+
+[data-theme="pyro"] {
+    --bg-primary: #0a0808;
+    --bg-secondary: #14100d;
+    --bg-card: #1c1410;
+    --bg-hover: #261a14;
+    --border: #332218;
+    --text-primary: #e0d5cc;
+    --text-secondary: #a08878;
+    --text-muted: #6a5545;
+    --accent: #ff6b35;
+    --accent-dim: #3d1e0e;
+    --success: #66bb6a;
+    --warning: #ffa726;
+    --danger: #ef5350;
+}
+
+/* ══ Pyro: Component Overrides ══ */
+
+[data-theme="pyro"] .sidebar-header h1 span { color: var(--accent); }
+
+[data-theme="pyro"] .nav-item.active {
+    border-right: 3px solid var(--accent);
+    color: var(--accent);
+}
+
+/* Stat cards */
+[data-theme="pyro"] .stat-card .stat-value { color: var(--accent); }
+[data-theme="pyro"] .stat-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(255, 107, 53, 0.15);
+}
+
+/* Table headers */
+[data-theme="pyro"] .data-table th:hover { color: var(--accent); }
+[data-theme="pyro"] .data-table th.sorted { color: var(--accent); }
+[data-theme="pyro"] .data-table tbody tr:hover { border-left: 2px solid var(--accent); }
+
+/* Pagination */
+[data-theme="pyro"] .page-btn.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+[data-theme="pyro"] .page-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* Filters */
+[data-theme="pyro"] .filter-input:focus,
+[data-theme="pyro"] .filter-select:focus {
+    border-color: var(--accent);
+}
+[data-theme="pyro"] .check-label input[type="checkbox"] {
+    accent-color: var(--accent);
+}
+
+/* Quick links */
+[data-theme="pyro"] .quick-link:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(255, 107, 53, 0.12);
+}
+
+/* Charts — Pyro mode */
+[data-theme="pyro"] .chart-bar-fill.system-Stanton { background: #ff8a65; }
+[data-theme="pyro"] .chart-bar-fill.system-Pyro { background: #ff5252; }
+
+[data-theme="pyro"] .cbl-val { color: var(--accent); }
+
+/* Badges */
+[data-theme="pyro"] .badge-bp {
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+[data-theme="pyro"] .comp-badge.ct-PowerPlant {
+    background: rgba(255, 107, 53, 0.15);
+    color: var(--accent);
+}
+[data-theme="pyro"] .comp-badge.ct-Shield {
+    background: rgba(255, 107, 53, 0.15);
+    color: var(--accent);
+}
+
+/* Catalog cards */
+[data-theme="pyro"] .catalog-card .cc-title { color: var(--accent); }
+[data-theme="pyro"] .catalog-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+}
+
+/* Search results accent */
+[data-theme="pyro"] .search-dropdown .sr-title { color: var(--accent); }
+[data-theme="pyro"] .search-result-item:hover { border-left: 2px solid var(--accent); }
+
+/* Pagination accent in text above */
+[data-theme="pyro"] .page-count {
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+/* Scroll-to-top button */
+[data-theme="pyro"] #scroll-top-btn:hover {
+    background: var(--accent);
+    color: var(--bg-primary);
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
+}
+
+/* Loading spinner */
+[data-theme="pyro"] .loading-indicator .spinner {
+    border-top-color: var(--accent);
+}
+
+/* Search dropdown accent header */
+[data-theme="pyro"] .search-dropdown div[style*="text-transform:uppercase"] {
+    color: var(--accent) !important;
+}
+
+/* ═══ Pyro: Fire gradient on sidebar header bottom border ═══ */
+
+[data-theme="pyro"] .sidebar-header {
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(90deg, #ff6b35, #ff5252, #ffa726, #ff6b35) 1;
+    border-image-slice: 1;
+    animation: pyro-fire-border 4s ease infinite;
+}
+
+@keyframes pyro-fire-border {
+    0% { border-image-source: linear-gradient(90deg, #ff6b35, #ff5252, #ffa726, #ff6b35); }
+    25% { border-image-source: linear-gradient(90deg, #ffa726, #ff6b35, #ff5252, #ffa726); }
+    50% { border-image-source: linear-gradient(90deg, #ff5252, #ffa726, #ff6b35, #ff5252); }
+    75% { border-image-source: linear-gradient(90deg, #ff6b35, #ff5252, #ffa726, #ff6b35); }
+    100% { border-image-source: linear-gradient(90deg, #ff6b35, #ff5252, #ffa726, #ff6b35); }
+}
+
+/* ═══ Pyro: Scanlines en toda la página ═══ */
+
+[data-theme="pyro"] body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent, transparent 2px,
+        rgba(255, 107, 53, 0.04) 2px, rgba(255, 107, 53, 0.04) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+}
+
+[data-theme="pyro"] .card,
+[data-theme="pyro"] .modal-detail,
+[data-theme="pyro"] .stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+[data-theme="pyro"] .card::after,
+[data-theme="pyro"] .modal-detail::after,
+[data-theme="pyro"] .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 107, 53, 0.05) 2px,
+        rgba(255, 107, 53, 0.05) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ═══ Pyro: Glitch effect — AUTOMÁTICO e infinito ═══ */
+
+@keyframes glitch {
+    0% { transform: translate(0, 0) skewX(0deg); }
+    1% { transform: translate(-2px, 1px) skewX(-0.8deg); }
+    2%, 3% { transform: translate(3px, -1px) skewX(0.6deg); clip-path: polygon(0 2%, 100% 2%, 100% 95%, 95% 95%, 95% 90%, 85% 90%, 85% 95%, 8% 95%, 0 70%); }
+    4% { transform: translate(-3px, 2px) skewX(-0.4deg); clip-path: polygon(0 78%, 100% 78%, 100% 100%, 95% 100%, 95% 90%, 85% 90%, 85% 100%, 8% 100%, 0 78%); }
+    5% { transform: translate(1px, 0) skewX(0.4deg); }
+    6% { transform: translate(4px, -2px) skewX(0.3deg); clip-path: polygon(0 44%, 100% 44%, 100% 54%, 95% 54%, 95% 54%, 85% 54%, 85% 54%, 8% 54%, 0 54%); }
+    7% { transform: translate(-1px, 1px) skewX(-0.3deg); }
+    8%, 9% { transform: translate(2px, -1px) skewX(0.5deg); clip-path: polygon(0 40%, 100% 40%, 100% 85%, 95% 85%, 95% 85%, 85% 85%, 85% 85%, 8% 85%, 0 70%); }
+    10% { transform: translate(-2px, 2px) skewX(-0.5deg); }
+    11% { transform: translate(1px, 0) skewX(0); }
+    12%, 14% { transform: translate(-1px, 1px) skewX(-0.3deg); clip-path: polygon(0 63%, 100% 63%, 100% 80%, 95% 80%, 95% 80%, 85% 80%, 85% 80%, 8% 80%, 0 70%); }
+    15% { transform: translate(0, 0) skewX(0); clip-path: none; }
+    100% { transform: translate(0, 0) skewX(0); clip-path: none; }
+}
+
+[data-theme="pyro"] .card,
+[data-theme="pyro"] .stat-card,
+[data-theme="pyro"] .modal-detail {
+    animation: glitch 8s infinite;
+    animation-delay: calc(var(--glitch-delay, 0) * 1s);
+}
+
+@keyframes glitch-rgb {
+    0% { text-shadow: 3px 0 #ff0040, -3px 0 #00ffff, 0 0 0 transparent; }
+    2% { text-shadow: -3px 0 #ff0040, 3px 0 #00ffff, 0 0 2px rgba(255, 107, 53, 0.3); }
+    4% { text-shadow: 2px 0 #ff0040, -2px 0 #00ffff, 0 0 0 transparent; }
+    6% { text-shadow: -2px 0 #ff0040, 2px 0 #00ffff, 0 0 3px rgba(255, 107, 53, 0.2); }
+    8% { text-shadow: 1px 0 #ff0040, -1px 0 #00ffff; }
+    10% { text-shadow: -1px 0 #ff0040, 3px 0 #00ffff; }
+    12%, 92% { text-shadow: 0 0 0 transparent; }
+    94% { text-shadow: 2px 0 #ff0040, -2px 0 #00ffff; }
+    96% { text-shadow: -2px 0 #ff0040, 2px 0 #00ffff; }
+    98% { text-shadow: 1px 0 #ff0040, -1px 0 #00ffff; }
+    100% { text-shadow: 0 0 0 transparent; }
+}
+
+[data-theme="pyro"] .stat-value,
+[data-theme="pyro"] h3,
+[data-theme="pyro"] .modal-detail h2,
+[data-theme="pyro"] .sidebar-header h1 {
+    animation: glitch-rgb 6s infinite;
+    animation-delay: calc(var(--glitch-delay, 0) * 1s);
+}
+
+/* ═══ Pyro: Static noise on sidebar header ═══ */
+
+@keyframes static-noise {
+    0% { background-position: 0 0; }
+    10% { background-position: -5px 3px; }
+    20% { background-position: 3px -2px; }
+    30% { background-position: -2px 5px; }
+    40% { background-position: 4px 4px; }
+    50% { background-position: -4px -3px; }
+    60% { background-position: 2px 6px; }
+    70% { background-position: -6px -1px; }
+    80% { background-position: 1px 4px; }
+    90% { background-position: -3px -5px; }
+    100% { background-position: 0 0; }
+}
+
+[data-theme="pyro"] .sidebar-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.1;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 64px 64px;
+    animation: static-noise 0.25s steps(3) infinite;
+    z-index: 0;
+}
+
+[data-theme="pyro"] .sidebar-header {
+    position: relative;
+    z-index: 0;
+}
+
+/* ═══ Pyro: Corner decorations en sidebar ═══ */
+[data-theme="pyro"] .sidebar-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    border-right: 2px solid var(--accent);
+    border-bottom: 2px solid var(--accent);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* ═══ Pyro: Corner decoration in sidebar (top-left) — injected via JS ═══ */
+[data-theme="pyro"] .sidebar-header .corner-tl {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    border-top: 2px solid var(--accent);
+    border-left: 2px solid var(--accent);
+    z-index: 2;
+    pointer-events: none;
+}
+
+[data-theme="pyro"] .sidebar-header h1,
+[data-theme="pyro"] .sidebar-header .version {
+    position: relative;
+    z-index: 1;
+}
+
+/* ═══ Pyro: Flicker intenso en badges, acentos y valores clave ═══ */
+
+@keyframes pyro-flicker {
+    0% { opacity: 1; transform: scale(1); }
+    3% { opacity: 0.08; transform: scale(0.95); }
+    5% { opacity: 0.7; transform: scale(1.02); }
+    7% { opacity: 0.1; transform: scale(0.97); filter: brightness(2); }
+    9% { opacity: 0.9; filter: brightness(1.5); }
+    11% { opacity: 0.15; transform: scale(0.98); }
+    13% { opacity: 1; transform: scale(1); filter: brightness(1); }
+    85% { opacity: 1; transform: scale(1); filter: brightness(1); }
+    87% { opacity: 0.2; transform: scale(0.96); filter: brightness(2.5); }
+    89% { opacity: 0.8; }
+    91% { opacity: 0.1; transform: scale(1.03); filter: brightness(2); }
+    93% { opacity: 0.9; }
+    95% { opacity: 0.05; filter: brightness(3); }
+    97% { opacity: 0.7; }
+    100% { opacity: 1; transform: scale(1); filter: brightness(1); }
+}
+
+[data-theme="pyro"] .badge,
+[data-theme="pyro"] .badge-bp,
+[data-theme="pyro"] .nav-item.active .nav-icon,
+[data-theme="pyro"] .stat-value,
+[data-theme="pyro"] .page-btn.active {
+    animation: pyro-flicker 3s infinite;
+}
+
+/* ═══ Pyro: Catalog card glitch automático ═══ */
+[data-theme="pyro"] .catalog-card {
+    animation: glitch 8s infinite;
+    animation-delay: calc(var(--glitch-delay, 0) * 1s);
+}
+
+/* ═══ Pyro: Minimap/faction nav glitch on key elements ═══ */
+[data-theme="pyro"] .nav-item.active {
+    background: var(--accent-dim);
+    border-right: 3px solid var(--accent);
+}
+
+[data-theme="pyro"] .nav-item.active .nav-text { color: var(--accent); }
+
+/* ═══ Pyro: Modal close button hover ═══ */
+[data-theme="pyro"] .modal-close:hover {
+    color: var(--accent);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -455,6 +813,17 @@ h2 { font-size: 24px; margin-bottom: 5px; }
 .comp-badge.ct-QuantumDrive { background: rgba(171,71,188,0.15); color: #ab47bc; }
 .comp-badge.ct-Radar { background: rgba(38,198,218,0.15); color: #26c6da; }
 
+/* ═══ Rarity Badges (Minerales) ═══ */
+.badge-rarity { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+.badge-rarity.común { background: rgba(158,158,158,0.15); color: #bdbdbd; border: 1px solid rgba(158,158,158,0.3); }
+.badge-rarity.raro { background: rgba(33,150,243,0.15); color: #64b5f6; border: 1px solid rgba(33,150,243,0.3); }
+.badge-rarity.épico { background: rgba(156,39,176,0.15); color: #ab47bc; border: 1px solid rgba(156,39,176,0.3); }
+.badge-rarity.legendario { background: rgba(255,167,38,0.15); color: #ffa726; border: 1px solid rgba(255,167,38,0.3); }
+
+[data-theme="pyro"] .badge-rarity.legendario { background: rgba(255,107,53,0.2); color: var(--accent); border-color: rgba(255,107,53,0.4); }
+[data-theme="pyro"] .badge-rarity.épico { background: rgba(171,71,188,0.15); color: #ce93d8; border-color: rgba(171,71,188,0.3); }
+[data-theme="pyro"] .badge-rarity.raro { background: rgba(79,195,247,0.15); color: #4fc3f7; border-color: rgba(79,195,247,0.3); }
+
 /* ═══ Item Type Badges ═══ */
 .badge-type { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
 .badge-type-armor_helmet,
@@ -857,6 +1226,14 @@ h2 { font-size: 24px; margin-bottom: 5px; }
     #comps-table.data-table td:nth-child(2)::before { content: 'Tipo'; }
     #comps-table.data-table td:nth-child(3)::before { content: 'Size'; }
     #comps-table.data-table td:nth-child(4)::before { content: 'Grade'; }
+
+    /* Minerals (6 cols): Nombre, Rareza, Firma Mín, Firma Máx, Valor/SCU, Sistemas */
+    #minerals-table.data-table td:nth-child(1)::before { content: 'Nombre'; }
+    #minerals-table.data-table td:nth-child(2)::before { content: 'Rareza'; }
+    #minerals-table.data-table td:nth-child(3)::before { content: 'Firma Mín'; }
+    #minerals-table.data-table td:nth-child(4)::before { content: 'Firma Máx'; }
+    #minerals-table.data-table td:nth-child(5)::before { content: 'Valor/SCU'; }
+    #minerals-table.data-table td:nth-child(6)::before { content: 'Sistemas'; }
 }
 
 @media (max-width: 480px) {
@@ -1066,4 +1443,759 @@ h2 { font-size: 24px; margin-bottom: 5px; }
     .kofi-banner-content { flex-direction: column; text-align: center; }
     .kofi-text { text-align: center; }
     .kofi-btn { width: 100%; justify-content: center; }
+}
+
+/* ═══ Supporter Section (Ko-fi desbloqueo Pyro) ═══ */
+
+.supporter-section {
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.10), rgba(255, 107, 53, 0.03));
+    border: 1px solid rgba(255, 107, 53, 0.2);
+    border-radius: 12px;
+    padding: 18px 24px;
+    margin: 0 0 16px 0;
+    transition: all 0.3s ease;
+}
+
+.supporter-section:hover {
+    border-color: rgba(255, 107, 53, 0.4);
+    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.12);
+}
+
+.supporter-content {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.supporter-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.supporter-text {
+    flex: 1;
+    min-width: 160px;
+}
+
+.supporter-text strong {
+    display: block;
+    font-size: 15px;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.supporter-text span {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.supporter-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.supporter-input-group .filter-input {
+    min-width: 180px;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.supporter-status {
+    margin-top: 10px;
+    display: none;
+    font-size: 13px;
+}
+
+.supporter-msg {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.supporter-msg-success {
+    background: rgba(102, 187, 106, 0.12);
+    border-color: rgba(102, 187, 106, 0.3);
+    color: var(--success);
+}
+
+.supporter-msg-error {
+    background: rgba(239, 83, 80, 0.12);
+    border-color: rgba(239, 83, 80, 0.3);
+    color: var(--danger);
+}
+
+.supporter-msg-locked {
+    background: rgba(255, 167, 38, 0.12);
+    border-color: rgba(255, 167, 38, 0.3);
+    color: var(--warning);
+}
+
+.supporter-unlocked .supporter-content {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.supporter-unlocked .supporter-icon {
+    filter: none;
+}
+
+[data-theme="pyro"] .supporter-section {
+    border-color: rgba(255, 107, 53, 0.3);
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 107, 53, 0.05));
+}
+
+[data-theme="pyro"] .supporter-section:hover {
+    border-color: rgba(255, 107, 53, 0.5);
+}
+
+[data-theme="pyro"] .supporter-msg-success {
+    background: rgba(255, 107, 53, 0.12);
+    border-color: rgba(255, 107, 53, 0.3);
+    color: var(--accent);
+}
+
+@media (max-width: 768px) {
+    .supporter-section { padding: 16px; }
+    .supporter-content { flex-direction: column; text-align: center; }
+    .supporter-text { text-align: center; }
+    .supporter-input-group { width: 100%; flex-direction: column; }
+    .supporter-input-group .filter-input { width: 100%; min-width: auto; }
+    .supporter-input-group .kofi-btn { width: 100%; justify-content: center; }
+}
+
+/* ═══════════════════════════════════════════
+   ═══ PYRO CYBER / GLITCH SYSTEM ═══
+   Integración del diseño cyber/glitch del ejemplo
+   Solo se activa con [data-theme="pyro"]
+   ═══════════════════════════════════════════ */
+
+/* ═══ Global: Glitch clip-path keyframes (referenciado desde pyro) ═══ */
+
+@keyframes glitch-cyber {
+    0% {
+      clip-path: var(--clip-one);
+    }
+    2%,
+    8% {
+      clip-path: var(--clip-two);
+      transform: translate(calc(var(--shimmy-distance, 5) * -1%), 0);
+    }
+    6% {
+      clip-path: var(--clip-two);
+      transform: translate(calc(var(--shimmy-distance, 5) * 1%), 0);
+    }
+    9% {
+      clip-path: var(--clip-two);
+      transform: translate(0, 0);
+    }
+    10% {
+      clip-path: var(--clip-three);
+      transform: translate(calc(var(--shimmy-distance, 5) * 1%), 0);
+    }
+    13% {
+      clip-path: var(--clip-three);
+      transform: translate(0, 0);
+    }
+    14%,
+    21% {
+      clip-path: var(--clip-four);
+      transform: translate(calc(var(--shimmy-distance, 5) * 1%), 0);
+    }
+    25% {
+      clip-path: var(--clip-five);
+      transform: translate(calc(var(--shimmy-distance, 5) * 1%), 0);
+    }
+    30% {
+      clip-path: var(--clip-five);
+      transform: translate(calc(var(--shimmy-distance, 5) * -1%), 0);
+    }
+    35%,
+    45% {
+      clip-path: var(--clip-six);
+      transform: translate(calc(var(--shimmy-distance, 5) * -1%));
+    }
+    40% {
+      clip-path: var(--clip-six);
+      transform: translate(calc(var(--shimmy-distance, 5) * 1%));
+    }
+    50% {
+      clip-path: var(--clip-six);
+      transform: translate(0, 0);
+    }
+    55% {
+      clip-path: var(--clip-seven);
+      transform: translate(calc(var(--shimmy-distance, 5) * 1%), 0);
+    }
+    60% {
+      clip-path: var(--clip-seven);
+      transform: translate(0, 0);
+    }
+    31%,
+    61%,
+    100% {
+      clip-path: var(--clip-four);
+    }
+}
+
+@keyframes flicker {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes bg-flicker {
+    0% {
+      background: hsla(0,0%,0%,0.65);
+    }
+    100% {
+      background: var(--accent);
+    }
+}
+
+/* ═══ PYRO CYBER THEME ═══ */
+
+[data-theme="pyro"] .cyber-btn,
+[data-theme="pyro"] .tb-btn.cyber-btn {
+    --corner: 12px;
+    --border: 1px;
+    --clip: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - var(--corner)),
+      calc(100% - var(--corner)) 100%,
+      0% 100%
+    );
+    font-family: inherit;
+    text-align: left;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.5rem;
+    border: 0;
+    background: transparent;
+    position: relative;
+    color: var(--accent);
+    cursor: pointer;
+    outline: none;
+    width: auto;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    clip-path: var(--clip);
+}
+
+[data-theme="pyro"] .cyber-btn *,
+[data-theme="pyro"] .tb-btn.cyber-btn * {
+    pointer-events: none;
+}
+
+[data-theme="pyro"] .cyber-btn .backdrop,
+[data-theme="pyro"] .tb-btn.cyber-btn .backdrop {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: hsla(0,0%,0%,0.4);
+    backdrop-filter: saturate(180%) blur(6px);
+    -webkit-backdrop-filter: saturate(180%) blur(6px);
+    clip-path: var(--clip);
+    pointer-events: none;
+    transition: background 0.2s ease;
+}
+
+[data-theme="pyro"] .cyber-btn .backdrop::before,
+[data-theme="pyro"] .tb-btn.cyber-btn .backdrop::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    translate: 0 0;
+    border: var(--border) solid transparent;
+    clip-path: var(--clip);
+    mask: linear-gradient(transparent 0% 100%), linear-gradient(#fff 0% 100%);
+    mask-clip: padding-box, border-box;
+    mask-repeat: no-repeat;
+    mask-composite: intersect;
+    z-index: 2;
+}
+
+[data-theme="pyro"] .cyber-btn .backdrop .corner,
+[data-theme="pyro"] .tb-btn.cyber-btn .backdrop .corner {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    height: var(--corner);
+    width: var(--corner);
+}
+
+[data-theme="pyro"] .cyber-btn .backdrop .corner::after,
+[data-theme="pyro"] .tb-btn.cyber-btn .backdrop .corner::after {
+    content: '';
+    height: calc(var(--border) * 2);
+    width: 200%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    transform: rotate(135deg);
+    background: var(--accent);
+}
+
+/* Cyber: hover/focus states */
+[data-theme="pyro"] .cyber-btn:is(:hover, :focus-visible),
+[data-theme="pyro"] .tb-btn.cyber-btn:is(:hover, :focus-visible) {
+    color: var(--bg-primary);
+}
+
+[data-theme="pyro"] .cyber-btn:is(:hover, :focus-visible) .backdrop,
+[data-theme="pyro"] .tb-btn.cyber-btn:is(:hover, :focus-visible) .backdrop {
+    background: var(--accent);
+}
+
+[data-theme="pyro"] .cyber-btn:is(:hover, :focus-visible) kbd,
+[data-theme="pyro"] .tb-btn.cyber-btn:is(:hover, :focus-visible) kbd {
+    color: var(--accent);
+}
+
+/* Cyber: glitch layer */
+[data-theme="pyro"] .cyber-btn:is(:focus-visible, :hover) .glitch,
+[data-theme="pyro"] .tb-btn.cyber-btn:is(:focus-visible, :hover) .glitch {
+    animation: glitch-cyber 2s infinite;
+    display: flex;
+}
+
+[data-theme="pyro"] .cyber-btn:is(:focus-visible, :hover) .glitch .backdrop,
+[data-theme="pyro"] .tb-btn.cyber-btn:is(:focus-visible, :hover) .glitch .backdrop {
+    background: var(--bg-primary);
+}
+
+[data-theme="pyro"] .cyber-btn .glitch,
+[data-theme="pyro"] .tb-btn.cyber-btn .glitch {
+    display: none;
+    position: absolute;
+    inset: 0;
+    translate: 0% 0;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.5rem;
+    pointer-events: none;
+    color: var(--accent);
+    text-shadow: 0 1px var(--shadow);
+    z-index: 3;
+}
+
+[data-theme="pyro"] .cyber-btn .glitch kbd,
+[data-theme="pyro"] .tb-btn.cyber-btn .glitch kbd {
+    opacity: 0;
+}
+
+/* Cyber: shimmy-distance for glitch animation */
+[data-theme="pyro"] .cyber-btn {
+    --shimmy-distance: 5;
+    --clip-one: polygon(
+      0 2%,
+      100% 2%,
+      100% 95%,
+      95% 95%,
+      95% 90%,
+      85% 90%,
+      85% 95%,
+      8% 95%,
+      0 70%
+    );
+    --clip-two: polygon(
+      0 78%,
+      100% 78%,
+      100% 100%,
+      95% 100%,
+      95% 90%,
+      85% 90%,
+      85% 100%,
+      8% 100%,
+      0 78%
+    );
+    --clip-three: polygon(
+      0 44%,
+      100% 44%,
+      100% 54%,
+      95% 54%,
+      95% 54%,
+      85% 54%,
+      85% 54%,
+      8% 54%,
+      0 54%
+    );
+    --clip-four: polygon(
+      0 0,
+      100% 0,
+      100% 0,
+      95% 0,
+      95% 0,
+      85% 0,
+      85% 0,
+      8% 0,
+      0 0
+    );
+    --clip-five: polygon(
+      0 0,
+      100% 0,
+      100% 0,
+      95% 0,
+      95% 0,
+      85% 0,
+      85% 0,
+      8% 0,
+      0 0
+    );
+    --clip-six: polygon(
+      0 40%,
+      100% 40%,
+      100% 85%,
+      95% 85%,
+      95% 85%,
+      85% 85%,
+      85% 85%,
+      8% 85%,
+      0 70%
+    );
+    --clip-seven: polygon(
+      0 63%,
+      100% 63%,
+      100% 80%,
+      95% 80%,
+      95% 80%,
+      85% 80%,
+      85% 80%,
+      8% 80%,
+      0 70%
+    );
+}
+
+/* ═══ Glitch Letters System ═══ */
+[data-theme="pyro"] .letters {
+    display: flex;
+}
+
+[data-theme="pyro"] .letters span:nth-of-type(2),
+[data-theme="pyro"] .letters span:nth-of-type(5) {
+    scale: 1 -1;
+}
+
+[data-theme="pyro"] .letters span:nth-of-type(3),
+[data-theme="pyro"] .letters span:nth-of-type(6),
+[data-theme="pyro"] .letters span:nth-of-type(7) {
+    scale: -1 -1;
+}
+
+/* ═══ PYRO CYBER: Modal Glitch Effects ═══ */
+[data-theme="pyro"] .modal-detail {
+    --corner: 12px;
+    --border: 2px;
+    --clip: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - var(--corner)),
+      calc(100% - var(--corner)) 100%,
+      0% 100%
+    );
+    clip-path: var(--clip);
+    overflow: visible;
+    position: relative;
+}
+
+[data-theme="pyro"] .modal-detail .modal__glitch {
+    --shimmy-distance: 2;
+    --clip-one: polygon(
+      0 2%,
+      100% 2%,
+      100% 95%,
+      95% 95%,
+      95% 90%,
+      85% 90%,
+      85% 95%,
+      8% 95%,
+      0 70%
+    );
+    --clip-two: polygon(
+      0 78%,
+      100% 78%,
+      100% 100%,
+      95% 100%,
+      95% 90%,
+      85% 90%,
+      85% 100%,
+      8% 100%,
+      0 78%
+    );
+    --clip-three: polygon(
+      0 44%,
+      100% 44%,
+      100% 54%,
+      95% 54%,
+      95% 54%,
+      85% 54%,
+      85% 54%,
+      8% 54%,
+      0 54%
+    );
+    --clip-four: polygon(
+      0 0,
+      100% 0,
+      100% 0,
+      95% 0,
+      95% 0,
+      85% 0,
+      85% 0,
+      8% 0,
+      0 0
+    );
+    --clip-five: polygon(
+      0 0,
+      100% 0,
+      100% 0,
+      95% 0,
+      95% 0,
+      85% 0,
+      85% 0,
+      8% 0,
+      0 0
+    );
+    --clip-six: polygon(
+      0 40%,
+      100% 40%,
+      100% 85%,
+      95% 85%,
+      95% 85%,
+      85% 85%,
+      85% 85%,
+      8% 85%,
+      0 70%
+    );
+    --clip-seven: polygon(
+      0 63%,
+      100% 63%,
+      100% 80%,
+      95% 80%,
+      95% 80%,
+      85% 80%,
+      85% 80%,
+      8% 80%,
+      0 70%
+    );
+    position: absolute;
+    inset: 0;
+    padding: 1rem;
+    animation-duration: 2s;
+    color: var(--accent-dim);
+    z-index: -1;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+[data-theme="pyro"] .modal-detail .modal__glitch.animating {
+    animation: glitch-cyber 2s infinite;
+}
+
+/* ═══ Pyro Cyber: Modal Backdrop Effects ═══ */
+[data-theme="pyro"] .modal-detail .body__backdrop {
+    position: absolute;
+    inset: 0;
+}
+
+[data-theme="pyro"] .modal-detail .body__backdrop::after {
+    content: '';
+    position: absolute;
+    left: 100%;
+    top: 2rem;
+    width: calc(2 * var(--border));
+    height: 40%;
+    background: var(--accent);
+    opacity: 0.7;
+    clip-path: polygon(0 0, 0 100%, 100% calc(100% - 6px), 100% 6px);
+}
+
+[data-theme="pyro"] .modal-detail .backdrop.body-backdrop {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: hsla(0,0%,0%,0.4);
+    backdrop-filter: saturate(180%) blur(6px);
+    -webkit-backdrop-filter: saturate(180%) blur(6px);
+    clip-path: var(--clip);
+    pointer-events: none;
+}
+
+/* Modal entry animation wrapper */
+[data-theme="pyro"] .modal-detail .modal-body {
+    backdrop-filter: saturate(180%) blur(6px);
+    -webkit-backdrop-filter: saturate(180%) blur(6px);
+}
+
+/* ═══ Pyro Cyber: Enhanced Flicker Effects ═══ */
+[data-theme="pyro"] .badge-bp,
+[data-theme="pyro"] .nav-item.active .nav-icon {
+    animation: pyro-flicker 3s var(--flicker) infinite;
+}
+
+/* Modal flicker on open */
+[data-theme="pyro"] .modal-overlay {
+    animation: flicker 0.625s var(--flicker) none;
+}
+
+/* Cyber button flicker on action */
+[data-theme="pyro"] .tb-btn.cyber-btn:active .backdrop,
+[data-theme="pyro"] .cyber-btn:active .backdrop {
+    animation: bg-flicker 0.25s var(--flicker);
+}
+
+/* ═══ Pyro Cyber: Corner Decorations for Modals ═══ */
+[data-theme="pyro"] .modal-detail .corner {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    height: var(--corner);
+    width: var(--corner);
+}
+
+[data-theme="pyro"] .modal-detail .corner::after {
+    content: '';
+    height: calc(var(--border) * 2);
+    width: 200%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    transform: rotate(135deg);
+    background: var(--accent);
+}
+
+/* ═══ Pyro Cyber: Hover glitch on data table rows ═══ */
+[data-theme="pyro"] .data-table tbody tr:hover {
+    --shimmy-distance: 2;
+    --clip-one: polygon(0 2%,100% 2%,100% 95%,95% 95%,95% 90%,85% 90%,85% 95%,8% 95%,0 70%);
+    --clip-two: polygon(0 78%,100% 78%,100% 100%,95% 100%,95% 90%,85% 90%,85% 100%,8% 100%,0 78%);
+}
+
+/* ═══ Pyro Cyber: Section divider with glitch line ═══ */
+[data-theme="pyro"] .detail-section h4 {
+    position: relative;
+    overflow: hidden;
+}
+
+[data-theme="pyro"] .detail-section h4::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    animation: glitch-cyber 4s ease infinite;
+    clip-path: var(--clip-one, none);
+}
+
+/* ═══════════════════════════════════════════
+   ═══ Buzón de sugerencias — Modal ═══
+   ═══════════════════════════════════════════ */
+
+.suggestions-modal {
+    max-width: 480px !important;
+}
+
+.suggestion-textarea {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    padding: 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+    transition: border-color 0.2s;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+
+.suggestion-textarea:focus {
+    border-color: var(--accent);
+}
+
+.suggestion-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.suggestion-email {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+
+.suggestion-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.suggestion-submit {
+    padding: 10px 24px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    cursor: pointer;
+}
+
+.suggestion-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.suggestion-feedback {
+    margin-bottom: 12px;
+    min-height: 0;
+}
+
+.suggestion-msg {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.suggestion-msg-success {
+    background: rgba(102, 187, 106, 0.12);
+    border: 1px solid rgba(102, 187, 106, 0.3);
+    color: var(--success);
+}
+
+.suggestion-msg-error {
+    background: rgba(239, 83, 80, 0.12);
+    border: 1px solid rgba(239, 83, 80, 0.3);
+    color: var(--danger);
+}
+
+@media (max-width: 480px) {
+    .suggestions-modal {
+        width: 95% !important;
+    }
+    .suggestion-actions {
+        flex-direction: column;
+    }
+    .suggestion-actions button {
+        width: 100%;
+        justify-content: center;
+    }
 }

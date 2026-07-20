@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin — Sugerencias SC Database</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; padding: 40px; }
+h1 { margin-bottom: 8px; color: #c9a84c; }
+.sub { color: #666; margin-bottom: 24px; font-size: 0.9rem; }
+#login { display: flex; gap: 8px; margin-bottom: 24px; align-items: center; flex-wrap: wrap; }
+#login input { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 0.9rem; }
+#login button { background: #c9a84c; color: #0a0a0a; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+#login button:hover { opacity: 0.85; }
+#login .error { color: #e74c3c; font-size: 0.85rem; margin-top: 4px; width: 100%; }
+.sug-box { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.sug-box .date { font-size: 0.75rem; color: #555; margin-bottom: 4px; }
+.sug-box .email { font-size: 0.8rem; color: #c9a84c; margin-bottom: 8px; }
+.sug-box .text { font-size: 0.95rem; line-height: 1.5; }
+.sug-box .status { display: inline-block; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+.sug-box .unread { background: #c9a84c22; color: #c9a84c; }
+.sug-box .read { background: #333; color: #666; }
+.empty { color: #555; text-align: center; padding: 40px; }
+#logout { margin-top: 20px; color: #666; cursor: pointer; font-size: 0.85rem; }
+#logout:hover { color: #e74c3c; }
+.loading { color: #555; text-align: center; padding: 20px; }
+</style>
+</head>
+<body>
+
+<h1>📋 Sugerencias SC Database</h1>
+<p class="sub">Buzón de sugerencias y reportes de errores</p>
+
+<div id="login">
+    <input type="password" id="token-input" placeholder="Token de administrador">
+    <button onclick="login()">Entrar</button>
+    <div id="login-error" class="error"></div>
+</div>
+
+<div id="content" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <span id="count" style="color:#666;font-size:0.9rem"></span>
+        <button onclick="logout()" id="logout">🚪 Salir</button>
+    </div>
+    <div id="list"></div>
+</div>
+
+<script>
+const API = '/api/suggestions';
+
+async function login() {
+    const token = document.getElementById('token-input').value.trim();
+    const error = document.getElementById('login-error');
+    if (!token) { error.textContent = 'Ingresa el token'; return; }
+    error.textContent = '';
+    localStorage.setItem('sc_admin_token', token);
+    await loadSuggestions();
+}
+
+function logout() {
+    localStorage.removeItem('sc_admin_token');
+    document.getElementById('token-input').value = '';
+    document.getElementById('login').style.display = 'flex';
+    document.getElementById('content').style.display = 'none';
+}
+
+async function loadSuggestions() {
+    const token = localStorage.getItem('sc_admin_token');
+    if (!token) {
+        document.getElementById('login').style.display = 'flex';
+        document.getElementById('content').style.display = 'none';
+        return;
+    }
+
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    document.getElementById('list').innerHTML = '<div class="loading">Cargando...</div>';
+
+    try {
+        const res = await fetch(API, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+            document.getElementById('login').style.display = 'flex';
+            document.getElementById('content').style.display = 'none';
+            document.getElementById('login-error').textContent = 'Token inválido';
+            localStorage.removeItem('sc_admin_token');
+            return;
+        }
+
+        const data = await res.json();
+        const list = document.getElementById('list');
+        document.getElementById('count').textContent = `${data.length} sugerencia(s)`;
+
+        if (data.length === 0) {
+            list.innerHTML = '<div class="empty">📭 No hay sugerencias aún</div>';
+            return;
+        }
+
+        list.innerHTML = data.map(s => `
+            <div class="sug-box">
+                <span class="status ${s.read ? 'read' : 'unread'}">${s.read ? 'Leída' : 'No leída'}</span>
+                <div class="date">${new Date(s.createdAt).toLocaleString('es-MX')}</div>
+                ${s.email ? `<div class="email">✉️ ${s.email}</div>` : ''}
+                <div class="text">${s.suggestion}</div>
+            </div>
+        `).join('');
+    } catch (e) {
+        document.getElementById('list').innerHTML = '<div class="empty">❌ Error al cargar sugerencias</div>';
+    }
+}
+
+// Auto-login si hay token guardado
+if (localStorage.getItem('sc_admin_token')) {
+    loadSuggestions();
+}
+</script>
+</body>
+</html>

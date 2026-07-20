@@ -50,6 +50,10 @@ def gzip_response(response):
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'scrapers', 'sc_data')
 
+# ─── Ko-fi supporter verification ───
+KOFI_API_KEY = "37fffa57-4232-4c80-9ca7-eba633d8433b"  # verification_token
+SUPPORTERS_PATH = os.path.join(os.path.dirname(__file__), "data", "supporters.json")
+
 # ─── Funciones helper ───
 
 def _strip_nulls(obj):
@@ -325,7 +329,9 @@ def api_docs():
             'GET /translate/missions?contractor=X': 'Traducciones por contratista',
             'GET /database?lang=es&fields=missions,blueprints': 'Base de datos (?fields= para subsets, ?fields=stats para conteos)',
             'GET /changelog': 'Historial de versiones',
-            'GET /search?q=termino': 'Búsqueda global'
+            'GET /search?q=termino': 'Búsqueda global',
+            'POST /api/kofi-webhook': 'Webhook de Ko-fi para donaciones',
+            'GET /api/check-supporter?email=X': 'Verificar si un email es supporter'
         }
     })
 
@@ -762,6 +768,181 @@ def global_search():
         return results
 
     return jsonify(cached_response(f'search_{q}', _gen))
+
+
+# ─── SUPPORTER HELPERS ───
+
+def _load_supporters():
+    """Carga la lista de supporters desde el archivo JSON."""
+    if not os.path.exists(SUPPORTERS_PATH):
+        return {"supporters": []}
+    with open(SUPPORTERS_PATH, "r") as f:
+        return json.load(f)
+
+
+def _save_supporters(data):
+    """Guarda la lista de supporters en el archivo JSON."""
+    os.makedirs(os.path.dirname(SUPPORTERS_PATH), exist_ok=True)
+    with open(SUPPORTERS_PATH, "w") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+# ─── KOFI WEBHOOK ───
+
+@app.route('/api/kofi-webhook', methods=['POST'])
+def kofi_webhook():
+    """
+    Recibe webhooks de Ko-fi cuando alguien dona.
+    Valida el verification_token y guarda al donante en supporters.json.
+    """
+    data = request.get_json(silent=True) or {}
+
+    # Validar verification_token
+    token = data.get("verification_token", "")
+    if token != KOFI_API_KEY:
+        return jsonify({"success": False, "error": "Invalid verification token"}), 403
+
+    # Extraer datos del webhook
+    email = (data.get("data") or {}).get("email", "").strip().lower()
+    name = (data.get("data") or {}).get("from_name", "Unknown").strip()
+    amount = (data.get("data") or {}).get("amount", "0")
+    timestamp = (data.get("data") or {}).get("timestamp", "")
+
+    # Si no hay email, no podemos registrar al donante como supporter
+    if not email:
+        return jsonify({"success": True, "note": "No email provided, donation recorded without supporter link"})
+
+    # Cargar supporters actuales
+    supporters_data = _load_supporters()
+    supporters = supporters_data["supporters"]
+
+    # Buscar si ya existe este email
+    existing = next((s for s in supporters if s["email"] == email), None)
+    if existing:
+        # Actualizar monto si ya existe
+        try:
+            existing["amount"] = float(amount)
+        except (ValueError, TypeError):
+            pass
+        if timestamp:
+            existing["since"] = timestamp
+        if name and name != "Unknown":
+            existing["name"] = name
+    else:
+        # Agregar nuevo supporter
+        supporters.append({
+            "email": email,
+            "name": name,
+            "since": timestamp or __import__("datetime").datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "amount": float(amount) if amount else 0.0
+        })
+
+    _save_supporters(supporters_data)
+    return jsonify({"success": True})
+
+
+@app.route('/api/check-supporter', methods=['GET'])
+def check_supporter():
+    """
+    Verifica si un email está registrado como supporter.
+    GET /api/check-supporter?email=usuario@ejemplo.com
+    """
+    email = request.args.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"error": "Falta parámetro ?email="}), 400
+
+    supporters_data = _load_supporters()
+    supporters = supporters_data["supporters"]
+
+    existing = next((s for s in supporters if s["email"] == email), None)
+    if existing:
+        return jsonify({
+            "is_supporter": True,
+            "since": existing["since"]
+        })
+
+    return jsonify({"is_supporter": False})
+
+
+# ─── SUGGESTIONS ───
+
+SUGGESTIONS_PATH = os.path.join(os.path.dirname(__file__), "data", "suggestions.json")
+
+
+def _load_suggestions():
+    """Carga las sugerencias desde el archivo JSON."""
+    if not os.path.exists(SUGGESTIONS_PATH):
+        return []
+    with open(SUGGESTIONS_PATH, "r") as f:
+        return json.load(f)
+
+
+def _save_suggestions(data):
+    """Guarda las sugerencias en el archivo JSON."""
+    os.makedirs(os.path.dirname(SUGGESTIONS_PATH), exist_ok=True)
+    with open(SUGGESTIONS_PATH, "w") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def _anonymize_ip(ip):
+    """Anonimiza la IP ocultando el último octeto."""
+    if not ip or ip == "127.0.0.1" or ip == "::1":
+        return ip
+    if "." in ip:
+        parts = ip.split(".")
+        parts[-1] = "0"
+        return ".".join(parts)
+    if ":" in ip:
+        return ":0:0:0:0:0:0:0:0"
+    return ip
+
+
+def _validate_email(email):
+    """Valida formato de email básico."""
+    import re
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email.strip()))
+
+
+@app.route('/api/suggestions', methods=['POST'])
+def post_suggestion():
+    """
+    Recibe sugerencias de usuarios y las guarda en suggestions.json.
+    POST /api/suggestions
+    {"suggestion": "...", "email": "opcional@email.com"}
+    """
+    data = request.get_json(silent=True) or {}
+
+    # Validar suggestion
+    suggestion = (data.get("suggestion") or "").strip()
+    if not suggestion:
+        return jsonify({"success": False, "error": "La sugerencia es requerida"}), 400
+    if len(suggestion) < 10:
+        return jsonify({"success": False, "error": "La sugerencia debe tener al menos 10 caracteres"}), 400
+
+    # Validar email opcional
+    email = (data.get("email") or "").strip()
+    if email and not _validate_email(email):
+        return jsonify({"success": False, "error": "El formato del email no es válido"}), 400
+
+    # Anonimizar IP
+    ip = _anonymize_ip(request.remote_addr or "")
+
+    # Cargar y agregar sugerencia
+    suggestions = _load_suggestions()
+
+    entry = {
+        "suggestion": suggestion
+    }
+    if email:
+        entry["email"] = email
+    entry["timestamp"] = __import__("datetime").datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    entry["ip"] = ip
+
+    suggestions.append(entry)
+    _save_suggestions(suggestions)
+
+    return jsonify({"success": True, "message": "Sugerencia recibida, ¡gracias!"}), 201
 
 
 # ─── MAIN ───

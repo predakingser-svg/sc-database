@@ -1,0 +1,657 @@
+{
+  "total": 26,
+  "data": [
+    {
+      "name": "Quantanium",
+      "type": "ore",
+      "rarity": "legendario",
+      "signatures": {
+        "20%": 3170,
+        "40%": 6340,
+        "60%": 9510,
+        "80%": 12680,
+        "100%": 15850,
+        "max": 19020
+      },
+      "signature_min": 3170,
+      "signature_max": 19020,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Magda (Crusader)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Lyria (ArcCorp)",
+        "Wala (microTech)"
+      ],
+      "value_per_scu": 24.69
+    },
+    {
+      "name": "Savrilium",
+      "type": "ore",
+      "rarity": "épico",
+      "signatures": {
+        "20%": 3200,
+        "40%": 6400,
+        "60%": 9600,
+        "80%": 12800,
+        "100%": 16000,
+        "max": 19200
+      },
+      "signature_min": 3200,
+      "signature_max": 19200,
+      "locations": [
+        "Arial (Hurston)",
+        "Magda (Crusader)",
+        "Wala (microTech)"
+      ],
+      "value_per_scu": 15.25
+    },
+    {
+      "name": "Riccite",
+      "type": "ore",
+      "rarity": "épico",
+      "signatures": {
+        "20%": 3385,
+        "40%": 6770,
+        "60%": 10155,
+        "80%": 13540,
+        "100%": 16925,
+        "max": 20310
+      },
+      "signature_min": 3385,
+      "signature_max": 20310,
+      "locations": [
+        "Magda (Crusader)",
+        "Calliope (microTech)",
+        "Pyro III"
+      ],
+      "value_per_scu": 19.85
+    },
+    {
+      "name": "Lindinium",
+      "type": "ore",
+      "rarity": "épico",
+      "signatures": {
+        "20%": 3400,
+        "40%": 6800,
+        "60%": 10200,
+        "80%": 13600,
+        "100%": 17000,
+        "max": 20400
+      },
+      "signature_min": 3400,
+      "signature_max": 20400,
+      "locations": [
+        "Lyria (ArcCorp)",
+        "Calliope (microTech)"
+      ],
+      "value_per_scu": 22.15
+    },
+    {
+      "name": "Aslarite",
+      "type": "ore",
+      "rarity": "épico",
+      "signatures": {
+        "20%": 3840,
+        "40%": 7680,
+        "60%": 11520,
+        "80%": 15360,
+        "100%": 19200,
+        "max": 23040
+      },
+      "signature_min": 3840,
+      "signature_max": 23040,
+      "locations": [
+        "Arial (Hurston)"
+      ],
+      "value_per_scu": 18.9
+    },
+    {
+      "name": "Stileron",
+      "type": "ore",
+      "rarity": "raro",
+      "signatures": {
+        "20%": 3185,
+        "40%": 6370,
+        "60%": 9555,
+        "80%": 12740,
+        "100%": 15925,
+        "max": 19110
+      },
+      "signature_min": 3185,
+      "signature_max": 19110,
+      "locations": [
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Lyria (ArcCorp)",
+        "Pyro I",
+        "Pyro II (Monox)",
+        "Pyro III",
+        "Pyro IV"
+      ],
+      "value_per_scu": 20.5
+    },
+    {
+      "name": "Ouratite",
+      "type": "ore",
+      "rarity": "raro",
+      "signatures": {
+        "20%": 3370,
+        "40%": 6740,
+        "60%": 10110,
+        "80%": 13480,
+        "100%": 16850,
+        "max": 20220
+      },
+      "signature_min": 3370,
+      "signature_max": 20220,
+      "locations": [
+        "Cellin (Crusader)",
+        "Wala (microTech)"
+      ],
+      "value_per_scu": 14.2
+    },
+    {
+      "name": "Beryl",
+      "type": "ore",
+      "rarity": "raro",
+      "signatures": {
+        "20%": 3540,
+        "40%": 7080,
+        "60%": 10620,
+        "80%": 14160,
+        "100%": 17700,
+        "max": 21240
+      },
+      "signature_min": 3540,
+      "signature_max": 21240,
+      "locations": [
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Wala (microTech)"
+      ],
+      "value_per_scu": 6.78
+    },
+    {
+      "name": "Gold",
+      "type": "ore",
+      "rarity": "raro",
+      "signatures": {
+        "20%": 3585,
+        "40%": 7170,
+        "60%": 10755,
+        "80%": 14340,
+        "100%": 17925,
+        "max": 21510
+      },
+      "signature_min": 3585,
+      "signature_max": 21510,
+      "locations": [
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Daymar (Crusader)",
+        "Lyria (ArcCorp)",
+        "Wala (microTech)"
+      ],
+      "value_per_scu": 11.37
+    },
+    {
+      "name": "Bexalite",
+      "type": "ore",
+      "rarity": "raro",
+      "signatures": {
+        "20%": 3600,
+        "40%": 7200,
+        "60%": 10800,
+        "80%": 14400,
+        "100%": 18000,
+        "max": 21600
+      },
+      "signature_min": 3600,
+      "signature_max": 21600,
+      "locations": [
+        "Arial (Hurston)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Calliope (microTech)"
+      ],
+      "value_per_scu": 12.33
+    },
+    {
+      "name": "Torite",
+      "type": "ore",
+      "rarity": "raro",
+      "signatures": {
+        "20%": 3900,
+        "40%": 7800,
+        "60%": 11700,
+        "80%": 15600,
+        "100%": 19500,
+        "max": 23400
+      },
+      "signature_min": 3900,
+      "signature_max": 23400,
+      "locations": [
+        "Ita (Hurston)",
+        "Cellin (Crusader)",
+        "Magda (Crusader)"
+      ],
+      "value_per_scu": 7.42
+    },
+    {
+      "name": "Taranite",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 3555,
+        "40%": 7110,
+        "60%": 10665,
+        "80%": 14220,
+        "100%": 17775,
+        "max": 21330
+      },
+      "signature_min": 3555,
+      "signature_max": 21330,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Calliope (microTech)",
+        "Wala (microTech)"
+      ],
+      "value_per_scu": 8.28
+    },
+    {
+      "name": "Borase",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 3570,
+        "40%": 7140,
+        "60%": 10710,
+        "80%": 14280,
+        "100%": 17850,
+        "max": 21420
+      },
+      "signature_min": 3570,
+      "signature_max": 21420,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Wala (microTech)",
+        "Pyro III",
+        "Pyro IV"
+      ],
+      "value_per_scu": 8.53
+    },
+    {
+      "name": "Laranite",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 3825,
+        "40%": 7650,
+        "60%": 11475,
+        "80%": 15300,
+        "100%": 19125,
+        "max": 22950
+      },
+      "signature_min": 3825,
+      "signature_max": 22950,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Wala (microTech)",
+        "Calliope (microTech)",
+        "Pyro IV"
+      ],
+      "value_per_scu": 18.59
+    },
+    {
+      "name": "Titanium",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 3855,
+        "40%": 7710,
+        "60%": 11565,
+        "80%": 15420,
+        "100%": 19275,
+        "max": 23130
+      },
+      "signature_min": 3855,
+      "signature_max": 23130,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Ita (Hurston)",
+        "Arial (Hurston)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Calliope (microTech)",
+        "Wala (microTech)"
+      ],
+      "value_per_scu": 5.31
+    },
+    {
+      "name": "Tungsten",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 3870,
+        "40%": 7740,
+        "60%": 11610,
+        "80%": 15480,
+        "100%": 19350,
+        "max": 23220
+      },
+      "signature_min": 3870,
+      "signature_max": 23220,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Ita (Hurston)",
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Calliope (microTech)",
+        "Wala (microTech)"
+      ],
+      "value_per_scu": 4.71
+    },
+    {
+      "name": "Agricium",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 3885,
+        "40%": 7770,
+        "60%": 11655,
+        "80%": 15540,
+        "100%": 19425,
+        "max": 23310
+      },
+      "signature_min": 3885,
+      "signature_max": 23310,
+      "locations": [
+        "Ita (Hurston)",
+        "Arial (Hurston)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Lyria (ArcCorp)",
+        "Wala (microTech)"
+      ],
+      "value_per_scu": 20.07
+    },
+    {
+      "name": "Hephaestanite",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 4180,
+        "40%": 8360,
+        "60%": 12540,
+        "80%": 16720,
+        "100%": 20900,
+        "max": 25080
+      },
+      "signature_min": 4180,
+      "signature_max": 25080,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Ita (Hurston)",
+        "Arial (Hurston)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Pyro II (Monox)"
+      ],
+      "value_per_scu": 3.89
+    },
+    {
+      "name": "Tin",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 4195,
+        "40%": 8390,
+        "60%": 12585,
+        "80%": 16780,
+        "100%": 20975,
+        "max": 25170
+      },
+      "signature_min": 4195,
+      "signature_max": 25170,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Ita (Hurston)",
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Calliope (microTech)",
+        "Wala (microTech)",
+        "Pyro I",
+        "Pyro II (Monox)"
+      ],
+      "value_per_scu": 4.23
+    },
+    {
+      "name": "Quartz",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 4210,
+        "40%": 8420,
+        "60%": 12630,
+        "80%": 16840,
+        "100%": 21050,
+        "max": 25260
+      },
+      "signature_min": 4210,
+      "signature_max": 25260,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Ita (Hurston)",
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Calliope (microTech)",
+        "Wala (microTech)",
+        "Pyro III"
+      ],
+      "value_per_scu": 4.17
+    },
+    {
+      "name": "Corundum",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 4225,
+        "40%": 8450,
+        "60%": 12675,
+        "80%": 16900,
+        "100%": 21125,
+        "max": 25350
+      },
+      "signature_min": 4225,
+      "signature_max": 25350,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Ita (Hurston)",
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Calliope (microTech)",
+        "Wala (microTech)"
+      ],
+      "value_per_scu": 4.62
+    },
+    {
+      "name": "Copper",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 4240,
+        "40%": 8480,
+        "60%": 12720,
+        "80%": 16960,
+        "100%": 21200,
+        "max": 25440
+      },
+      "signature_min": 4240,
+      "signature_max": 25440,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Ita (Hurston)",
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Calliope (microTech)",
+        "Wala (microTech)",
+        "Pyro I",
+        "Pyro IV"
+      ],
+      "value_per_scu": 4.27
+    },
+    {
+      "name": "Silicon",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 4255,
+        "40%": 8510,
+        "60%": 12765,
+        "80%": 17020,
+        "100%": 21275,
+        "max": 25530
+      },
+      "signature_min": 4255,
+      "signature_max": 25530,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Ita (Hurston)",
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)"
+      ],
+      "value_per_scu": 4.09
+    },
+    {
+      "name": "Iron",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 4270,
+        "40%": 8540,
+        "60%": 12810,
+        "80%": 17080,
+        "100%": 21350,
+        "max": 25620
+      },
+      "signature_min": 4270,
+      "signature_max": 25620,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Ita (Hurston)",
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Calliope (microTech)",
+        "Wala (microTech)",
+        "Pyro I",
+        "Pyro II (Monox)"
+      ],
+      "value_per_scu": 4.05
+    },
+    {
+      "name": "Aluminum",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 4285,
+        "40%": 8570,
+        "60%": 12855,
+        "80%": 17140,
+        "100%": 21425,
+        "max": 25710
+      },
+      "signature_min": 4285,
+      "signature_max": 25710,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Ita (Hurston)",
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Calliope (microTech)",
+        "Wala (microTech)"
+      ],
+      "value_per_scu": 4.3
+    },
+    {
+      "name": "Ice",
+      "type": "ore",
+      "rarity": "común",
+      "signatures": {
+        "20%": 4300,
+        "40%": 8600,
+        "60%": 12900,
+        "80%": 17200,
+        "100%": 21500,
+        "max": 25800
+      },
+      "signature_min": 4300,
+      "signature_max": 25800,
+      "locations": [
+        "Aberdeen (Hurston)",
+        "Ita (Hurston)",
+        "Arial (Hurston)",
+        "Euterpe (microTech)",
+        "Cellin (Crusader)",
+        "Daymar (Crusader)",
+        "Magda (Crusader)",
+        "Lyria (ArcCorp)",
+        "Calliope (microTech)",
+        "Wala (microTech)"
+      ],
+      "value_per_scu": 3.29
+    }
+  ]
+}

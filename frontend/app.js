@@ -21,6 +21,65 @@ const API = _isDev
     ? ''
     : '';
 
+// ─── Theme system ───
+const DEFAULT_THEME = 'dark';
+let currentTheme = localStorage.getItem('sc_theme') || DEFAULT_THEME;
+// Si el tema Pyro estaba activo pero no es supporter, revertir a oscuro
+if (currentTheme === 'pyro' && localStorage.getItem('sc_supporter') !== 'true') {
+    currentTheme = 'dark';
+    localStorage.setItem('sc_theme', 'dark');
+}
+document.documentElement.setAttribute('data-theme', currentTheme);
+
+function assignGlitchDelays() {
+    const selectors = ['.card', '.stat-card', '.modal-detail', '.catalog-card', '.badge'];
+    selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+            if (!el.style.getPropertyValue('--glitch-delay') || Math.random() < 0.3) {
+                const delay = Math.random() * 7;
+                el.style.setProperty('--glitch-delay', delay.toString());
+            }
+        });
+    });
+    // Inject corner decoration in sidebar header
+    const sh = document.querySelector('.sidebar-header');
+    if (sh && !sh.querySelector('.corner-tl')) {
+        const corner = document.createElement('span');
+        corner.className = 'corner-tl';
+        sh.appendChild(corner);
+    }
+}
+
+function toggleTheme() {
+    const isSupporter = localStorage.getItem('sc_supporter') === 'true';
+    if (currentTheme === 'dark' && !isSupporter) {
+        const status = document.getElementById('supporter-status');
+        if (status) {
+            status.innerHTML = '<span class="supporter-msg supporter-msg-locked">🔒 Solo para supporters — <a href="https://ko-fi.com/tubsdep" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline">dona en Ko-fi</a> para acceder al tema Pyro</span>';
+            status.style.display = 'block';
+            setTimeout(() => { status.style.display = 'none'; }, 5000);
+        }
+        return;
+    }
+    currentTheme = currentTheme === 'dark' ? 'pyro' : 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    localStorage.setItem('sc_theme', currentTheme);
+    const btn = document.getElementById('theme-toggle');
+    if (btn) {
+        btn.textContent = currentTheme === 'pyro' ? '💠' : '🔥';
+        btn.title = currentTheme === 'pyro' ? 'Tema Stanton' : 'Tema Pyro';
+        btn.className = 'tb-btn' + (currentTheme === 'pyro' ? ' cyber-btn' : '');
+    }
+    // Apply cyber-btn class to all topbar buttons when pyro
+    document.querySelectorAll('.topbar-info .tb-btn').forEach(b => {
+        if (currentTheme === 'pyro') b.classList.add('cyber-btn');
+        else b.classList.remove('cyber-btn');
+    });
+    if (currentTheme === 'pyro') {
+        assignGlitchDelays();
+    }
+}
+
 // ─── Global state ───
 let currentLang = localStorage.getItem('sc_lang') || 'es';
 let fullTranslations = {};
@@ -168,7 +227,37 @@ const _stringMap = {
     'Peluche': 'Plushie',
     'Mineral': 'Mineral/Ore',
     'Mineral/Ore': 'Mineral',
+    'Minerales': 'Minerals',
+    'Rareza': 'Rarity',
+    'Firma Mín': 'Min Signature',
+    'Firma Máx': 'Max Signature',
+    'Valor/SCU': 'Value/SCU',
+    'Sistemas': 'Systems',
+    'Buscar mineral...': 'Search mineral...',
+    'Todas las rarezas': 'All rarities',
+    'Todos los sistemas': 'All systems',
+    'Catálogo completo de minerales y menas': 'Complete catalog of ores and minerals',
+    'Ver minerales': 'View minerals',
+    'Hurston': 'Hurston',
+    'Crusader': 'Crusader',
+    'ArcCorp': 'ArcCorp',
+    'microTech': 'microTech',
+    'Pyro': 'Pyro',
+    'Común': 'Common',
+    'Raro': 'Rare',
+    'Épico': 'Epic',
+    'Legendario': 'Legendary',
     'Otro': 'Other',
+    // ─── Buzón de sugerencias ───
+    'Sugerencia': 'Suggestion',
+    '¿Tienes una idea para mejorar SC Database?': 'Got an idea to improve SC Database?',
+    'Describe tu sugerencia...': 'Describe your suggestion...',
+    'tu@email.com (opcional)': 'your@email.com (optional)',
+    'Enviar sugerencia': 'Send suggestion',
+    'Cerrar': 'Close',
+    '¡Gracias! Tu sugerencia ha sido recibida': 'Thanks! Your suggestion has been received',
+    'La sugerencia debe tener al menos 10 caracteres': 'The suggestion must be at least 10 characters long',
+    'Error al enviar sugerencia': 'Error sending suggestion',
 };
 
 // Reverse map for O(1) __() lookup (ES→EN and EN→ES)
@@ -231,6 +320,122 @@ async function openChangelog() {
 }
 
 function openFeedback() { openChangelog(); }
+
+// ─── Buzón de sugerencias ───
+function openSuggestionsModal() {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+
+    const t = (es, en) => currentLang === 'es' ? es : en;
+
+    const html = `
+    <div class="modal-detail suggestions-modal">
+        <div class="modal-header">
+            <h3>💬 ${t('Sugerencia', 'Suggestion')}</h3>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom:16px;color:var(--text-secondary);font-size:14px">
+                ${t('¿Tienes una idea para mejorar SC Database?', 'Got an idea to improve SC Database?')}
+            </p>
+            <textarea id="suggestion-text" class="filter-input suggestion-textarea"
+                placeholder="${t('Describe tu sugerencia...', 'Describe your suggestion...')}"
+                rows="5"></textarea>
+            <input type="email" id="suggestion-email" class="filter-input suggestion-email"
+                placeholder="${t('tu@email.com (opcional)', 'your@email.com (optional)')}">
+            <div id="suggestion-feedback" class="suggestion-feedback"></div>
+            <div class="suggestion-actions">
+                <button class="kofi-btn suggestion-submit" id="suggestion-submit-btn">
+                    ${t('Enviar sugerencia', 'Send suggestion')}
+                </button>
+                <button class="tb-btn" onclick="this.closest('.modal-overlay').remove()">
+                    ${t('Cerrar', 'Close')}
+                </button>
+            </div>
+        </div>
+    </div>`;
+
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', e => {
+        if (e.target === overlay) {
+            const cb = overlay.querySelector('.modal-detail');
+            if (cb) cb.style.animation = 'fadeOut 0.2s ease forwards';
+            setTimeout(() => overlay.remove(), 200);
+        }
+    });
+
+    // Botón de enviar
+    const submitBtn = overlay.querySelector('#suggestion-submit-btn');
+    const textarea = overlay.querySelector('#suggestion-text');
+    const emailInput = overlay.querySelector('#suggestion-email');
+    const feedback = overlay.querySelector('#suggestion-feedback');
+
+    submitBtn.addEventListener('click', async () => {
+        const suggestion = textarea.value.trim();
+        const email = emailInput.value.trim();
+
+        if (suggestion.length < 10) {
+            feedback.innerHTML = '<span class="suggestion-msg suggestion-msg-error">⚠️ ' +
+                t('La sugerencia debe tener al menos 10 caracteres', 'The suggestion must be at least 10 characters long') +
+                '</span>';
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳...';
+        feedback.innerHTML = '';
+
+        try {
+            const body = { suggestion };
+            if (email) body.email = email;
+
+            const res = await fetch('/api/suggestions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            const result = await res.json();
+
+            feedback.innerHTML = '<span class="suggestion-msg suggestion-msg-success">✅ ' +
+                t('¡Gracias! Tu sugerencia ha sido recibida', 'Thanks! Your suggestion has been received') +
+                '</span>';
+
+            textarea.value = '';
+            emailInput.value = '';
+
+            setTimeout(() => {
+                const cb = overlay.querySelector('.modal-detail');
+                if (cb) cb.style.animation = 'fadeOut 0.2s ease forwards';
+                setTimeout(() => overlay.remove(), 200);
+            }, 2500);
+
+        } catch (e) {
+            console.error('Suggestion error:', e);
+            feedback.innerHTML = '<span class="suggestion-msg suggestion-msg-error">❌ ' +
+                t('Error al enviar sugerencia', 'Error sending suggestion') +
+                '</span>';
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = t('Enviar sugerencia', 'Send suggestion');
+        }
+    });
+
+    // Permitir Ctrl+Enter para enviar
+    textarea.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            submitBtn.click();
+        }
+    });
+
+    // Enfocar el textarea al abrir
+    setTimeout(() => textarea.focus(), 150);
+}
 
 function applyLang() {
     if (currentLang === 'es') return;
@@ -570,6 +775,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btn = document.getElementById('langBtn');
     if (btn) btn.textContent = currentLang === 'es' ? '🇪🇸 ES' : '🇬🇧 EN';
 
+    // ─── Estado inicial del botón de tema ───
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+        themeBtn.textContent = currentTheme === 'pyro' ? '💠' : '🔥';
+        themeBtn.title = currentTheme === 'pyro' ? 'Tema Stanton' : 'Tema Pyro';
+        themeBtn.className = 'tb-btn' + (currentTheme === 'pyro' ? ' cyber-btn' : '');
+    }
+    // Apply cyber-btn to all topbar buttons on initial load
+    document.querySelectorAll('.topbar-info .tb-btn').forEach(b => {
+        if (currentTheme === 'pyro') b.classList.add('cyber-btn');
+    });
+
     // Fase 1: carga crítica — dashboard con stats instantáneos
     await loadStats();
 
@@ -604,6 +821,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tr = e.target.closest('.data-table tbody tr');
         if (tr) tr.classList.add('loading');
     }, true);
+
+    // ─── Inicializar glitch delays si el tema es Pyro ───
+    if (currentTheme === 'pyro') assignGlitchDelays();
+
+    // ─── MutationObserver para asignar delays a contenido dinámico ───
+    const glitchObserver = new MutationObserver(() => {
+        if (currentTheme === 'pyro') assignGlitchDelays();
+    });
+    glitchObserver.observe(document.getElementById('content'), { childList: true, subtree: true });
+
+    // ─── Inicializar UI de supporter para desbloquear tema Pyro ───
+    setupSupporterUI();
 });
 
 async function apiFetch(path) {
@@ -701,6 +930,9 @@ async function loadStats() {
         const el = document.getElementById('badge-' + k);
         if (el) el.textContent = statsData['total_' + k] || 0;
     });
+    // Badge para minerales (datos conocidos desde stats)
+    const badgeMinerals = document.getElementById('badge-minerals');
+    if (badgeMinerals) badgeMinerals.textContent = statsData.total_minerals || 0;
     // Badges para secciones lazy (se cargan bajo demanda)
     ['items','components','wikelo'].forEach(k => {
         const el = document.getElementById('badge-' + k);
@@ -800,6 +1032,18 @@ async function prefetchData() {
         })());
     }
 
+    if (!mineralsCache) {
+        promises.push((async () => {
+            try {
+                const res = await fetch('/data/minerals.json');
+                if (res.ok) {
+                    const data = await res.json();
+                    mineralsCache = data.data || data;
+                }
+            } catch(e) { /* silently fail */ }
+        })());
+    }
+
     await Promise.allSettled(promises);
 
     // Ocultar indicador de carga
@@ -818,7 +1062,13 @@ async function prefetchData() {
         });
     }
 
-    console.log('⚡ Precarga completada: missions, blueprints, weapons');
+    // Actualizar badge de minerales
+    if (mineralsCache && mineralsCache.length) {
+        const badge = document.getElementById('badge-minerals');
+        if (badge) badge.textContent = mineralsCache.length;
+    }
+
+    console.log('⚡ Precarga completada: missions, blueprints, weapons, minerals');
 }
 
 // ═══════════════════════════════════════════
@@ -860,6 +1110,7 @@ function navigateTo(page, filter) {
     else if (page === 'weapons') loadWeapons(filter);
     else if (page === 'wikelo') loadWikelo(filter);
     else if (page === 'components') loadComponents();
+    else if (page === 'minerals') loadMinerals();
     else if (page === 'items') loadItems();
     else if (page === 'factions') loadFactions();
 
@@ -894,11 +1145,12 @@ function setupSearch() {
 
     function localSearch(q) {
         const lq = q.toLowerCase();
-        const results = { missions: [], blueprints: [], weapons: [], items: [] };
+        const results = { missions: [], blueprints: [], weapons: [], items: [], minerals: [] };
         if (missionsCache) results.missions = missionsCache.filter(m => (m.title || '').toLowerCase().includes(lq)).slice(0, 4);
         if (bpCache) results.blueprints = bpCache.filter(b => (b.output_name || b.output || '').toLowerCase().includes(lq)).slice(0, 4);
         if (wpCache) results.weapons = wpCache.filter(w => (w.name || '').toLowerCase().includes(lq)).slice(0, 4);
         if (itemsCache) results.items = itemsCache.filter(i => (i.name || '').toLowerCase().includes(lq)).slice(0, 4);
+        if (mineralsCache) results.minerals = mineralsCache.filter(m => m.name.toLowerCase().includes(lq)).slice(0, 4);
         return results;
     }
 
@@ -971,6 +1223,15 @@ function renderSearchResults(results, dropdown) {
         results.items.slice(0, 4).forEach(i => {
             html += `<div class="search-result-item">
                 <div class="sr-title">📦 ${escapeHtml(i.name)}</div>
+            </div>`; count++;
+        });
+    }
+    if (results.minerals?.length) {
+        html += `<div style="padding:8px 14px;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Minerales</div>`;
+        results.minerals.slice(0, 4).forEach(m => {
+            html += `<div class="search-result-item" onclick="navigateTo('minerals')">
+                <div class="sr-title">💎 ${escapeHtml(m.name)}</div>
+                <div class="sr-meta">${getRarityLabel(m.rarity)} · ${m.value_per_scu.toFixed(2)}/SCU</div>
             </div>`; count++;
         });
     }
@@ -2293,6 +2554,296 @@ function loadFactions() {
 }
 
 // ═══════════════════════════════════════════
+// MINERALS PAGE
+// ═══════════════════════════════════════════
+
+// Static fallback minerals data (26 minerals)
+const MINERALS_STATIC_DATA = [
+  {"name":"Quantanium","type":"ore","rarity":"legendario","signatures":{"20%":3170,"40%":6340,"60%":9510,"80%":12680,"100%":15850,"max":19020},"signature_min":3170,"signature_max":19020,"locations":["Aberdeen (Hurston)","Magda (Crusader)","Cellin (Crusader)","Daymar (Crusader)","Lyria (ArcCorp)","Wala (microTech)"],"value_per_scu":24.69},
+  {"name":"Savrilium","type":"ore","rarity":"épico","signatures":{"20%":3200,"40%":6400,"60%":9600,"80%":12800,"100%":16000,"max":19200},"signature_min":3200,"signature_max":19200,"locations":["Arial (Hurston)","Magda (Crusader)","Wala (microTech)"],"value_per_scu":15.25},
+  {"name":"Riccite","type":"ore","rarity":"épico","signatures":{"20%":3385,"40%":6770,"60%":10155,"80%":13540,"100%":16925,"max":20310},"signature_min":3385,"signature_max":20310,"locations":["Magda (Crusader)","Calliope (microTech)","Pyro III"],"value_per_scu":19.85},
+  {"name":"Lindinium","type":"ore","rarity":"épico","signatures":{"20%":3400,"40%":6800,"60%":10200,"80%":13600,"100%":17000,"max":20400},"signature_min":3400,"signature_max":20400,"locations":["Lyria (ArcCorp)","Calliope (microTech)"],"value_per_scu":22.15},
+  {"name":"Aslarite","type":"ore","rarity":"épico","signatures":{"20%":3840,"40%":7680,"60%":11520,"80%":15360,"100%":19200,"max":23040},"signature_min":3840,"signature_max":23040,"locations":["Arial (Hurston)"],"value_per_scu":18.9},
+  {"name":"Stileron","type":"ore","rarity":"raro","signatures":{"20%":3185,"40%":6370,"60%":9555,"80%":12740,"100%":15925,"max":19110},"signature_min":3185,"signature_max":19110,"locations":["Cellin (Crusader)","Daymar (Crusader)","Lyria (ArcCorp)","Pyro I","Pyro II (Monox)","Pyro III","Pyro IV"],"value_per_scu":20.5},
+  {"name":"Ouratite","type":"ore","rarity":"raro","signatures":{"20%":3370,"40%":6740,"60%":10110,"80%":13480,"100%":16850,"max":20220},"signature_min":3370,"signature_max":20220,"locations":["Cellin (Crusader)","Wala (microTech)"],"value_per_scu":14.2},
+  {"name":"Beryl","type":"ore","rarity":"raro","signatures":{"20%":3540,"40%":7080,"60%":10620,"80%":14160,"100%":17700,"max":21240},"signature_min":3540,"signature_max":21240,"locations":["Cellin (Crusader)","Daymar (Crusader)","Wala (microTech)"],"value_per_scu":6.78},
+  {"name":"Gold","type":"ore","rarity":"raro","signatures":{"20%":3585,"40%":7170,"60%":10755,"80%":14340,"100%":17925,"max":21510},"signature_min":3585,"signature_max":21510,"locations":["Arial (Hurston)","Euterpe (microTech)","Daymar (Crusader)","Lyria (ArcCorp)","Wala (microTech)"],"value_per_scu":11.37},
+  {"name":"Bexalite","type":"ore","rarity":"raro","signatures":{"20%":3600,"40%":7200,"60%":10800,"80%":14400,"100%":18000,"max":21600},"signature_min":3600,"signature_max":21600,"locations":["Arial (Hurston)","Magda (Crusader)","Lyria (ArcCorp)","Calliope (microTech)"],"value_per_scu":12.33},
+  {"name":"Torite","type":"ore","rarity":"raro","signatures":{"20%":3900,"40%":7800,"60%":11700,"80%":15600,"100%":19500,"max":23400},"signature_min":3900,"signature_max":23400,"locations":["Ita (Hurston)","Cellin (Crusader)","Magda (Crusader)"],"value_per_scu":7.42},
+  {"name":"Taranite","type":"ore","rarity":"común","signatures":{"20%":3555,"40%":7110,"60%":10665,"80%":14220,"100%":17775,"max":21330},"signature_min":3555,"signature_max":21330,"locations":["Aberdeen (Hurston)","Arial (Hurston)","Euterpe (microTech)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)","Calliope (microTech)","Wala (microTech)"],"value_per_scu":8.28},
+  {"name":"Borase","type":"ore","rarity":"común","signatures":{"20%":3570,"40%":7140,"60%":10710,"80%":14280,"100%":17850,"max":21420},"signature_min":3570,"signature_max":21420,"locations":["Aberdeen (Hurston)","Arial (Hurston)","Euterpe (microTech)","Cellin (Crusader)","Daymar (Crusader)","Wala (microTech)","Pyro III","Pyro IV"],"value_per_scu":8.53},
+  {"name":"Laranite","type":"ore","rarity":"común","signatures":{"20%":3825,"40%":7650,"60%":11475,"80%":15300,"100%":19125,"max":22950},"signature_min":3825,"signature_max":22950,"locations":["Aberdeen (Hurston)","Arial (Hurston)","Euterpe (microTech)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)","Wala (microTech)","Calliope (microTech)","Pyro IV"],"value_per_scu":18.59},
+  {"name":"Titanium","type":"ore","rarity":"común","signatures":{"20%":3855,"40%":7710,"60%":11565,"80%":15420,"100%":19275,"max":23130},"signature_min":3855,"signature_max":23130,"locations":["Aberdeen (Hurston)","Ita (Hurston)","Arial (Hurston)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)","Calliope (microTech)","Wala (microTech)"],"value_per_scu":5.31},
+  {"name":"Tungsten","type":"ore","rarity":"común","signatures":{"20%":3870,"40%":7740,"60%":11610,"80%":15480,"100%":19350,"max":23220},"signature_min":3870,"signature_max":23220,"locations":["Aberdeen (Hurston)","Ita (Hurston)","Arial (Hurston)","Euterpe (microTech)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)","Calliope (microTech)","Wala (microTech)"],"value_per_scu":4.71},
+  {"name":"Agricium","type":"ore","rarity":"común","signatures":{"20%":3885,"40%":7770,"60%":11655,"80%":15540,"100%":19425,"max":23310},"signature_min":3885,"signature_max":23310,"locations":["Ita (Hurston)","Arial (Hurston)","Cellin (Crusader)","Daymar (Crusader)","Lyria (ArcCorp)","Wala (microTech)"],"value_per_scu":20.07},
+  {"name":"Hephaestanite","type":"ore","rarity":"común","signatures":{"20%":4180,"40%":8360,"60%":12540,"80%":16720,"100%":20900,"max":25080},"signature_min":4180,"signature_max":25080,"locations":["Aberdeen (Hurston)","Ita (Hurston)","Arial (Hurston)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)","Pyro II (Monox)"],"value_per_scu":3.89},
+  {"name":"Tin","type":"ore","rarity":"común","signatures":{"20%":4195,"40%":8390,"60%":12585,"80%":16780,"100%":20975,"max":25170},"signature_min":4195,"signature_max":25170,"locations":["Aberdeen (Hurston)","Ita (Hurston)","Arial (Hurston)","Euterpe (microTech)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)","Calliope (microTech)","Wala (microTech)","Pyro I","Pyro II (Monox)"],"value_per_scu":4.23},
+  {"name":"Quartz","type":"ore","rarity":"común","signatures":{"20%":4210,"40%":8420,"60%":12630,"80%":16840,"100%":21050,"max":25260},"signature_min":4210,"signature_max":25260,"locations":["Aberdeen (Hurston)","Ita (Hurston)","Arial (Hurston)","Euterpe (microTech)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)","Calliope (microTech)","Wala (microTech)","Pyro III"],"value_per_scu":4.17},
+  {"name":"Corundum","type":"ore","rarity":"común","signatures":{"20%":4225,"40%":8450,"60%":12675,"80%":16900,"100%":21125,"max":25350},"signature_min":4225,"signature_max":25350,"locations":["Aberdeen (Hurston)","Ita (Hurston)","Arial (Hurston)","Euterpe (microTech)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)","Calliope (microTech)","Wala (microTech)"],"value_per_scu":4.62},
+  {"name":"Copper","type":"ore","rarity":"común","signatures":{"20%":4240,"40%":8480,"60%":12720,"80%":16960,"100%":21200,"max":25440},"signature_min":4240,"signature_max":25440,"locations":["Aberdeen (Hurston)","Ita (Hurston)","Arial (Hurston)","Euterpe (microTech)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)","Calliope (microTech)","Wala (microTech)","Pyro I","Pyro IV"],"value_per_scu":4.27},
+  {"name":"Silicon","type":"ore","rarity":"común","signatures":{"20%":4255,"40%":8510,"60%":12765,"80%":17020,"100%":21275,"max":25530},"signature_min":4255,"signature_max":25530,"locations":["Aberdeen (Hurston)","Ita (Hurston)","Arial (Hurston)","Euterpe (microTech)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)"],"value_per_scu":4.09},
+  {"name":"Iron","type":"ore","rarity":"común","signatures":{"20%":4270,"40%":8540,"60%":12810,"80%":17080,"100%":21350,"max":25620},"signature_min":4270,"signature_max":25620,"locations":["Aberdeen (Hurston)","Ita (Hurston)","Arial (Hurston)","Euterpe (microTech)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)","Calliope (microTech)","Wala (microTech)","Pyro I","Pyro II (Monox)"],"value_per_scu":4.05},
+  {"name":"Aluminum","type":"ore","rarity":"común","signatures":{"20%":4285,"40%":8570,"60%":12855,"80%":17140,"100%":21425,"max":25710},"signature_min":4285,"signature_max":25710,"locations":["Aberdeen (Hurston)","Ita (Hurston)","Arial (Hurston)","Euterpe (microTech)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)","Calliope (microTech)","Wala (microTech)"],"value_per_scu":4.30},
+  {"name":"Ice","type":"ore","rarity":"común","signatures":{"20%":4300,"40%":8600,"60%":12900,"80%":17200,"100%":21500,"max":25800},"signature_min":4300,"signature_max":25800,"locations":["Aberdeen (Hurston)","Ita (Hurston)","Arial (Hurston)","Euterpe (microTech)","Cellin (Crusader)","Daymar (Crusader)","Magda (Crusader)","Lyria (ArcCorp)","Calliope (microTech)","Wala (microTech)"],"value_per_scu":3.29}
+];
+
+// Extract unique systems from locations
+function getMineralSystems(minerals) {
+    const systemsSet = new Set();
+    minerals.forEach(m => {
+        m.locations.forEach(loc => {
+            const match = loc.match(/\(([^)]+)\)/);
+            if (match) systemsSet.add(match[1]);
+        });
+    });
+    return [...systemsSet].sort();
+}
+
+// Get display systems for a mineral (unique, comma-separated)
+function getMineralSystemList(mineral) {
+    const systems = new Set();
+    mineral.locations.forEach(loc => {
+        const match = loc.match(/\(([^)]+)\)/);
+        if (match) systems.add(match[1]);
+    });
+    return [...systems].sort().join(', ');
+}
+
+// Get rarity display label and badge HTML
+function getRarityLabel(rarity) {
+    const labels = {
+        'común': currentLang === 'es' ? 'Común' : 'Common',
+        'raro': currentLang === 'es' ? 'Raro' : 'Rare',
+        'épico': currentLang === 'es' ? 'Épico' : 'Epic',
+        'legendario': currentLang === 'es' ? 'Legendario' : 'Legendary'
+    };
+    return labels[rarity] || rarity;
+}
+
+function getRarityBadge(rarity) {
+    const label = getRarityLabel(rarity);
+    const cls = rarity === 'legendario' ? 'legendario' : rarity === 'épico' ? 'épico' : rarity === 'raro' ? 'raro' : 'común';
+    return `<span class="badge-rarity ${cls}">${label}</span>`;
+}
+
+let mineralsCache = null;
+let mineralsFiltered = [];
+let mineralsPage = 1;
+let mineralsSort = { key: 'name', asc: true };
+const MINERALS_PER_PAGE = 25;
+
+async function loadMinerals() {
+    const tbody = document.getElementById('minerals-tbody');
+    if (!mineralsCache) {
+        showSkeleton('minerals-tbody', 5, 6);
+        try {
+            const res = await fetch('/data/minerals.json');
+            if (res.ok) {
+                const data = await res.json();
+                mineralsCache = data.data || data;
+            } else {
+                throw new Error('HTTP ' + res.status);
+            }
+        } catch(e) {
+            console.warn('Static load failed for minerals, trying API:', e);
+            const data = await apiFetch('/minerals');
+            if (data && data.data) {
+                mineralsCache = data.data;
+            } else if (Array.isArray(data)) {
+                mineralsCache = data;
+            } else {
+                // Ultimate fallback: static data
+                console.warn('Using static minerals fallback');
+                mineralsCache = [...MINERALS_STATIC_DATA];
+            }
+        }
+        // Update badge
+        const badge = document.getElementById('badge-minerals');
+        if (badge) badge.textContent = mineralsCache.length;
+    }
+    mineralsFiltered = [...mineralsCache];
+    populateMineralsFilters();
+    applyMineralsFilters();
+    applyMineralsSort();
+    renderMineralsPage(1);
+    setupMineralsFilters();
+}
+
+function populateMineralsFilters() {
+    const raritySel = document.getElementById('filter-rarity');
+    if (raritySel && raritySel.options.length <= 1) {
+        const rarities = ['común', 'raro', 'épico', 'legendario'];
+        rarities.forEach(r => {
+            const o = document.createElement('option');
+            o.value = r;
+            o.textContent = getRarityLabel(r);
+            raritySel.appendChild(o);
+        });
+    }
+    const systemSel = document.getElementById('filter-system');
+    if (systemSel && systemSel.options.length <= 1) {
+        const systems = getMineralSystems(mineralsCache);
+        systems.forEach(s => {
+            const o = document.createElement('option');
+            o.value = s;
+            o.textContent = s;
+            systemSel.appendChild(o);
+        });
+    }
+}
+
+function applyMineralsFilters() {
+    const search = (document.getElementById('minerals-search').value || '').toLowerCase();
+    const rarity = document.getElementById('filter-rarity').value;
+    const system = document.getElementById('filter-system').value;
+
+    mineralsFiltered = (mineralsCache || []).filter(m => {
+        if (search && !m.name.toLowerCase().includes(search)) return false;
+        if (rarity && m.rarity !== rarity) return false;
+        if (system) {
+            const hasSystem = m.locations.some(loc => {
+                const match = loc.match(/\(([^)]+)\)/);
+                return match && match[1] === system;
+            });
+            if (!hasSystem) return false;
+        }
+        return true;
+    });
+    document.getElementById('minerals-count').textContent = mineralsFiltered.length;
+}
+
+function applyMineralsSort() {
+    const { key, asc } = mineralsSort;
+    if (!key) return;
+    mineralsFiltered.sort((a, b) => {
+        let va, vb;
+        switch (key) {
+            case 'name': va = a.name || ''; vb = b.name || ''; break;
+            case 'rarity': {
+                const order = { 'común': 0, 'raro': 1, 'épico': 2, 'legendario': 3 };
+                va = order[a.rarity] || 0;
+                vb = order[b.rarity] || 0;
+                break;
+            }
+            case 'sig_min': va = a.signature_min || 0; vb = b.signature_min || 0; break;
+            case 'sig_max': va = a.signature_max || 0; vb = b.signature_max || 0; break;
+            case 'value': va = a.value_per_scu || 0; vb = b.value_per_scu || 0; break;
+            case 'locations': {
+                const systemsA = new Set();
+                a.locations.forEach(l => { const m = l.match(/\(([^)]+)\)/); if (m) systemsA.add(m[1]); });
+                const systemsB = new Set();
+                b.locations.forEach(l => { const m = l.match(/\(([^)]+)\)/); if (m) systemsB.add(m[1]); });
+                va = [...systemsA].sort().join(', ');
+                vb = [...systemsB].sort().join(', ');
+                break;
+            }
+            default: return 0;
+        }
+        if (typeof va === 'string') return asc ? va.localeCompare(vb) : vb.localeCompare(va);
+        return asc ? va - vb : vb - va;
+    });
+}
+
+function renderMineralsPage(page) {
+    mineralsPage = page;
+    const tbody = document.getElementById('minerals-tbody');
+    const total = mineralsFiltered.length;
+    const pages = Math.ceil(total / MINERALS_PER_PAGE) || 1;
+    const start = (page - 1) * MINERALS_PER_PAGE;
+    const pageItems = mineralsFiltered.slice(start, start + MINERALS_PER_PAGE);
+    if (total === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Sin resultados</td></tr>';
+        document.getElementById('minerals-pagination').innerHTML = '';
+        return;
+    }
+    tbody.innerHTML = pageItems.map(m => {
+        const sigMin = m.signature_min.toLocaleString();
+        const sigMax = m.signature_max.toLocaleString();
+        const systems = getMineralSystemList(m);
+        const valueStr = m.value_per_scu.toFixed(2);
+        return `<tr onclick="openMineralDetail('${m.name.replace(/'/g, "\\'")}')">
+            <td style="font-weight:600">${m.name}</td>
+            <td>${getRarityBadge(m.rarity)}</td>
+            <td style="color:var(--text-secondary)">${sigMin}</td>
+            <td style="color:var(--text-secondary)">${sigMax}</td>
+            <td style="color:var(--accent);font-weight:500">${valueStr}</td>
+            <td style="font-size:12px;color:var(--text-secondary)">${systems}</td>
+        </tr>`;
+    }).join('');
+    renderPagination('minerals-pagination', page, pages, renderMineralsPage);
+    updateSortIndicators('minerals-table', mineralsSort.key, mineralsSort.asc);
+}
+
+function setupMineralsFilters() {
+    if (window._mineralsFiltersReady) return;
+    window._mineralsFiltersReady = true;
+    ['minerals-search', 'filter-rarity', 'filter-system'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', function() { applyMineralsFilters(); applyMineralsSort(); renderMineralsPage(1); });
+        el.addEventListener('change', function() { applyMineralsFilters(); applyMineralsSort(); renderMineralsPage(1); });
+    });
+    document.getElementById('minerals-reset').addEventListener('click', function() {
+        document.getElementById('minerals-search').value = '';
+        document.getElementById('filter-rarity').value = '';
+        document.getElementById('filter-system').value = '';
+        applyMineralsFilters(); applyMineralsSort(); renderMineralsPage(1);
+    });
+    document.querySelectorAll('#minerals-table th.sortable').forEach(th => {
+        th.addEventListener('click', function() {
+            const key = this.dataset.sort;
+            if (mineralsSort.key === key) mineralsSort.asc = !mineralsSort.asc;
+            else { mineralsSort.key = key; mineralsSort.asc = true; }
+            applyMineralsSort(); renderMineralsPage(1);
+        });
+    });
+}
+
+// ─── MINERAL DETAIL (uses unified modal) ───
+
+function openMineralDetail(name) {
+    const m = (mineralsCache || MINERALS_STATIC_DATA).find(x => x.name === name);
+    if (!m) return;
+
+    const systems = getMineralSystemList(m);
+    const sigFields = Object.entries(m.signatures).map(([pct, val]) => ({
+        label: pct,
+        value: val.toLocaleString()
+    }));
+
+    const fields = [
+        { label: 'Tipo', value: m.type === 'ore' ? (currentLang === 'es' ? 'Mena' : 'Ore') : m.type },
+        { label: 'Rareza', value: getRarityLabel(m.rarity) },
+        { label: 'Firma Mín', value: m.signature_min.toLocaleString() },
+        { label: 'Firma Máx', value: m.signature_max.toLocaleString() },
+        { label: 'Valor/SCU', value: m.value_per_scu.toFixed(2) + ' aUEC' },
+        { label: 'Sistemas', value: systems, fullWidth: true },
+    ];
+
+    const sections = [
+        {
+            title: '📍 Locaciones',
+            items: m.locations.map(loc => ({ label: '', value: loc }))
+        },
+        {
+            title: '📊 Firmas por porcentaje',
+            items: sigFields
+        }
+    ];
+
+    const colorHex = m.rarity === 'legendario' ? '#ffa726' : m.rarity === 'épico' ? '#ab47bc' : m.rarity === 'raro' ? '#64b5f6' : '#bdbdbd';
+    const footer = `<span style="color:${colorHex};font-weight:700">◆ ${getRarityLabel(m.rarity)}</span> · ${m.name}`;
+
+    showDetailModal({
+        icon: '💎',
+        title: m.name,
+        fields: fields,
+        sections: sections,
+        footer: footer
+    });
+}
+
+// ═══════════════════════════════════════════
 // POLISH — cross-links, tooltips, keyboard nav, responsive, skeletons, badges
 // ═══════════════════════════════════════════
 
@@ -2312,6 +2863,39 @@ showDetailModal = function(config) {
                     factionDiv.innerHTML = `<span class="mini-card" onclick="navigateTo('factions');closeModal(overlay);return false">${fname}</span>`;
                 }
             }
+        }
+    }
+    // ═══ PYRO CYBER: Inject modal glitch overlay ═══
+    if (currentTheme === 'pyro') {
+        const bodyEl = overlay.querySelector('.modal-body');
+        if (bodyEl) {
+            const glitchDiv = document.createElement('div');
+            glitchDiv.className = 'modal__glitch';
+            glitchDiv.setAttribute('aria-hidden', 'true');
+            const titleEl = overlay.querySelector('h3');
+            if (titleEl) {
+                const h2Clone = document.createElement('h2');
+                h2Clone.innerHTML = titleEl.innerHTML;
+                glitchDiv.appendChild(h2Clone);
+            }
+            const textEl = overlay.querySelector('.body__text');
+            if (textEl) {
+                const textClone = document.createElement('div');
+                textClone.className = 'body__text';
+                textClone.innerHTML = textEl.innerHTML;
+                glitchDiv.appendChild(textClone);
+            }
+            bodyEl.appendChild(glitchDiv);
+        }
+        const glitchId = initModalGlitch(overlay);
+        if (glitchId) {
+            overlay.dataset.glitchId = glitchId;
+        }
+        const closeBtn = overlay.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                stopModalGlitch(overlay.dataset.glitchId);
+            });
         }
     }
     return overlay;
@@ -2443,5 +3027,136 @@ setInterval(async () => {
         }
     }
 }, 60000);
+
+
+// ═══════════════════════════════════════════
+// ═══ PYRO CYBER: Modal Glitch Animation System ═══
+// ═══════════════════════════════════════════
+
+let _glitchTimers = new Map();
+
+function initModalGlitch(modalEl) {
+    if (!modalEl || currentTheme !== 'pyro') return;
+    const glitchEl = modalEl.querySelector('.modal__glitch');
+    if (!glitchEl) return;
+    const id = 'modal_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    let glitched = false;
+
+    function kickOff() {
+        const delay = !glitched ? 1500 : Math.random() * 10000 + 2000;
+        const timer = setTimeout(() => {
+            glitchEl.classList.add('animating');
+            requestAnimationFrame(async () => {
+                const anims = glitchEl.getAnimations();
+                if (anims.length) {
+                    await Promise.allSettled(anims.map(a => a.finished));
+                }
+                glitched = true;
+                glitchEl.classList.remove('animating');
+                kickOff();
+            });
+        }, delay);
+        _glitchTimers.set(id, timer);
+    }
+
+    kickOff();
+    return id;
+}
+
+function stopModalGlitch(id) {
+    if (id && _glitchTimers.has(id)) {
+        clearTimeout(_glitchTimers.get(id));
+        _glitchTimers.delete(id);
+    }
+}
+
+
+
+// Apply cyber-btn class to theme-toggle on load if coming from pyro
+if (currentTheme === 'pyro') {
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.classList.add('cyber-btn');
+}
+
+// ═══════════════════════════════════════════
+// ═══ SUPPORTER SYSTEM (Ko-fi desbloqueo Pyro) ═══
+// ═══════════════════════════════════════════
+
+async function checkSupporter(email) {
+    try {
+        const res = await fetch(`/api/check-supporter?email=${encodeURIComponent(email)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+    } catch (e) {
+        console.error('Error checking supporter:', e);
+        return { supporter: false, error: 'Error de conexión' };
+    }
+}
+
+function setupSupporterUI() {
+    const verifyBtn = document.getElementById('supporter-verify-btn');
+    const emailInput = document.getElementById('supporter-email');
+    const statusEl = document.getElementById('supporter-status');
+
+    if (!verifyBtn || !emailInput) return;
+
+    // Si ya es supporter, ocultar la sección de input
+    if (localStorage.getItem('sc_supporter') === 'true') {
+        document.getElementById('supporter-section').classList.add('supporter-unlocked');
+        if (statusEl) {
+            statusEl.innerHTML = '<span class="supporter-msg supporter-msg-success">✅ ¡Eres supporter! Tema Pyro desbloqueado 🔥</span>';
+            statusEl.style.display = 'block';
+        }
+        return;
+    }
+
+    verifyBtn.addEventListener('click', async () => {
+        const email = emailInput.value.trim();
+        if (!email || !email.includes('@')) {
+            if (statusEl) {
+                statusEl.innerHTML = '<span class="supporter-msg supporter-msg-error">⚠️ Ingresa un email válido</span>';
+                statusEl.style.display = 'block';
+            }
+            return;
+        }
+
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = 'Verificando...';
+
+        if (statusEl) {
+            statusEl.innerHTML = '<span class="supporter-msg">⏳ Verificando...</span>';
+            statusEl.style.display = 'block';
+        }
+
+        const result = await checkSupporter(email);
+
+        if (result.supporter) {
+            localStorage.setItem('sc_supporter', 'true');
+            document.getElementById('supporter-section').classList.add('supporter-unlocked');
+            if (statusEl) {
+                statusEl.innerHTML = '<span class="supporter-msg supporter-msg-success">🎉 ¡Email verificado! Tema Pyro desbloqueado 🔥</span>';
+            }
+            // Cambiar a tema Pyro automáticamente
+            if (currentTheme !== 'pyro') {
+                toggleTheme();
+            }
+        } else {
+            if (statusEl) {
+                const msg = result.error
+                    ? `<span class="supporter-msg supporter-msg-error">❌ Error: ${result.error}</span>`
+                    : '<span class="supporter-msg supporter-msg-error">❌ Email no registrado como supporter. ¿Donaste en <a href="https://ko-fi.com/tubsdep" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline">Ko-fi</a>?</span>';
+                statusEl.innerHTML = msg;
+            }
+        }
+
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verificar';
+    });
+
+    // Permitir verificar con Enter
+    emailInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') verifyBtn.click();
+    });
+}
 
 console.log('✅ SC Database v2.2 — Lazy loading por sección');

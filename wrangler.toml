@@ -1,0 +1,9 @@
+name = "sc-database"
+compatibility_date = "2026-07-20"
+compatibility_flags = ["nodejs_compat"]
+
+pages_build_output_dir = "/"
+
+[[kv_namespaces]]
+binding = "SUGGESTIONS"
+id = "YOUR_KV_NAMESPACE_ID"

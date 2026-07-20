@@ -1,0 +1,18 @@
+[
+  {
+    "suggestion": "Test sugerencia para SC Database",
+    "email": "test@test.com",
+    "timestamp": "2026-07-19T07:29:54Z",
+    "ip": "127.0.0.1"
+  },
+  {
+    "suggestion": "Test sugerencia desde el deploy",
+    "timestamp": "2026-07-19T07:32:06Z",
+    "ip": "127.0.0.1"
+  },
+  {
+    "suggestion": "Sugerencia de prueba para verificar que funciona correctamente",
+    "timestamp": "2026-07-19T07:32:06Z",
+    "ip": "127.0.0.1"
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "supporters": [
+    {
+      "email": "tubsdep@ejemplo.com",
+      "name": "Señor",
+      "since": "2026-07-19T00:00:00Z",
+      "amount": 5.0
+    },
+    {
+      "email": "nuevo@supporter.com",
+      "name": "Nuevo Support",
+      "since": "2026-07-19T00:00:00Z",
+      "amount": 3.0
+    }
+  ]
+}

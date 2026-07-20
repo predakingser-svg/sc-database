@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SC Database</title>
     <link rel="stylesheet" href="style.css">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HVD7ZQLWYD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-HVD7ZQLWYD');
+</script>
 </head>
 <body>
     <div id="app">
@@ -54,6 +62,11 @@
                     <span>Componentes</span>
                     <span class="badge" id="badge-components">0</span>
                 </li>
+                <li class="nav-item" data-page="minerals">
+                    <span class="nav-icon">💎</span>
+                    <span>Minerales</span>
+                    <span class="badge" id="badge-minerals">0</span>
+                </li>
             </ul>
             <div class="sidebar-footer">
                 <span>⚡ Ecko · SC Database</span>
@@ -78,7 +91,8 @@
                         <span id="langBtn">🇪🇸</span>
                     </button>
                     <button class="tb-btn" onclick="openChangelog()" title="Novedades">🆕</button>
-                    <button class="tb-btn" onclick="openFeedback()" title="Feedback">💬</button>
+                    <button class="tb-btn" onclick="openSuggestionsModal()" title="Sugerencias/Reporte">Sugerencias/Reporte</button>
+                    <button class="tb-btn" id="theme-toggle" onclick="toggleTheme()" title="Tema Pyro"><span class="backdrop" style="display:none"><span class="corner"></span></span>🔥</button>
                 </div>
             </header>
 
@@ -104,6 +118,21 @@
                                 Invítame un café
                             </a>
                         </div>
+                    </div>
+
+                    <div class="supporter-section" id="supporter-section">
+                        <div class="supporter-content">
+                            <span class="supporter-icon">🔒</span>
+                            <div class="supporter-text">
+                                <strong>Desbloquea temas exclusivos</strong>
+                                <span>¿Donaste en Ko-fi? Ingresa tu email para desbloquear el tema Pyro</span>
+                            </div>
+                            <div class="supporter-input-group">
+                                <input type="email" id="supporter-email" placeholder="tu@email.com" class="filter-input">
+                                <button id="supporter-verify-btn" class="kofi-btn" style="padding:8px 16px;font-size:13px">Verificar</button>
+                            </div>
+                        </div>
+                        <div id="supporter-status" class="supporter-status"></div>
                     </div>
 
                     <div class="dashboard-grid">
@@ -148,6 +177,10 @@
                                 <a href="#" class="quick-link" data-page="components">
                                     <span class="ql-icon">⚙️</span>
                                     <span>Componentes de nave</span>
+                                </a>
+                                <a href="#" class="quick-link" data-page="minerals">
+                                    <span class="ql-icon">💎</span>
+                                    <span>Ver minerales</span>
                                 </a>
                             </div>
                         </div>
@@ -305,6 +338,20 @@
                     </div>
                     <div class="table-container"><table class="data-table" id="comps-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="type" class="sortable">Tipo</th><th data-sort="size" class="sortable">Size</th><th data-sort="grade" class="sortable">Grade</th></tr></thead><tbody id="comps-tbody"><tr><td colspan="4" class="loading-row">Cargando...</td></tr></tbody></table></div>
                     <div class="pagination" id="comps-pagination"></div>
+                </div>
+
+                <!-- ═══ MINERALS PAGE ═══ -->
+                <div id="page-minerals" class="page">
+                    <div class="page-header"><h2>Minerales</h2><span id="minerals-count" class="page-count">0</span></div>
+                    <p class="subtitle">Catálogo completo de minerales y menas — firmas, rareza y locaciones</p>
+                    <div class="filters-bar">
+                        <div class="filter-group"><input type="text" id="minerals-search" class="filter-input" placeholder="Buscar mineral..."></div>
+                        <div class="filter-group"><select id="filter-rarity" class="filter-select"><option value="">Todas las rarezas</option></select></div>
+                        <div class="filter-group"><select id="filter-system" class="filter-select"><option value="">Todos los sistemas</option></select></div>
+                        <button id="minerals-reset" class="btn-reset">✕</button>
+                    </div>
+                    <div class="table-container"><table class="data-table" id="minerals-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="rarity" class="sortable">Rareza</th><th data-sort="sig_min" class="sortable">Firma Mín</th><th data-sort="sig_max" class="sortable">Firma Máx</th><th data-sort="value" class="sortable">Valor/SCU</th><th data-sort="locations" class="sortable">Sistemas</th></tr></thead><tbody id="minerals-tbody"><tr><td colspan="6" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                    <div class="pagination" id="minerals-pagination"></div>
                 </div>
             </div>
         </main>
