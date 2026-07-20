@@ -6,4 +6,4 @@ pages_build_output_dir = "/"
 
 [[kv_namespaces]]
 binding = "SUGGESTIONS"
-id = "YOUR_KV_NAMESPACE_ID"
+id = "299aebf31fad42ba8c0e454110db4980"
