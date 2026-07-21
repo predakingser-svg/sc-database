@@ -835,19 +835,103 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupSupporterUI();
 });
 
+// ═══════════════════════════════════════════
+// API / DATA LOADING — Sin backend
+// Carga desde JSON cacheado en memoria.
+// ═══════════════════════════════════════════
+
+let CACHED_DB = null;
+let DB_LOADING = null;
+
 async function apiFetch(path) {
-    try {
-        const res = await fetch(`${API}${path}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
-    } catch (e) {
-        console.error(`API error: ${path}`, e);
-        return null;
+    if (!CACHED_DB) {
+        if (!DB_LOADING) {
+            DB_LOADING = (async () => {
+                try {
+                    const res = await fetch('/data/sc_database_es.json');
+                    if (res.ok) return await res.json();
+                } catch(e) { /* fallback */ }
+                try {
+                    const res = await fetch('https://raw.githubusercontent.com/predakingser-svg/sc-database/master/sc_database_es.json');
+                    if (res.ok) return await res.json();
+                } catch(e) { console.error('Cannot load DB'); }
+                return null;
+            })();
+        }
+        CACHED_DB = await DB_LOADING;
     }
+    if (!CACHED_DB) return null;
+
+    const url = new URL(path, window.location.origin);
+    const route = url.pathname;
+    const perPage = parseInt(url.searchParams.get('per_page')) || 5000;
+    const page = parseInt(url.searchParams.get('page')) || 1;
+
+    const toStats = (list) => (list || []).length;
+
+    if (route === '/stats') {
+        return {
+            total_missions: toStats(CACHED_DB.missions),
+            total_blueprints: toStats(CACHED_DB.blueprints),
+            total_weapons: toStats(CACHED_DB.weapons),
+            total_components: toStats(CACHED_DB.components),
+            total_items: toStats(CACHED_DB.items),
+            total_minerals: toStats(CACHED_DB.minerals),
+            total_wikelo: toStats(CACHED_DB.wikelo),
+            total_ships: toStats(CACHED_DB.ships),
+            total_factions: toStats(CACHED_DB.factions),
+            version: CACHED_DB.version || '4.9.0',
+        };
+    }
+    if (route === '/missions') {
+        const data = CACHED_DB.missions || [];
+        const totalPages = Math.ceil(data.length / perPage);
+        const start = (page - 1) * perPage;
+        return { data: data.slice(start, start + perPage), total: data.length, total_pages: totalPages };
+    }
+    if (route === '/blueprints') {
+        const data = CACHED_DB.blueprints || [];
+        const totalPages = Math.ceil(data.length / perPage);
+        const start = (page - 1) * perPage;
+        return { data: data.slice(start, start + perPage), total: data.length, total_pages: totalPages };
+    }
+    if (route === '/weapons') return CACHED_DB.weapons || [];
+    if (route === '/items') return CACHED_DB.items || [];
+    if (route === '/wikelo') return CACHED_DB.wikelo || [];
+    if (route === '/factions') return CACHED_DB.factions || [];
+    if (route === '/components') return CACHED_DB.components || [];
+    if (route === '/minerals') return CACHED_DB.minerals || [];
+    if (route === '/ships') return CACHED_DB.ships || [];
+
+    const parts = route.split('/').filter(Boolean);
+    if (parts.length === 2) {
+        const [section, id] = parts;
+        const list = CACHED_DB[section];
+        if (Array.isArray(list)) {
+            return list.find(i => i.uuid === id || i.id === id || i.name === id) || null;
+        }
+    }
+
+    if (route === '/search') {
+        const q = (url.searchParams.get('q') || '').toLowerCase();
+        if (!q) return [];
+        const results = [];
+        for (const key of ['missions','blueprints','weapons','items','components','minerals','wikelo','ships']) {
+            for (const item of (CACHED_DB[key] || [])) {
+                if ((item.name || item.title || '').toLowerCase().includes(q)) {
+                    results.push({ section: key, ...item });
+                    if (results.length >= 50) break;
+                }
+            }
+            if (results.length >= 50) break;
+        }
+        return results;
+    }
+
+    return null;
 }
 
-// ─── Static JSON loader for Cloudflare Pages ───
-// Carga archivos desde /data/ con fallback a la API live
+// ─── Static JSON loader (fallback) ───
 async function loadJSON(path) {
     try {
         const res = await fetch(path);
@@ -862,6 +946,7 @@ async function loadJSON(path) {
 function setStatus(stateVal, text) {
     const dot = document.getElementById('status-indicator');
     const txt = document.getElementById('status-text');
+    if (!dot || !txt) return;
     dot.className = 'status-dot';
     if (stateVal === 'online') dot.classList.add('online');
     if (stateVal === 'offline') dot.style.background = 'var(--danger)';
@@ -884,17 +969,17 @@ async function loadStats() {
         }
     }
 
-    // Cargar stats desde archivo estático (instantáneo)
-    let statsData = await loadJSON('/data/stats.json');
+    // Cargar stats desde la DB cacheada
+    let statsData = await apiFetch('/stats');
 
     if (!statsData) {
-        // Fallback: API live
-        statsData = await apiFetch('/stats');
+        // Fallback: archivo estático
+        statsData = await loadJSON('/data/stats.json');
     }
 
     if (!statsData) {
-        setStatus('offline', 'API no disponible');
-        document.getElementById('stats-grid').innerHTML = '<div class="stat-card" style="grid-column:1/-1;color:var(--danger);padding:40px">❌ No se pudo conectar con la API.<br>Ejecuta primero la API Flask en localhost:5000</div>';
+        setStatus('offline', 'Sin datos');
+        document.getElementById('stats-grid').innerHTML = '<div class="stat-card" style="grid-column:1/-1;color:var(--danger);padding:40px">❌ No se pudieron cargar los datos.</div>';
         return;
     }
 
