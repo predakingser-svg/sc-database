@@ -1,0 +1,45 @@
+{
+  "name": "Executive Hangars",
+  "name_es": "Hangares Ejecutivos",
+  "status": "ONLINE",
+  "phase": "3 of 5",
+  "location": "Pyro - PYAM-EXHANG-0-1",
+  "ship_rewards": [
+    {
+      "name": "Hornet F7A Mk II Executive",
+      "manufacturer": "ANVL"
+    },
+    {
+      "name": "Lightning F8C Executive",
+      "manufacturer": "ANVL"
+    },
+    {
+      "name": "Cutlass Black Executive",
+      "manufacturer": "DRAK"
+    },
+    {
+      "name": "Corsair Executive",
+      "manufacturer": "DRAK"
+    },
+    {
+      "name": "Syulen Executive",
+      "manufacturer": "GATA"
+    },
+    {
+      "name": "Guardian MX Wikelo War Special",
+      "manufacturer": "MRAI"
+    },
+    {
+      "name": "Meteor Executive",
+      "manufacturer": "RSI"
+    },
+    {
+      "name": "Scorpius Wikelo War Special",
+      "manufacturer": "RSI"
+    }
+  ],
+  "loot_rewards": {
+    "components": 16,
+    "weapons": 4
+  }
+}
