@@ -2,10 +2,46 @@
    Star Citizen Database — App Logic
    ═══════════════════════════════════════════ */
 
-// Auto-detect API base: Serveo tunnel = same origin, otherwise use tunnel URL
-const API = (window.location.hostname.includes('serveo') || window.location.port === '8080')
-    ? ''
-    : 'https://sc-database.serveousercontent.com';
+// Load data directly from static JSON — no backend API needed
+const DB_URL = '/sc_database_es.json';
+let CACHED_DB = null;
+
+async function apiFetch(path) {
+    if (!CACHED_DB) {
+        try {
+            const res = await fetch(DB_URL);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            CACHED_DB = await res.json();
+        } catch (e) {
+            console.error('Error loading database:', e);
+            return null;
+        }
+    }
+    // Parse path to return appropriate section
+    const url = new URL(path, window.location.origin);
+    const route = url.pathname;
+    const perPage = parseInt(url.searchParams.get('per_page')) || 5000;
+    
+    if (route === '/stats') {
+        return {
+            total_missions: (CACHED_DB.missions || []).length,
+            total_blueprints: (CACHED_DB.blueprints || []).length,
+            total_weapons: (CACHED_DB.weapons || []).length,
+            total_components: (CACHED_DB.components || []).length,
+            total_minerals: (CACHED_DB.minerals || []).length,
+            total_items: (CACHED_DB.items || []).length,
+            total_wikelo: (CACHED_DB.wikelo || []).length,
+            total_ships: (CACHED_DB.ships || []).length,
+            version: CACHED_DB.version || '4.9.0',
+        };
+    }
+    if (route === '/missions') return (CACHED_DB.missions || []).slice(0, perPage);
+    if (route === '/blueprints') return (CACHED_DB.blueprints || []).slice(0, perPage);
+    if (route === '/weapons') return CACHED_DB.weapons || [];
+    if (route === '/items') return CACHED_DB.items || [];
+    if (route === '/wikelo') return CACHED_DB.wikelo || [];
+    return null;
+}
 
 // ─── State ───
 let state = {
@@ -29,17 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateBadges();
 });
 
-// ─── API helper ───
-async function apiFetch(path) {
-    try {
-        const res = await fetch(`${API}${path}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
-    } catch (e) {
-        console.error(`API error: ${path}`, e);
-        return null;
-    }
-}
+
 
 // ─── Load Dashboard Stats ───
 async function loadStats() {
