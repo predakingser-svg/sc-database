@@ -1,7 +1,9 @@
 {
   "total_ships": 265,
   "total_items": 2916,
-  "total_blueprints": 697,
   "total_missions": 2169,
-  "total_minerals": 246
+  "total_blueprints": 697,
+  "total_minerals": 246,
+  "total_components": 1708,
+  "total_wikelo": 51
 }
