@@ -1,0 +1,549 @@
+{
+  "proyecto": "star-citizen-db",
+  "fase_director": "planificacion_inicial",
+  "version": "3.0.0",
+  "fecha": "2026-07-20",
+  "contexto": "El proyecto ya tiene un frontend funcional y API Flask con datos de scrapers web. Ahora se requiere reconstruir la pipeline de datos usando extractos directos de StarBreaker (61,635 registros JSON formato DataCore) para obtener datos mucho más precisos y detallados: naves con stats completas, componentes con valores reales, armas con DPS/daño, armaduras, misiones con requisitos exactos, economía, crafting y locaciones de venta. Los scripts deben correr en Windows 10 (PowerShell 5.1, sin -Depth en ConvertFrom-Json, sin Python).",
+  "stack_extraccion": {
+    "sistema": "Windows 10, PowerShell 5.1",
+    "herramientas": {
+      "starbreaker": "C:\\Users\\preda\\Desktop\\star_data\\libs\\foundry\\records\\",
+      "traducciones": "LetalDark global.ini (89,527 claves) desde GitHub",
+      "smart_citizen": "Instalado pero base.ini no se genera",
+      "limitaciones": "ConvertFrom-Json sin -Depth, sin Python, sin Python modules"
+    },
+    "flujo": "PowerShell → JSON estructurado → Integración con build existente (Python en Linux) → Web"
+  },
+  "estructura_origen": {
+    "spaceships": "entities/spaceships/ (EntityClassDefinition, Components[])",
+    "ship_components": "entities/haulingentityclass/ + entities/scitem/ships/",
+    "weapons_ship": "entities/scitem/weapons/",
+    "weapons_fps": "entities/scitem/weapons/fps/ (o similar)",
+    "armor": "entities/scitem/characters/armor/",
+    "missions": "missiondata/ (2,470 registros)",
+    "commodities": "entities/commodities/",
+    "crafting": "crafting/ (1,874 recetas)",
+    "manufacturers": "scitemmanufacturer/ (1,152)",
+    "factions": "factions/ (135)",
+    "prices_ships": "legacyitems/vehicles/shipsshop/"
+  },
+  "formato_datacore": {
+    "_RecordName": "Nombre del tipo de registro (ej. EntityClassDefinition.AEGS_Avenger_Stalker)",
+    "_RecordValue": "Contenido del registro (objeto o array)",
+    "_RecordId": "UUID del registro",
+    "nota": "Los datos reales están dentro de _RecordValue. Puede haber arrays de objetos anidados. Los Components[] de naves contienen SVehicleMovementParams, SItemPortContainerComponentParams, SHealthComponentParams, etc."
+  },
+  "tareas": [
+    {
+      "id": "T-000",
+      "agente": "backend-dev",
+      "descripcion": "Fase 0: Crear módulo PowerShell base para parseo de StarBreaker JSON (DataCore). Función Read-StarBreakerJson que carga archivos recorriendo _RecordValue recursivamente. Función Get-StarBreakerFiles que indexa todos los archivos por tipo. Salida: data-index.json con lista de archivos agrupados por categoría.",
+      "prioridad": "critica",
+      "depende": [],
+      "estado": "pendiente",
+      "entregable": "scripts/starbreaker/StarBreaker-Parser.psm1 + data-index.json",
+      "estimacion": "2-3 horas",
+      "criterios_aceptacion": [
+        "Carga archivos JSON con _RecordName, _RecordValue, _RecordId",
+        "Navega estructuras anidadas sin -Depth (usando Get-Member + bucles)",
+        "Indexa todos los 61,635 archivos por tipo de _RecordName"
+      ]
+    },
+    {
+      "id": "T-001",
+      "agente": "backend-dev",
+      "descripcion": "Fase 0: Obtener y parsear traducción LetalDark ES (89,527 claves). El usuario tiene el global.ini de LetalDark desde GitHub. Función Get-LetalDarkTranslations que parsea el archivo INI (key=value) y produce translations.json con {key_original: traduccion_es}. Manejar secciones [section] y claves con espacios.",
+      "prioridad": "critica",
+      "depende": [],
+      "estado": "pendiente",
+      "entregable": "translations_raw.json (89,527 pares clave=valor)",
+      "estimacion": "1 hora",
+      "criterios_aceptacion": [
+        "Parseo de formato global.ini con secciones y espacios",
+        "Mantiene 89,527+ claves sin pérdida",
+        "Salida JSON UTF-8 con acentos/caracteres especiales"
+      ]
+    },
+    {
+      "id": "T-101",
+      "agente": "backend-dev",
+      "descripcion": "Fase 1: Script PowerShell para extraer catálogo de naves desde entities/spaceships/. Leer cada archivo EntityClassDefinition, extraer nombre base de _RecordName, fabricante (prefijo del nombre, ej. AEGS, ANVL, DRAK), tamaño, salud/hull HP de SHealthComponentParams, velocidad SCM/max/pitch/yaw/roll de SVehicleMovementParams, velocidad QT de SQuantumDriveParams, capacidad SCU de SCargoGridParams, tripulación de SShipCrewParams. Aplicar traducción ES vía translations.json sobre nombres.",
+      "prioridad": "critica",
+      "depende": ["T-000"],
+      "estado": "pendiente",
+      "entregable": "naves_raw.json (catálogo básico de ~100+ naves con stats)",
+      "estimacion": "4-5 horas",
+      "criterios_aceptacion": [
+        "100+ naves extraídas",
+        "Campos: nombre_es, fabricante, tamaño, hull_hp, velocidad_scm, velocidad_max, qt_speed, cuartiles vel Angular (pitch/yaw/roll)",
+        "SCU de carga (si aplica, no todas las naves tienen)",
+        "Tripulación min/max",
+        "Traducción ES aplicada a nombres"
+      ]
+    },
+    {
+      "id": "T-102",
+      "agente": "backend-dev",
+      "descripcion": "Fase 1: Extraer componentes equipables (ranuras) de cada nave desde SItemPortContainerComponentParams. Esto define QUÉ componentes puede llevar la nave y de QUÉ TAMAÑO (size). Extraer: tipo de componente (shield, power_plant, cooler, quantum_drive, weapon), tamaño por ranura, cantidad por tipo. Vincular con T-003 (precios de nave).",
+      "prioridad": "alta",
+      "depende": ["T-000", "T-101"],
+      "estado": "pendiente",
+      "entregable": "naves_slots.json (ranuras de componentes por nave)",
+      "estimacion": "2-3 horas",
+      "criterios_aceptacion": [
+        "Por nave: lista de ranuras con tipo y tamaño",
+        "Tipos: shield, power_plant, cooler, quantum_drive, weapon_mount",
+        "Cantidad de ranuras por tipo"
+      ]
+    },
+    {
+      "id": "T-103",
+      "agente": "backend-dev",
+      "descripcion": "Fase 1: Extraer precios de naves desde legacyitems/vehicles/shipsshop/. Buscar archivos con precios de compra en tiendas. Estructura esperada: _RecordValue con propiedades de precio por locación.",
+      "prioridad": "alta",
+      "depende": ["T-000", "T-101"],
+      "estado": "pendiente",
+      "entregable": "naves_precios.json (precios por nave y tienda)",
+      "estimacion": "1-2 horas",
+      "criterios_aceptacion": [
+        "Precio aUEC por nave",
+        "Tienda/locación donde se vende (si disponible en datos)",
+        "Enlace con catálogo de naves (T-101)"
+      ]
+    },
+    {
+      "id": "T-201",
+      "agente": "backend-dev",
+      "descripcion": "Fase 2: Extraer datos de escudos (shield generators) desde entities/haulingentityclass/haulingentityclass_shieldgenerator_s*.json + entities/scitem/ships/shieldgenerator/shld_*.json. Datos: tamaño (s00, s01, s02, s03), grado (grade 1-3), HP, tasa de recarga, absorción de daño (físico/energético), firma EM y calor generado.",
+      "prioridad": "alta",
+      "depende": ["T-000", "T-001"],
+      "estado": "pendiente",
+      "entregable": "componentes_shields.json (todos los escudos con stats)",
+      "estimacion": "2-3 horas",
+      "criterios_aceptacion": [
+        "20+ escudos extraídos",
+        "Campos: nombre, tamaño (s00-s03), grado (1-3), hp, regen_rate, dmg_absorption_phys, dmg_absorption_energy, signature_em, signature_ir, heat_generated",
+        "Traducción ES aplicada"
+      ]
+    },
+    {
+      "id": "T-202",
+      "agente": "backend-dev",
+      "descripcion": "Fase 2: Extraer datos de power plants desde entities/haulingentityclass/ + entities/scitem/ships/powerplant/. Datos: tamaño, grado, potencia generada, calor generado, firma EM/IR.",
+      "prioridad": "alta",
+      "depende": ["T-000", "T-001"],
+      "estado": "pendiente",
+      "entregable": "componentes_powerplants.json (power plants con stats)",
+      "estimacion": "2 horas",
+      "criterios_aceptacion": [
+        "15+ power plants extraídos",
+        "Campos: nombre, tamaño, grado, power_output, heat_generated, signature_em, signature_ir",
+        "Traducción ES aplicada"
+      ]
+    },
+    {
+      "id": "T-203",
+      "agente": "backend-dev",
+      "descripcion": "Fase 2: Extraer datos de coolers desde entities/haulingentityclass/ + entities/scitem/ships/cooler/. Datos: tamaño, grado, capacidad de enfriamiento, calor disipado por segundo, firma.",
+      "prioridad": "alta",
+      "depende": ["T-000", "T-001"],
+      "estado": "pendiente",
+      "entregable": "componentes_coolers.json (coolers con stats)",
+      "estimacion": "2 horas",
+      "criterios_aceptacion": [
+        "15+ coolers extraídos",
+        "Campos: nombre, tamaño, grado, cooling_rate, heat_dissipation, signature_em, signature_ir",
+        "Traducción ES aplicada"
+      ]
+    },
+    {
+      "id": "T-204",
+      "agente": "backend-dev",
+      "descripcion": "Fase 2: Extraer datos de quantum drives desde entities/haulingentityclass/ + entities/scitem/ships/quantumdrive/. Datos: tamaño, grado, velocidad QT, rango QT, preparación (spool time), calentamiento (warmup), firma, consumo de combustible.",
+      "prioridad": "alta",
+      "depende": ["T-000", "T-001"],
+      "estado": "pendiente",
+      "entregable": "componentes_quantumdrives.json (QT drives con stats)",
+      "estimacion": "2 horas",
+      "criterios_aceptacion": [
+        "15+ QT drives extraídos",
+        "Campos: nombre, tamaño, grado, qt_speed, qt_range, spool_time, warmup_time, signature_em, signature_ir, fuel_consumption",
+        "Traducción ES aplicada"
+      ]
+    },
+    {
+      "id": "T-301",
+      "agente": "backend-dev",
+      "descripcion": "Fase 3: Extraer armas de nave desde entities/scitem/weapons/. Buscar archivos de armas montables (cañones, repetidores, gatlings, mass drivers, suckerpunches). Extraer: tipo de arma, tamaño (size 1-7), daño por tipo (físico, energía, distorsión), cadencia (fire rate), alcance, velocidad de proyectil, capacidad de munición, recarga, calor generado por disparo.",
+      "prioridad": "alta",
+      "depende": ["T-000", "T-001"],
+      "estado": "pendiente",
+      "entregable": "armas_nave.json (armas de nave con stats completas)",
+      "estimacion": "3-4 horas",
+      "criterios_aceptacion": [
+        "100+ armas de nave extraídas",
+        "Campos: nombre_es, tamaño, tipo (cannon/repeater/gatling/etc), damage_phys, damage_energy, damage_distortion, fire_rate, range, projectile_speed, ammo_capacity, reload_time, heat_per_shot, signature",
+        "DPS calculado (daño_por_disparo × cadencia)",
+        "Traducción ES aplicada"
+      ]
+    },
+    {
+      "id": "T-302",
+      "agente": "backend-dev",
+      "descripcion": "Fase 3: Extraer armas FPS desde entities/scitem/weapons/fps/ (o entidades de armas personales). Datos: tipo (pistol, rifle, shotgun, smg, sniper), daño por tipo, alcance, cadencia, capacidad cargador, recarga.",
+      "prioridad": "media",
+      "depende": ["T-000", "T-001"],
+      "estado": "pendiente",
+      "entregable": "armas_fps.json (armas FPS con stats)",
+      "estimacion": "2-3 horas",
+      "criterios_aceptacion": [
+        "30+ armas FPS extraídas",
+        "Campos: nombre_es, tipo, damage, fire_rate, range, magazine, reload",
+        "Traducción ES aplicada"
+      ]
+    },
+    {
+      "id": "T-303",
+      "agente": "backend-dev",
+      "descripcion": "Fase 3: Extraer soportes de armas (weapon mounts), torretas, racks de misiles desde scitem/weaponmounts/ o entidades similares. Datos: tipo de montaje, tamaño, ranuras de armas compatibles.",
+      "prioridad": "media",
+      "depende": ["T-000"],
+      "estado": "pendiente",
+      "entregable": "weapon_mounts.json (soportes y torretas)",
+      "estimacion": "1-2 horas",
+      "criterios_aceptacion": [
+        "Datos de torretas montables",
+        "Racks de misiles/torpedos",
+        "Tamaño y compatibilidad"
+      ]
+    },
+    {
+      "id": "T-401",
+      "agente": "backend-dev",
+      "descripcion": "Fase 4: Extraer armaduras y gear desde entities/scitem/characters/armor/. Datos: peso, protección por zona (cabeza, torso, brazos, piernas), daño físico/energético absorbido por zona, tipo de armadura (ligera, media, pesada). Incluir cascos, chalecos, brazales, perneras y mochilas si están como entidades separadas.",
+      "prioridad": "media",
+      "depende": ["T-000", "T-001"],
+      "estado": "pendiente",
+      "entregable": "armaduras.json (armaduras con protección por zona)",
+      "estimacion": "2-3 horas",
+      "criterios_aceptacion": [
+        "Armaduras con stats de protección",
+        "Campos: nombre_es, tipo (light/medium/heavy), peso, phys_resist_head/torso/arms/legs, energy_resist_head/torso/arms/legs",
+        "Cascos, chalecos, brazales, perneras",
+        "Traducción ES aplicada"
+      ]
+    },
+    {
+      "id": "T-501",
+      "agente": "backend-dev",
+      "descripcion": "Fase 5: Extraer misiones desde missiondata/. Leer cada registro de misión. Extraer: nombre, descripción, tipo (bounty, delivery, salvage, etc.), facción/emisor, requisitos (items, cantidad, destruir/transportar), pago (aUEC), reputación necesaria (facción, nivel mínimo), sistema y locación, recompensas adicionales. Aplicar traducciones de contractor_translations.json.",
+      "prioridad": "alta",
+      "depende": ["T-000", "T-001"],
+      "estado": "pendiente",
+      "entregable": "misiones_detalle.json (misiones con requisitos exactos)",
+      "estimacion": "4-5 horas",
+      "criterios_aceptacion": [
+        "2,470 misiones extraídas",
+        "Campos: debug_name, tipo, facción, pago_auec, sistema, locación, reputación_necesaria (facción+valor), items_requeridos (nombre+cantidad), recompensas",
+        "Traducción ES de nombres y descripciones"
+      ]
+    },
+    {
+      "id": "T-601",
+      "agente": "backend-dev",
+      "descripcion": "Fase 6: Extraer commodities desde entities/commodities/. Datos: nombre del commodity, tipo, precio base, rareza, locaciones donde se encuentra/extrae. Vincular con precios de compra/venta si existen en shop data.",
+      "prioridad": "media",
+      "depende": ["T-000", "T-001"],
+      "estado": "pendiente",
+      "entregable": "commodities.json (commodities con precios y locaciones)",
+      "estimacion": "2 horas",
+      "criterios_aceptacion": [
+        "Todos los commodities del juego",
+        "Campos: nombre_es, tipo, base_price, rarity, locations",
+        "Traducción ES aplicada"
+      ]
+    },
+    {
+      "id": "T-602",
+      "agente": "backend-dev",
+      "descripcion": "Fase 6: Extraer precios de venta en tiendas para todos los items (armas, componentes, gear, commodities). Buscar datos de shop/pricing en los archivos JSON. Si existe entidad de tienda separada, extraer: item_id, tienda, locación, precio_compra, precio_venta.",
+      "prioridad": "media",
+      "depende": ["T-000"],
+      "estado": "pendiente",
+      "entregable": "shop_prices.json (precios por item y tienda)",
+      "estimacion": "2-3 horas",
+      "criterios_aceptacion": [
+        "Múltiples tiendas/locaciones",
+        "Precios de compra y venta",
+        "Vinculación con items por ID o nombre"
+      ]
+    },
+    {
+      "id": "T-701",
+      "agente": "backend-dev",
+      "descripcion": "Fase 7: Extraer recetas de crafting desde crafting/. Datos: 1,874 recetas. Por cada receta extraer: materiales requeridos (nombre y cantidad exacta), item producido (nombre y cantidad), herramienta/estación requerida, locación de fabricación (si existe). Aplicar traducción ES a nombres de items.",
+      "prioridad": "alta",
+      "depende": ["T-000", "T-001"],
+      "estado": "pendiente",
+      "entregable": "crafting_recetas.json (recetas con materiales exactos)",
+      "estimacion": "3 horas",
+      "criterios_aceptacion": [
+        "1,874 recetas extraídas",
+        "Campos: output_name, output_quantity, ingredients[] (nombre+cantidad), station_type, location",
+        "Traducción ES de materiales y productos"
+      ]
+    },
+    {
+      "id": "T-801",
+      "agente": "backend-dev",
+      "descripcion": "Fase 8: Extraer fabricantes desde scitemmanufacturer/ (1,152 registros). Datos: nombre, código, descripción. Vincular fabricantes con naves y componentes existentes. Traducción ES de nombres.",
+      "prioridad": "baja",
+      "depende": ["T-000"],
+      "estado": "pendiente",
+      "entregable": "manufacturers.json (fabricantes con código y descripción)",
+      "estimacion": "1 hora",
+      "criterios_aceptacion": [
+        "1,152+ fabricantes extraídos",
+        "Campos: code (AEGS, ANVL, etc), name, description_es",
+        "Vínculo preparado para unir con naves y componentes"
+      ]
+    },
+    {
+      "id": "T-802",
+      "agente": "backend-dev",
+      "descripcion": "Fase 8: Extraer facciones desde factions/ (135 registros). Datos: nombre, tipo, descripción. Traducción ES.",
+      "prioridad": "baja",
+      "depende": ["T-000"],
+      "estado": "pendiente",
+      "entregable": "factions_data.json (facciones con descripción)",
+      "estimacion": "30 min",
+      "criterios_aceptacion": [
+        "135 facciones extraídas",
+        "Campos: nombre_es, tipo, descripción",
+        "Listo para integrar con misiones (emisores)"
+      ]
+    },
+    {
+      "id": "T-901",
+      "agente": "database-engineer",
+      "descripcion": "Fase 9: Diseñar esquema SQL para la base de datos relacional. Tablas: ships, ship_components, weapons, armor, missions, commodities, crafting_recipes, manufacturers, factions, shop_locations, ship_prices, translation_keys. Definir tipos, PKs, FKs, índices. El esquema debe soportar búsquedas por nombre, filtros por tipo/tamaño/grado, relaciones entre naves y componentes, y relaciones entre misiones y facciones.",
+      "prioridad": "alta",
+      "depende": ["T-101", "T-102", "T-103", "T-201", "T-202", "T-203", "T-204", "T-301", "T-401", "T-501", "T-601", "T-701", "T-801", "T-802"],
+      "estado": "pendiente",
+      "entregable": "schema.sql (esquema completo SQL con relaciones)",
+      "estimacion": "2 horas",
+      "criterios_aceptacion": [
+        "Normalizado (3FN)",
+        "FK entre naves y componentes (ranuras)",
+        "FK entre misiones y facciones",
+        "FK entre crafting y items/materiales",
+        "Índices para búsqueda por nombre, tipo, tamaño, facción",
+        "Comentarios en español explicando cada tabla"
+      ]
+    },
+    {
+      "id": "T-902",
+      "agente": "database-engineer",
+      "descripcion": "Fase 9: Diseñar script SQL de migración que convierta los JSON extraídos en inserts SQL. Definir orden de inserción (respetando FKs). Script autocontenido que importe los archivos JSON generados por las fases 1-8.",
+      "prioridad": "media",
+      "depende": ["T-901"],
+      "estado": "pendiente",
+      "entregable": "migrate_to_sql.sql (script de migración con LOAD DATA / INSERTs)",
+      "estimacion": "2 horas",
+      "criterios_aceptacion": [
+        "Orden correcto de inserción (sin errores de FK)",
+        "Manejo de datos faltantes/opcionales",
+        "UTF-8 para caracteres especiales/tildes"
+      ]
+    },
+    {
+      "id": "T-QA1",
+      "agente": "qa-engineer",
+      "descripcion": "Fase QA-1: Validar datos extraídos de naves (T-101, T-102, T-103). Verificar: cantidad de naves (100+), campos obligatorios presentes, valores numéricos coherentes (HP > 0, velocidad > 0), traducciones aplicadas, sin duplicados.",
+      "prioridad": "alta",
+      "depende": ["T-101", "T-102", "T-103"],
+      "estado": "pendiente",
+      "entregable": "qa_naves.json (reporte de validación de naves)",
+      "estimacion": "1 hora",
+      "criterios_aceptacion": [
+        "Reporte con: total_count, fields_present, missing_fields, value_ranges, translation_coverage, duplicates"
+      ]
+    },
+    {
+      "id": "T-QA2",
+      "agente": "qa-engineer",
+      "descripcion": "Fase QA-2: Validar datos de componentes (T-201..T-204), armas (T-301..T-303), armaduras (T-401). Verificar: cantidades esperadas, rangos de valores, consistencia de tipos/tamaños, traducciones.",
+      "prioridad": "media",
+      "depende": ["T-201", "T-202", "T-203", "T-204", "T-301", "T-302", "T-303", "T-401"],
+      "estado": "pendiente",
+      "entregable": "qa_componentes_armas.json (reporte componentes, armas, armaduras)",
+      "estimacion": "1 hora",
+      "criterios_aceptacion": [
+        "Reporte detallado por categoría (shields, power, coolers, QT, weapons_ship, weapons_fps, armor)",
+        "Cobertura de traducción por categoría"
+      ]
+    },
+    {
+      "id": "T-QA3",
+      "agente": "qa-engineer",
+      "descripcion": "Fase QA-3: Validar misiones (T-501), commodities (T-601), crafting (T-701), fabricantes (T-801), facciones (T-802). Verificar: consistencia entre crafting y commodities (materiales existen como commodities), consistencia entre misiones y facciones (emisor existe), cobertura de traducción.",
+      "prioridad": "media",
+      "depende": ["T-501", "T-601", "T-602", "T-701", "T-801", "T-802"],
+      "estado": "pendiente",
+      "entregable": "qa_resto.json (reporte misiones, economía, crafting, facciones)",
+      "estimacion": "1 hora",
+      "criterios_aceptacion": [
+        "Reporte con validación cruzada (materiales de crafting existen en commodities)",
+        "Misiones vinculadas a facciones existentes",
+        "Cobertura de traducción"
+      ]
+    },
+    {
+      "id": "T-FE1",
+      "agente": "frontend-dev",
+      "descripcion": "Fase Frontend: Integrar nuevos datos de naves (T-101, T-103) en el frontend. Crear nueva página/sección 'Naves' con tabla de catálogo de naves: filtros por fabricante, tamaño, precio; columnas con HP, shields, velocidad, SCU, tripulación. Modal de detalle con stats completas y componentes equipables.",
+      "prioridad": "alta",
+      "depende": ["T-101", "T-102", "T-103"],
+      "estado": "pendiente",
+      "entregable": "Página de Naves en frontend (tabla + modal detalle + filtros)",
+      "estimacion": "4-5 horas",
+      "criterios_aceptacion": [
+        "Tabla con todas las naves",
+        "Filtros: fabricante, tamaño, rango de precio",
+        "Modal detalle con stats, componentes, precio",
+        "Responsive"
+      ]
+    },
+    {
+      "id": "T-FE2",
+      "agente": "frontend-dev",
+      "descripcion": "Fase Frontend: Enriquecer página de componentes existente con todos los datos nuevos de T-201..T-204. Añadir columnas de stats específicas por tipo de componente (shield: hp, regen; power: output; cooler: cooling; QT: speed, range).",
+      "prioridad": "alta",
+      "depende": ["T-201", "T-202", "T-203", "T-204"],
+      "estado": "pendiente",
+      "entregable": "Página de Componentes enriquecida con stats detalladas",
+      "estimacion": "2-3 horas",
+      "criterios_aceptacion": [
+        "Componentes con stats específicas por tipo",
+        "Filtros por tipo, tamaño, grado",
+        "Modal detalle con todas las stats"
+      ]
+    },
+    {
+      "id": "T-FE3",
+      "agente": "frontend-dev",
+      "descripcion": "Fase Frontend: Enriquecer página de armas con nuevos datos de T-301..T-303. Añadir DPS, daño por tipo, alcance, velocidad proyectil, munición. Agrupar armas por tipo (cañones, repetidores, misiles, etc.).",
+      "prioridad": "media",
+      "depende": ["T-301", "T-302", "T-303"],
+      "estado": "pendiente",
+      "entregable": "Página de Armas enriquecida con DPS y stats completas",
+      "estimacion": "2-3 horas",
+      "criterios_aceptacion": [
+        "Tabla con DPS y daño por tipo visible",
+        "Filtros por tamaño, tipo de arma",
+        "Modal detalle con todas las stats"
+      ]
+    },
+    {
+      "id": "T-FE4",
+      "agente": "frontend-dev",
+      "descripcion": "Fase Frontend: Crear página de Misiones mejorada con datos de T-501. Mostrar requisitos exactos (items, cantidad), pago, reputación, sistema. Filtros por facción, tipo, sistema, reputación.",
+      "prioridad": "alta",
+      "depende": ["T-501"],
+      "estado": "pendiente",
+      "entregable": "Página de Misiones mejorada con requisitos y filtros",
+      "estimacion": "3-4 horas",
+      "criterios_aceptacion": [
+        "Requisitos de misión visibles (items y cantidades)",
+        "Pago y reputación necesaria",
+        "Filtros funcionales",
+        "Modal detalle completo"
+      ]
+    },
+    {
+      "id": "T-FE5",
+      "agente": "frontend-dev",
+      "descripcion": "Fase Frontend: Crear página de Crafting con datos de T-701. Mostrar recetas con materiales, cantidades, output. Filtros por categoría de output, búsqueda.",
+      "prioridad": "media",
+      "depende": ["T-701"],
+      "estado": "pendiente",
+      "entregable": "Página de Crafting (tabla de recetas + modal detalle)",
+      "estimacion": "2-3 horas",
+      "criterios_aceptacion": [
+        "Tabla con todas las recetas",
+        "Detalle: materiales (nombre+cantidad), output (nombre+cantidad)",
+        "Búsqueda y filtros por tipo"
+      ]
+    },
+    {
+      "id": "T-FE6",
+      "agente": "frontend-dev",
+      "descripcion": "Fase Frontend: Crear página de Armaduras con datos de T-401. Tabla con protección por zona, peso, tipo. Filtros por tipo de armadura.",
+      "prioridad": "baja",
+      "depende": ["T-401"],
+      "estado": "pendiente",
+      "entregable": "Página de Armaduras (tabla + detalle de protección por zona)",
+      "estimacion": "2 horas",
+      "criterios_aceptacion": [
+        "Tabla de armaduras con stats",
+        "Protección por zona visible",
+        "Filtros por tipo"
+      ]
+    },
+    {
+      "id": "T-FE7",
+      "agente": "frontend-dev",
+      "descripcion": "Fase Frontend: Crear página de Economía/Commodities con datos de T-601, T-602. Tabla de commodities con precios y locaciones de compra/venta. Rutas de comercio sugeridas (compra barato, vende caro).",
+      "prioridad": "baja",
+      "depende": ["T-601", "T-602"],
+      "estado": "pendiente",
+      "entregable": "Página de Economía (commodities + precios + rutas)",
+      "estimacion": "3-4 horas",
+      "criterios_aceptacion": [
+        "Tabla de commodities con precios",
+        "Locaciones de compra y venta",
+        "Cálculo de rutas rentables"
+      ]
+    },
+    {
+      "id": "T-DB1",
+      "agente": "backend-dev",
+      "descripcion": "Fase Integración: Crear script Python/Linux que integre los JSON extraídos de StarBreaker (PowerShell) con la pipeline de build existente (build_integrated_db.py). Recibir los archivos JSON de las fases 1-8 y generar sc_database_es.json y sc_database_en.json actualizados con todos los datos nuevos.",
+      "prioridad": "alta",
+      "depende": ["T-101", "T-102", "T-103", "T-201", "T-202", "T-203", "T-204", "T-301", "T-302", "T-303", "T-401", "T-501", "T-601", "T-602", "T-701", "T-801", "T-802"],
+      "estado": "pendiente",
+      "entregable": "Script de integración (build_db_starbreaker.py) que fusiona datos nuevos con DB existente",
+      "estimacion": "2-3 horas",
+      "criterios_aceptacion": [
+        "Lee todos los JSON de las fases 1-8",
+        "Fusiona con datos existentes (scrapers) sin duplicar",
+        "Genera sc_database_es.json y sc_database_en.json completos"
+      ]
+    }
+  ],
+  "orden_ejecucion": [
+    "FASE 0: T-000, T-001",
+    "FASE 1: T-101, T-102, T-103",
+    "FASE 2: T-201, T-202, T-203, T-204",
+    "FASE 3: T-301, T-302, T-303",
+    "FASE 4: T-401",
+    "FASE 5: T-501",
+    "FASE 6: T-601, T-602",
+    "FASE 7: T-701",
+    "FASE 8: T-801, T-802",
+    "FASE QA: T-QA1, T-QA2, T-QA3",
+    "FASE DB: T-901, T-902",
+    "FASE INTEGRACIÓN: T-DB1",
+    "FASE FRONTEND: T-FE1, T-FE2, T-FE3, T-FE4, T-FE5, T-FE6, T-FE7"
+  ],
+  "bloqueos": [],
+  "notas": "El proyecto ya tiene un frontend funcional con datos de scrapers. Esta fase 3.0 reemplaza la pipeline de extracción con datos directos de StarBreaker para mayor precisión. Los scripts PowerShell corren en Windows del usuario y producen JSON intermedios. La integración final (T-DB1) se hace en Linux/Python donde ya existe la pipeline de build. Las tareas de frontend (T-FE1..T-FE7) pueden empezar en paralelo con los datos mock/diseños, pero la integración real requiere los JSON finales. Las tareas T-901 y T-902 (DB SQL) se pueden diseñar en paralelo con los datos disponibles. Prioridad: FASE 0 → FASE 1 → FASE 2,3,5,7 (paralelizables) → QA → INTEGRACIÓN → FRONTEND. Las tareas T-302, T-303, T-401, T-601, T-602, T-801, T-802 son de menor prioridad y pueden pausarse si el usuario quiere ver resultados tempranos.",
+  "bloqueos_potenciales": [],
+  "recomendaciones": [
+    "Probar T-000 primero con 1 archivo de nave (ej. aegs_avenger_stalker.json) antes de procesar 61,635 archivos",
+    "Smart Citizen podría reemplazar la necesidad de T-000 si logra generar base.ini, pero no depende de ello",
+    "Las traducciones de LetalDark tienen prioridad sobre las existentes en global.ini del juego",
+    "Los precios de naves pueden estar en archivos separados (shipsshop/) o embebidos en los mismos EntityClassDefinition",
+    "Validar contra datos conocidos (SCM speeds oficiales de RSI website) para verificar precisión"
+  ]
+}
