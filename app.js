@@ -2,49 +2,46 @@
    Star Citizen Database — App Logic
    ═══════════════════════════════════════════ */
 
-const API = '';
+// Load data directly from GitHub Raw — no Cloudflare/APIs needed
+const DB_URL = 'https://raw.githubusercontent.com/predakingser-svg/sc-database/master/sc_database_es.json';
+let CACHED_DB = null;
 
-// ─── Translation system ───
-const _translations = {
-    "Shield": "Escudo", "Power Plant": "Planta de poder", "Cooler": "Enfriador",
-    "Quantum Drive": "Motor cuántico", "Radar": "Radar",
-    "común": "común", "raro": "raro", "épico": "épico", "legendario": "legendario",
-    "BP": "Plano", "Legal": "Legal", "Ilegal": "Ilegal",
-    "Sí": "Sí", "No": "No",
-    "Stanton": "Stanton", "Pyro": "Pyro", "Nyx": "Nyx"
-};
-
-function __(text) {
-    return _translations[text] || text;
-}
-
-// ─── Full translation dictionary from global.ini ───
-let fullTranslations = {};
-let currentLang = 'es';
-
-async function loadTranslations() {
-    try {
-        const resp = await fetch('/translations?lang=es');
-        const data = await resp.json();
-        if (data && data.data) {
-            fullTranslations = data.data;
-            console.log('📚 ' + Object.keys(fullTranslations).length + ' traducciones cargadas');
+async function apiFetch(path) {
+    if (!CACHED_DB) {
+        try {
+            const res = await fetch(DB_URL);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            CACHED_DB = await res.json();
+        } catch (e) {
+            console.error('Error loading database:', e);
+            return null;
         }
-    } catch(e) {
-        console.warn('No se pudieron cargar traducciones:', e);
     }
-}
-
-function translateFull(key) {
-    if (!key) return '';
-    if (fullTranslations[key]) return fullTranslations[key];
-    const kl = key.toLowerCase();
-    for (const [k, v] of Object.entries(fullTranslations)) {
-        if (k.toLowerCase() === kl) return v;
+    // Parse path to return appropriate section
+    const url = new URL(path, window.location.origin);
+    const route = url.pathname;
+    const perPage = parseInt(url.searchParams.get('per_page')) || 5000;
+    
+    if (route === '/stats') {
+        return {
+            total_missions: (CACHED_DB.missions || []).length,
+            total_blueprints: (CACHED_DB.blueprints || []).length,
+            total_weapons: (CACHED_DB.weapons || []).length,
+            total_components: (CACHED_DB.components || []).length,
+            total_minerals: (CACHED_DB.minerals || []).length,
+            total_items: (CACHED_DB.items || []).length,
+            total_wikelo: (CACHED_DB.wikelo || []).length,
+            total_ships: (CACHED_DB.ships || []).length,
+            version: CACHED_DB.version || '4.9.0',
+        };
     }
+    if (route === '/missions') return (CACHED_DB.missions || []).slice(0, perPage);
+    if (route === '/blueprints') return (CACHED_DB.blueprints || []).slice(0, perPage);
+    if (route === '/weapons') return CACHED_DB.weapons || [];
+    if (route === '/items') return CACHED_DB.items || [];
+    if (route === '/wikelo') return CACHED_DB.wikelo || [];
     return null;
 }
-
 
 // ─── State ───
 let state = {
@@ -59,16 +56,6 @@ const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 
 // ─── Init ───
-// Global error handler
-window.addEventListener('unhandledrejection', (e) => {
-    console.warn('Promesa sin capturar:', e.reason);
-    e.preventDefault();
-});
-
-window.addEventListener('error', (e) => {
-    console.warn('Error global:', e.message);
-});
-
 document.addEventListener('DOMContentLoaded', () => {
     loadStats();
     setupNavigation();
@@ -78,24 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateBadges();
 });
 
-// ─── API helper ───
-async function apiFetch(path, timeoutMs = 5000) {
-    try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), timeoutMs);
-        const res = await fetch(`${API}${path}`, { signal: controller.signal });
-        clearTimeout(timeout);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
-    } catch (e) {
-        if (e.name === 'AbortError') {
-            console.warn(`API timeout: ${path}`);
-        } else {
-            console.error(`API error: ${path}`, e);
-        }
-        return null;
-    }
-}
+
 
 // ─── Load Dashboard Stats ───
 async function loadStats() {
@@ -254,14 +224,11 @@ function navigateTo(page, filter) {
     $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
 
     if (page === 'missions') loadMissions(filter);
-    else if (page === 'blueprints') loadBlueprints(filter);
-    else if (page === 'weapons') loadWeapons(filter);
-    else if (page === 'wikelo') loadWikelo(filter);
-    else if (page === 'factions') loadFactions();
-    else if (page === 'items') loadItems();
-    else if (page === 'minerals') loadMinerals();
-    else if (page === 'components') loadComponents();
+    if (page === 'blueprints') loadBlueprints(filter);
+    if (page === 'weapons') loadWeapons(filter);
+    if (page === 'wikelo') loadWikelo(filter);
 
+    // Close sidebar on mobile
     document.getElementById('sidebar').classList.remove('open');
 }
 
@@ -331,7 +298,7 @@ function renderSearchResults(results, dropdown) {
         html += `<div style="padding:8px 14px;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Misiones</div>`;
         results.missions.slice(0, 4).forEach(m => {
             html += `<div class="search-result-item" onclick="navigateTo('missions')">
-                <div class="sr-title">🎯 ${m._translated_title || m.title}</div>
+                <div class="sr-title">🎯 ${m.title}</div>
                 <div class="sr-meta">${m.faction || '?'} · ${m.reward?.toLocaleString() || '?'} aUEC</div>
             </div>`;
             count++;
@@ -539,7 +506,7 @@ function renderMissionPage(page) {
         const bpBadge = m.has_blueprints ? '<span class="badge-bp">BP</span>' : '—';
         
         return `<tr onclick="openMissionModal('${m.uuid}')">
-            <td>${m._translated_title || m.title || '?'}</td>
+            <td>${m.title || '?'}</td>
             <td style="color:var(--text-secondary)">${fname}</td>
             <td>${m.reward_scope || '?'}</td>
             <td>${reward}</td>
@@ -638,7 +605,7 @@ async function openMissionModal(uuid) {
     
     const html = `
         <button class="modal-close" onclick="closeMissionModal()">✕</button>
-        <h2 style="margin-bottom:20px">${m._translated_title || m.title || '?'}</h2>
+        <h2 style="margin-bottom:20px">${m.title || '?'}</h2>
         <div class="detail-grid">
             <div class="detail-item">
                 <div class="di-label">Facción</div>
@@ -1122,7 +1089,6 @@ async function loadWikelo(filter) {
 const wkNames = { favor_trades:'🤝 Favor Trades', polaris_bit_recipes:'💎 Polaris Bit', weapon_contracts:'🔫 Armas', armor_contracts:'🛡️ Armaduras', vehicle_contracts:'🚗 Vehículos', ship_contracts:'🚀 Naves' };
 
 function renderWikelo() {
-    const container = document.getElementById("wikelo-contracts");
     const data = window._wikeloData;
     if (!data) return;
     const cat = document.getElementById('filter-wk-cat').value;
@@ -1233,6 +1199,19 @@ function filterItems() {
 // SAFE NAVIGATE OVERRIDE
 // ═══════════════════════════════════════════
 
+const _origNav = window.navigateTo || function(){};
+window.navigateTo = function(page, filter) {
+    state.currentPage = page;
+    $$('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+    $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
+    if (page === 'missions') loadMissions(filter);
+    else if (page === 'blueprints') loadBlueprints(filter);
+    else if (page === 'weapons') loadWeapons(filter);
+    else if (page === 'wikelo') loadWikelo(filter);
+    else if (page === 'factions') loadFactions();
+    else if (page === 'items') loadItems();
+    document.getElementById('sidebar').classList.remove('open');
+};
 window.navigateTo = window.navigateTo;
 
 // Force reconnect if API was called
@@ -1446,342 +1425,3 @@ setInterval(async () => {
 
 
 console.log('✅ Paso 6 — Pulido aplicado');
-
-
-// ═══════════════════════════════════════════
-// MINERALS PAGE (Paso 8)
-// ═══════════════════════════════════════════
-
-let mineralsCache = null;
-let mineralsPage = 1;
-let mineralsSort = { key: 'rarity', asc: false };
-const MIN_PER_PAGE = 26;
-
-async function loadMinerals() {
-    const tbody = document.getElementById('minerals-tbody');
-    tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Cargando...</td></tr>';
-    
-    const data = await apiFetch('/minerals');
-    if (!data) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row" style="color:var(--danger)">Error</td></tr>'; return; }
-    
-    mineralsCache = data.data || [];
-    populateLocationFilter();
-    applyMineralFilters();
-    applyMineralSort();
-    renderMinerals();
-    setupMineralFilters();
-}
-
-function populateLocationFilter() {
-    const sel = document.getElementById('filter-mlocation');
-    if (sel.options.length > 1) return;
-    const locs = [...new Set((mineralsCache || []).flatMap(m => m.locations || []))].sort();
-    locs.forEach(l => { const o = document.createElement('option'); o.value = l; o.textContent = l; sel.appendChild(o); });
-}
-
-function applyMineralFilters() {
-    const q = document.getElementById('mineral-search')?.value?.toLowerCase() || '';
-    const rar = document.getElementById('filter-rarity')?.value || '';
-    const loc = document.getElementById('filter-mlocation')?.value || '';
-    const minV = parseFloat(document.getElementById('filter-minval')?.value) || 0;
-    
-    window._mineralFiltered = (mineralsCache || []).filter(m => {
-        if (q && !m.name.toLowerCase().includes(q)) return false;
-        if (rar && m.rarity !== rar) return false;
-        if (loc && !(m.locations || []).some(l => l === loc)) return false;
-        if (minV > 0 && (m.value_per_scu || 0) < minV) return false;
-        return true;
-    });
-    document.getElementById('minerals-count').textContent = window._mineralFiltered.length;
-}
-
-function applyMineralSort() {
-    const { key, asc } = mineralsSort;
-    if (!key || !window._mineralFiltered) return;
-    window._mineralFiltered.sort((a, b) => {
-        const getV = (m, k) => {
-            if (k === 'rarity') return { 'común':0, 'raro':1, 'épico':2, 'legendario':3 }[m.rarity] || 0;
-            if (k === 'signature') return m.signature_min || 0;
-            if (k === 'locations') return (m.locations || []).length;
-            if (k === 'value') return m.value_per_scu || 0;
-            return (m.name || '').toLowerCase();
-        };
-        return asc ? getV(a,key) - getV(b,key) : getV(b,key) - getV(a,key);
-    });
-}
-
-function renderMinerals() {
-    const tbody = document.getElementById('minerals-tbody');
-    const items = window._mineralFiltered || [];
-    if (!items.length) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Sin resultados</td></tr>'; return; }
-    
-    tbody.innerHTML = items.map(m => {
-        const rarClass = m.rarity === 'legendario' ? 'rar-legend' : m.rarity === 'épico' ? 'rar-epic' : m.rarity === 'raro' ? 'rar-rare' : 'rar-common';
-        return `<tr onclick="openMineralModal('${m.name}')">
-            <td style="font-weight:600">${m.name}</td>
-            <td><span class="rarity-badge ${rarClass}">${m.rarity}</span></td>
-            <td style="font-family:monospace">${m.signature_min.toLocaleString()} - ${m.signature_max.toLocaleString()}</td>
-            <td>${(m.locations || []).length}</td>
-            <td style="color:var(--accent)">${m.value_per_scu.toFixed(2)}</td>
-        </tr>`;
-    }).join('');
-    
-    document.querySelectorAll('#minerals-table th').forEach(th => {
-        th.classList.remove('sorted','asc','desc');
-        if (th.dataset.sort === mineralsSort.key) th.classList.add('sorted', mineralsSort.asc ? 'asc' : 'desc');
-    });
-}
-
-function setupMineralFilters() {
-    if (window._mnFReady) return; window._mnFReady = true;
-    ['mineral-search','filter-rarity','filter-mlocation','filter-minval'].forEach(id => {
-        const el = document.getElementById(id); if (!el) return;
-        el.addEventListener('input', () => { applyMineralFilters(); applyMineralSort(); renderMinerals(); });
-        el.addEventListener('change', () => { applyMineralFilters(); applyMineralSort(); renderMinerals(); });
-    });
-    document.getElementById('mineral-reset').addEventListener('click', () => {
-        ['mineral-search','filter-rarity','filter-mlocation','filter-minval'].forEach(id => document.getElementById(id).value = '');
-        applyMineralFilters(); applyMineralSort(); renderMinerals();
-    });
-    document.querySelectorAll('#minerals-table th.sortable').forEach(th => {
-        th.addEventListener('click', () => {
-            const k = th.dataset.sort;
-            if (mineralsSort.key === k) mineralsSort.asc = !mineralsSort.asc;
-            else { mineralsSort.key = k; mineralsSort.asc = k === 'name'; }
-            applyMineralSort(); renderMinerals();
-        });
-    });
-}
-
-async function openMineralModal(name) {
-    const m = await apiFetch(`/minerals/${name}`);
-    if (!m) return;
-    
-    const rarClass = m.rarity === 'legendario' ? 'rar-legend' : m.rarity === 'épico' ? 'rar-epic' : m.rarity === 'raro' ? 'rar-rare' : 'rar-common';
-    const sigs = m.signatures || {};
-    
-    const html = `
-        <button class="modal-close" onclick="closeMineralModal()">✕</button>
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-            <h2 style="margin:0">⛏️ ${m.name}</h2>
-            <span class="rarity-badge ${rarClass}" style="font-size:14px">${m.rarity}</span>
-        </div>
-        <div class="detail-grid">
-            <div class="detail-item"><div class="di-label">Valor</div><div class="di-value" style="color:var(--accent);font-size:18px">${m.value_per_scu.toFixed(2)} aUEC/SCU</div></div>
-            <div class="detail-item"><div class="di-label">Firma mínima</div><div class="di-value" style="font-family:monospace">${m.signature_min.toLocaleString()}</div></div>
-            <div class="detail-item"><div class="di-label">Firma máxima</div><div class="di-value" style="font-family:monospace">${m.signature_max.toLocaleString()}</div></div>
-            <div class="detail-item"><div class="di-label">Tipo</div><div class="di-value">${m.type || 'ore'}</div></div>
-        </div>
-        <div style="margin:15px 0">
-            <h4 style="color:var(--text-secondary);margin-bottom:8px">📊 Firmas de escaneo</h4>
-            ${Object.entries(sigs).map(([pct, val]) => {
-                const pctNum = (val - m.signature_min) / (m.signature_max - m.signature_min) * 100;
-                return `<div class="chart-bar-group">
-                    <div class="chart-bar-label"><span class="cbl-name">${pct}</span><span class="cbl-val">${val.toLocaleString()}</span></div>
-                    <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${pctNum}%;background:var(--accent)"></div></div>
-                </div>`;
-            }).join('')}
-        </div>
-        <div style="margin:15px 0">
-            <h4 style="color:var(--text-secondary);margin-bottom:8px">📍 Locaciones (${(m.locations || []).length})</h4>
-            <div style="display:flex;flex-wrap:wrap;gap:4px">${(m.locations || []).map(l => `<span style="padding:3px 8px;background:var(--bg-primary);border-radius:4px;font-size:12px;color:var(--text-secondary)">${l}</span>`).join('')}</div>
-        </div>
-    `;
-    document.getElementById('mineral-modal-content').innerHTML = html;
-    document.getElementById('mineral-modal').classList.remove('hidden');
-}
-
-function closeMineralModal() { document.getElementById('mineral-modal').classList.add('hidden'); }
-
-// Add mineral rarity badge styles
-const mineralStyle = document.createElement('style');
-mineralStyle.textContent = `
-    .rarity-badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .rar-common { background: rgba(100,100,100,0.2); color: #aaa; border: 1px solid #555; }
-    .rar-rare { background: rgba(79,195,247,0.15); color: #4fc3f7; border: 1px solid #4fc3f7; }
-    .rar-epic { background: rgba(171,71,188,0.15); color: #ab47bc; border: 1px solid #ab47bc; }
-    .rar-legend { background: rgba(255,167,38,0.15); color: #ffa726; border: 1px solid #ffa726; animation: glow 2s infinite; }
-    @keyframes glow { 0%,100% { box-shadow: 0 0 5px rgba(255,167,38,0.3); } 50% { box-shadow: 0 0 15px rgba(255,167,38,0.6); } }
-`;
-document.head.appendChild(mineralStyle);
-
-// Override navigateTo to include minerals
-
-console.log('✅ Paso 8 — Minerales frontend listo');
-
-// ═══════════════════════════════════════════
-// COMPONENTS PAGE
-// ═══════════════════════════════════════════
-
-let compsCache = null;
-let compsSort = { key: 'type', asc: true };
-
-async function loadComponents() {
-    const tbody = document.getElementById('components-tbody');
-    tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Cargando...</td></tr>';
-    const data = await apiFetch('/components');
-    if (!data) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row" style="color:var(--danger)">Error</td></tr>'; return; }
-    compsCache = data.data || [];
-    document.getElementById('badge-components').textContent = compsCache.length;
-    applyCompFilters(); applyCompSort(); renderComps();
-    setupCompFilters();
-}
-
-function applyCompFilters() {
-    const q = (document.getElementById('comp-search')?.value || '').toLowerCase();
-    const t = document.getElementById('filter-comp-type')?.value || '';
-    const s = document.getElementById('filter-comp-size')?.value || '';
-    window._compFiltered = (compsCache || []).filter(c => {
-        if (q && !c.name.toLowerCase().includes(q)) return false;
-        if (t && c.type !== t) return false;
-        if (s && c.size !== s) return false;
-        return true;
-    });
-    document.getElementById('components-count').textContent = window._compFiltered.length;
-}
-
-function applyCompSort() {
-    if (!compsSort.key || !window._compFiltered) return;
-    window._compFiltered.sort((a, b) => {
-        const va = (a[compsSort.key] || '').toLowerCase(), vb = (b[compsSort.key] || '').toLowerCase();
-        return compsSort.asc ? va.localeCompare(vb) : vb.localeCompare(va);
-    });
-}
-
-function renderComps() {
-    const tbody = document.getElementById('components-tbody');
-    const items = window._compFiltered || [];
-    if (!items.length) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Sin resultados</td></tr>'; return; }
-    tbody.innerHTML = items.map(c => `<tr>
-        <td style="font-weight:600">${c.name}</td>
-        <td><span class="comp-badge ct-${c.type.replace(/ /g,'')}">${__(c.type)}</span></td>
-        <td>${c.grade || '—'}</td>
-        <td>S${c.size || '?'}</td>
-    </tr>`).join('');
-    document.querySelectorAll('#components-table th').forEach(th => {
-        th.classList.remove('sorted','asc','desc');
-        if (th.dataset.sort === compsSort.key) th.classList.add('sorted', compsSort.asc ? 'asc' : 'desc');
-    });
-}
-
-function setupCompFilters() {
-    if (window._cpFReady) return; window._cpFReady = true;
-    ['comp-search','filter-comp-type','filter-comp-size'].forEach(id => {
-        const el = document.getElementById(id); if (!el) return;
-        el.addEventListener('input', () => { applyCompFilters(); applyCompSort(); renderComps(); });
-        el.addEventListener('change', () => { applyCompFilters(); applyCompSort(); renderComps(); });
-    });
-    document.getElementById('comp-reset').addEventListener('click', () => {
-        document.getElementById('comp-search').value=''; document.getElementById('filter-comp-type').value=''; document.getElementById('filter-comp-size').value='';
-        applyCompFilters(); applyCompSort(); renderComps();
-    });
-    document.querySelectorAll('#components-table th.sortable').forEach(th => {
-        th.addEventListener('click', () => {
-            const k = th.dataset.sort;
-            if (compsSort.key === k) compsSort.asc = !compsSort.asc;
-            else { compsSort.key = k; compsSort.asc = true; }
-            applyCompSort(); renderComps();
-        });
-    });
-}
-
-// Component badge styles
-const compStyle = document.createElement('style');
-compStyle.textContent = `
-    .comp-badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-    .ct-Shield { background: rgba(79,195,247,0.15); color: #4fc3f7; }
-    .ct-PowerPlant { background: rgba(255,167,38,0.15); color: #ffa726; }
-    .ct-Cooler { background: rgba(102,187,106,0.15); color: #66bb6a; }
-    .ct-QuantumDrive { background: rgba(171,71,188,0.15); color: #ab47bc; }
-    .ct-Radar { background: rgba(239,83,80,0.15); color: #ef5350; }
-`;
-document.head.appendChild(compStyle);
-
-// Add components to navigator
-
-console.log('✅ Componentes page ready');
-
-// ═══ COMPONENTS PAGE ═══
-
-async function loadComponents() {
-    const tbody = document.getElementById('components-tbody');
-    tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Cargando...</td></tr>';
-    const data = await apiFetch('/components');
-    if (!data) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row" style="color:var(--danger)">Error</td></tr>'; return; }
-    compsCache = data.data || [];
-    document.getElementById('badge-components').textContent = compsCache.length;
-    applyCompFilters(); applyCompSort(); renderComps();
-    setupCompFilters();
-}
-
-function applyCompFilters() {
-    const q = (document.getElementById('comp-search')?.value || '').toLowerCase();
-    const t = document.getElementById('filter-comp-type')?.value || '';
-    const s = document.getElementById('filter-comp-size')?.value || '';
-    window._compFiltered = (compsCache || []).filter(c => {
-        if (q && !c.name.toLowerCase().includes(q)) return false;
-        if (t && c.type !== t) return false;
-        if (s && c.size !== s) return false;
-        return true;
-    });
-    document.getElementById('components-count').textContent = window._compFiltered.length;
-}
-
-function applyCompSort() {
-    if (!compsSort.key || !window._compFiltered) return;
-    window._compFiltered.sort((a, b) => {
-        const va = (a[compsSort.key] || '').toLowerCase(), vb = (b[compsSort.key] || '').toLowerCase();
-        return compsSort.asc ? va.localeCompare(vb) : vb.localeCompare(va);
-    });
-}
-
-function renderComps() {
-    const tbody = document.getElementById('components-tbody');
-    const items = window._compFiltered || [];
-    if (!items.length) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Sin resultados</td></tr>'; return; }
-    tbody.innerHTML = items.map(c => `<tr>
-        <td style="font-weight:600">${c.name}</td>
-        <td><span class="comp-badge ct-${c.type.replace(/ /g,'')}">${__(c.type)}</span></td>
-        <td>${c.grade || '—'}</td>
-        <td>S${c.size || '?'}</td>
-    </tr>`).join('');
-    document.querySelectorAll('#components-table th').forEach(th => {
-        th.classList.remove('sorted','asc','desc');
-        if (th.dataset.sort === compsSort.key) th.classList.add('sorted', compsSort.asc ? 'asc' : 'desc');
-    });
-}
-
-function setupCompFilters() {
-    if (window._cpFReady) return; window._cpFReady = true;
-    ['comp-search','filter-comp-type','filter-comp-size'].forEach(id => {
-        const el = document.getElementById(id); if (!el) return;
-        el.addEventListener('input', () => { applyCompFilters(); applyCompSort(); renderComps(); });
-        el.addEventListener('change', () => { applyCompFilters(); applyCompSort(); renderComps(); });
-    });
-    document.getElementById('comp-reset').addEventListener('click', () => {
-        ['comp-search','filter-comp-type','filter-comp-size'].forEach(id => document.getElementById(id).value='');
-        applyCompFilters(); applyCompSort(); renderComps();
-    });
-    document.querySelectorAll('#components-table th.sortable').forEach(th => {
-        th.addEventListener('click', () => {
-            const k = th.dataset.sort;
-            if (compsSort.key === k) compsSort.asc = !compsSort.asc;
-            else { compsSort.key = k; compsSort.asc = true; }
-            applyCompSort(); renderComps();
-        });
-    });
-}
-
-// Badge styles
-const cs = document.createElement('style');
-cs.textContent = `
-    .comp-badge { padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
-    .ct-Shield { background:rgba(79,195,247,0.15); color:#4fc3f7; }
-    .ct-PowerPlant { background:rgba(255,167,38,0.15); color:#ffa726; }
-    .ct-Cooler { background:rgba(102,187,106,0.15); color:#66bb6a; }
-    .ct-QuantumDrive { background:rgba(171,71,188,0.15); color:#ab47bc; }
-    .ct-Radar { background:rgba(239,83,80,0.15); color:#ef5350; }
-`;
-document.head.appendChild(cs);
-
-// Update navigateTo
