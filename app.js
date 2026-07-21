@@ -2,8 +2,8 @@
    Star Citizen Database — App Logic
    ═══════════════════════════════════════════ */
 
-// Load data directly from static JSON — no backend API needed
-const DB_URL = '/sc_database_es.json';
+// Load data directly from GitHub Raw — no Cloudflare/APIs needed
+const DB_URL = 'https://raw.githubusercontent.com/predakingser-svg/sc-database/master/sc_database_es.json';
 let CACHED_DB = null;
 
 async function apiFetch(path) {
