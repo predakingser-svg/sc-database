@@ -1,25 +1,7 @@
 {
-  "total_ships": 1058,
-  "total_missions": 4256,
-  "total_blueprints": 1591,
-  "total_weapons": 381,
-  "total_components": 5000,
-  "total_items": 7509,
-  "total_minerals": 295,
-  "total_wikelo": 51,
-  "total_contracts": 647,
-  "total_crafting": 1874,
-  "items_by_category": {
-    "Arma": 1423,
-    "Armadura": 4882,
-    "Munici\u00f3n": 51,
-    "Arma de nave": 237,
-    "Cabezal de Salvage": 161,
-    "Planta de Energ\u00eda": 27,
-    "Refrigerador": 38,
-    "Motor Cu\u00e1ntico": 54,
-    "Radar": 109,
-    "Escudo": 179,
-    "L\u00e1ser Minero": 348
-  }
+  "total_ships": 265,
+  "total_items": 2916,
+  "total_blueprints": 697,
+  "total_missions": 2169,
+  "total_minerals": 246
 }
