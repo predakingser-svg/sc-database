@@ -27,45 +27,55 @@
                     <span class="nav-icon">📊</span>
                     <span>Dashboard</span>
                 </li>
-                <li class="nav-item" data-page="missions">
-                    <span class="nav-icon">📋</span>
-                    <span>Misiones</span>
-                    <span class="badge" id="badge-missions">0</span>
+                <li class="nav-item" data-page="ships">
+                    <span class="nav-icon">🚀</span>
+                    <span>Naves</span>
+                    <span class="badge" id="badge-ships">0</span>
                 </li>
-                <li class="nav-item" data-page="blueprints">
-                    <span class="nav-icon">🔧</span>
-                    <span>Blueprints</span>
-                    <span class="badge" id="badge-blueprints">0</span>
+                <li class="nav-item" data-page="equipment">
+                    <span class="nav-icon">🎒</span>
+                    <span>Equipamiento</span>
+                    <span class="badge" id="badge-equipment">0</span>
                 </li>
                 <li class="nav-item" data-page="weapons">
                     <span class="nav-icon">🔫</span>
                     <span>Armas</span>
                     <span class="badge" id="badge-weapons">0</span>
                 </li>
-                <li class="nav-item" data-page="wikelo">
-                    <span class="nav-icon">🛸</span>
-                    <span>Catálogo de Wikelo</span>
-                    <span class="badge" id="badge-wikelo">0</span>
-                </li>
-                <li class="nav-item" data-page="factions">
-                    <span class="nav-icon">🏛️</span>
-                    <span>Facciones</span>
-                    <span class="badge" id="badge-factions">0</span>
-                </li>
-                <li class="nav-item" data-page="items">
-                    <span class="nav-icon">📦</span>
-                    <span>Items</span>
-                    <span class="badge" id="badge-items">0</span>
-                </li>
                 <li class="nav-item" data-page="components">
                     <span class="nav-icon">⚙️</span>
                     <span>Componentes</span>
                     <span class="badge" id="badge-components">0</span>
                 </li>
+                <li class="nav-item" data-page="missions">
+                    <span class="nav-icon">📋</span>
+                    <span>Misiones</span>
+                    <span class="badge" id="badge-missions">0</span>
+                </li>
+                <li class="nav-item" data-page="contracts">
+                    <span class="nav-icon">📝</span>
+                    <span>Contratos</span>
+                    <span class="badge" id="badge-contracts">0</span>
+                </li>
+                <li class="nav-item" data-page="blueprints">
+                    <span class="nav-icon">🔧</span>
+                    <span>Blueprints</span>
+                    <span class="badge" id="badge-blueprints">0</span>
+                </li>
                 <li class="nav-item" data-page="minerals">
                     <span class="nav-icon">💎</span>
                     <span>Minerales</span>
                     <span class="badge" id="badge-minerals">0</span>
+                </li>
+                <li class="nav-item" data-page="wikelo">
+                    <span class="nav-icon">🛸</span>
+                    <span>Wikelo</span>
+                    <span class="badge" id="badge-wikelo">0</span>
+                </li>
+                <li class="nav-item" data-page="exec-hangars">
+                    <span class="nav-icon">🏗️</span>
+                    <span>Hangar Ejecutivo</span>
+                    <span class="badge" id="badge-exec-hangars">0</span>
                 </li>
             </ul>
             <div class="sidebar-footer">
@@ -352,6 +362,52 @@
                     </div>
                     <div class="table-container"><table class="data-table" id="minerals-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="rarity" class="sortable">Rareza</th><th data-sort="sig_min" class="sortable">Firma Mín</th><th data-sort="sig_max" class="sortable">Firma Máx</th><th data-sort="value" class="sortable">Valor/SCU</th><th data-sort="locations" class="sortable">Sistemas</th></tr></thead><tbody id="minerals-tbody"><tr><td colspan="6" class="loading-row">Cargando...</td></tr></tbody></table></div>
                     <div class="pagination" id="minerals-pagination"></div>
+                </div>
+                <!-- ═══ SHIPS PAGE ═══ -->
+                <div id="page-ships" class="page">
+                    <div class="page-header"><h2>Naves</h2><span id="ships-count" class="page-count">0</span></div>
+                    <p class="subtitle">Catálogo completo de naves con especificaciones</p>
+                    <div class="filters-bar">
+                        <div class="filter-group"><input type="text" id="ships-search" class="filter-input" placeholder="Buscar nave..."></div>
+                        <div class="filter-group"><select id="filter-ship-manu" class="filter-select"><option value="">Todos los fabricantes</option></select></div>
+                        <div class="filter-group"><select id="filter-ship-size" class="filter-select"><option value="">Todos los tamaños</option><option value="Snub">Snub</option><option value="Pequeña">Pequeña</option><option value="Mediana">Mediana</option><option value="Grande">Grande</option><option value="Capital">Capital</option></select></div>
+                        <div class="filter-group"><select id="filter-ship-role" class="filter-select"><option value="">Todos los roles</option></select></div>
+                        <button id="ships-reset" class="btn-reset">✕</button>
+                    </div>
+                    <div class="table-container"><table class="data-table" id="ships-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="manufacturer" class="sortable">Fabricante</th><th data-sort="size" class="sortable">Tamaño</th><th data-sort="role" class="sortable">Rol</th><th data-sort="scm_speed" class="sortable">SCM</th><th data-sort="max_speed" class="sortable">Máx</th><th data-sort="shield_hp" class="sortable">Escudo</th><th data-sort="price_auec" class="sortable">Precio</th></tr></thead><tbody id="ships-tbody"><tr><td colspan="8" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                    <div class="pagination" id="ships-pagination"></div>
+                </div>
+
+                <!-- ═══ EQUIPMENT PAGE ═══ -->
+                <div id="page-equipment" class="page">
+                    <div class="page-header"><h2>Equipamiento</h2><span id="equipment-count" class="page-count">0</span></div>
+                    <p class="subtitle">Armaduras, armas FPS, accesorios y equipo personal</p>
+                    <div class="filters-bar">
+                        <div class="filter-group"><input type="text" id="equip-search" class="filter-input" placeholder="Buscar equipo..."></div>
+                        <div class="filter-group"><select id="filter-equip-type" class="filter-select"><option value="">Todas las categorías</option></select></div>
+                        <button id="equip-reset" class="btn-reset">✕</button>
+                    </div>
+                    <div class="table-container"><table class="data-table" id="equipment-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="type" class="sortable">Tipo</th><th data-sort="subtype" class="sortable">Subtipo</th><th data-sort="manufacturer" class="sortable">Fabricante</th></tr></thead><tbody id="equipment-tbody"><tr><td colspan="4" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                    <div class="pagination" id="equipment-pagination"></div>
+                </div>
+
+                <!-- ═══ CONTRACTS PAGE ═══ -->
+                <div id="page-contracts" class="page">
+                    <div class="page-header"><h2>Contratos</h2><span id="contracts-count" class="page-count">0</span></div>
+                    <p class="subtitle">Contratos con pagos, recompensas y reputación</p>
+                    <div class="filters-bar">
+                        <div class="filter-group"><input type="text" id="contracts-search" class="filter-input" placeholder="Buscar contrato..."></div>
+                        <button id="contracts-reset" class="btn-reset">✕</button>
+                    </div>
+                    <div class="table-container"><table class="data-table" id="contracts-table"><thead><tr><th data-sort="name" class="sortable">Nombre</th><th data-sort="type" class="sortable">Tipo</th><th data-sort="pay_auec" class="sortable">Pago</th></tr></thead><tbody id="contracts-tbody"><tr><td colspan="3" class="loading-row">Cargando...</td></tr></tbody></table></div>
+                    <div class="pagination" id="contracts-pagination"></div>
+                </div>
+
+                <!-- ═══ EXEC HANGARS PAGE ═══ -->
+                <div id="page-exec-hangars" class="page">
+                    <div class="page-header"><h2>Hangar Ejecutivo</h2><span id="exec-hangars-count" class="page-count">0</span></div>
+                    <p class="subtitle">Monitoreo del PowerCycle de los Hangares Ejecutivos en Pyro</p>
+                    <div id="exec-hangars-content"><div class="loading-sm">Cargando...</div></div>
                 </div>
             </div>
         </main>
