@@ -53,8 +53,12 @@ export default {
       return new Response('Method not allowed', { status: 405, headers: corsHeaders });
     }
 
-    // API minerales (data)
-    if (path.startsWith('/api/data') || path === '/api') {
+    // API data — serve from static JSON (no Flask needed)
+    if (path.startsWith('/api/')) {
+      // Try the static database file first
+      if (path === '/api/data' || path === '/api/database') {
+        return env.ASSETS.fetch(new URL('/sc_database_es.json', request.url));
+      }
       return env.ASSETS.fetch(request);
     }
 
