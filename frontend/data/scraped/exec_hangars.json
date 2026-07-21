@@ -1,0 +1,69 @@
+{
+  "status": "ONLINE",
+  "phase": "3 of 5",
+  "location": "Pyro - Executive Hangar PYAM-EXHANG-0-1",
+  "schedule": [
+    {
+      "cycle": "NOW",
+      "opens": "21 Jul 04:30:09",
+      "closes": "21 Jul 05:35:10",
+      "open_for": "1h 5m"
+    },
+    {
+      "cycle": "+2",
+      "opens": "21 Jul 07:35:10",
+      "closes": "21 Jul 08:40:10",
+      "open_for": "1h 5m"
+    },
+    {
+      "cycle": "+3",
+      "opens": "21 Jul 10:40:11",
+      "closes": "21 Jul 11:45:11",
+      "open_for": "1h 5m"
+    },
+    {
+      "cycle": "+4",
+      "opens": "21 Jul 13:45:12",
+      "closes": "21 Jul 14:50:12",
+      "open_for": "1h 5m"
+    },
+    {
+      "cycle": "+5",
+      "opens": "21 Jul 16:50:13",
+      "closes": "21 Jul 17:55:13",
+      "open_for": "1h 5m"
+    },
+    {
+      "cycle": "+6",
+      "opens": "21 Jul 19:55:14",
+      "closes": "21 Jul 21:00:14",
+      "open_for": "1h 5m"
+    },
+    {
+      "cycle": "+7",
+      "opens": "21 Jul 23:00:15",
+      "closes": "22 Jul 00:05:15",
+      "open_for": "1h 5m"
+    },
+    {
+      "cycle": "+8",
+      "opens": "22 Jul 02:05:16",
+      "closes": "22 Jul 03:10:16",
+      "open_for": "1h 5m"
+    }
+  ],
+  "ship_rewards": [
+    "Hornet F7A Mk II Executive",
+    "Lightning F8C Executive",
+    "Cutlass Black Executive",
+    "Corsair Executive",
+    "Syulen Executive",
+    "Guardian MX Wikelo War Special",
+    "Meteor Executive",
+    "Scorpius Wikelo War Special"
+  ],
+  "loot_rewards": {
+    "components": 16,
+    "weapons": 4
+  }
+}

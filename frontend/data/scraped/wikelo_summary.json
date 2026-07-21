@@ -1,0 +1,10 @@
+{
+  "total": 64,
+  "categories": {
+    "ships": 41,
+    "weapons": 9,
+    "armor": 10,
+    "other": 4
+  },
+  "pages": 3
+}
